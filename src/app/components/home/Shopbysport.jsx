@@ -311,7 +311,7 @@ export default function ShopBySport() {
           className="flex flex-col md:flex-row items-center justify-between gap-6 pt-6 border-t border-gray-200"
         >
           {/* Stats */}
-          <div className="flex items-center gap-6 text-sm overflow-x-auto whitespace-nowrap w-full">
+          <div className="flex items-center gap-6 text-sm overflow-x-auto whitespace-nowrap w-full pb-3 scrollbar-hide">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-full bg-gradient-to-r from-red-100 to-orange-100 flex items-center justify-center">
                 <TrendingUp size={18} className="text-red-600" />
@@ -357,7 +357,7 @@ export default function ShopBySport() {
   className="group relative inline-flex items-center justify-center gap-2 
   bg-gradient-to-r from-primary to-secondary 
   text-white font-extrabold text-xs sm:text-sm 
-  px-6 sm:px-7 py-3 sm:py-3.5 rounded-xl 
+  px-6 sm:px-7 py-3 sm:py-1.5 rounded-xl 
   transition-all duration-300 w-full sm:w-auto 
   overflow-hidden shadow-lg hover:shadow-xl"
 >

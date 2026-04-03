@@ -1,19 +1,54 @@
-import products from "@/data/products";
+// import { notFound } from "next/navigation";
+// import { products } from "@/data/products";
+// import ProductDetailClient from "./ProductDetailClient";
 
-export default function ProductDetails({ params }) {
-  const id = params?.id;
+// export async function generateMetadata({ params }) {
+//   const product = products.find((p) => p.id === params.id);
+//   if (!product) return {};
+//   return {
+//     title: `${product.name} — LEO CULT`,
+//     description: product.description,
+//   };
+// }
 
-  const product = products.find(
-    (p) => p._id === id
-  );
+// export default function ProductDetailPage({ params }) {
+//   const product = products.find((p) => p.id === params.id);
+//   if (!product) notFound();
+//   return <ProductDetailClient product={product} />;
+// }
 
+
+
+import { notFound } from "next/navigation";
+import { products } from "@/data/products";
+import JerseyCustomizer from "@/app/components/products/JersyCustomizer";
+
+export async function generateMetadata({ params }) {
+  // For Next.js 15+
+  const { id } = await params;
+  const product = products.find((p) => p.id === id);
+  
+  if (!product) return { title: "Product Not Found" };
+  
+  return {
+    title: `${product.name} — LEO CULT`,
+    description: product.description,
+  };
+}
+
+export default async function ProductDetailPage({ params }) {
+  // For Next.js 15+ - await params
+  const { id } = await params;
+  
+  console.log("Looking for product with ID:", id); // Debug line
+  
+  const product = products.find((p) => p.id === id);
+  
   if (!product) {
-    return <h1 className="p-5">Product not found</h1>;
+    console.log(`Product with ID "${id}" not found. Available IDs:`, 
+                products.map(p => p.id));
+    notFound();
   }
-
-  return (
-    <div className="p-6">
-      <h1 className="text-2xl font-bold">{product.name}</h1>
-    </div>
-  );
+  
+  return <JerseyCustomizer product={product} />;
 }
