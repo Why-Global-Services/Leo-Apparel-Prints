@@ -30,7 +30,6 @@ import HowItWorks from "./components/home/HowItWorks";
 import ShopBySport from "./components/home/Shopbysport";
 import WhyChooseUs from "./components/home/WhyChooseUs";
 import TestimonialSection from "./components/home/TestimonialSection";
-import Footer from "./components/home/Footer";
 import FeatureBar from "./components/home/FeatureBar";
 
 export default function Home() {
@@ -64,7 +63,6 @@ export default function Home() {
       <WhyChooseUs />
       <TestimonialSection />
       <FeatureBar />
-      <Footer />
 
       {/* Scroll to Top Button */}
       {showScrollTop && (
