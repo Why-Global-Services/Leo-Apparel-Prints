@@ -31,6 +31,7 @@ import ShopBySport from "./components/home/Shopbysport";
 import WhyChooseUs from "./components/home/WhyChooseUs";
 import TestimonialSection from "./components/home/TestimonialSection";
 import Footer from "./components/home/Footer";
+import FeatureBar from "./components/home/FeatureBar";
 
 export default function Home() {
   const [showScrollTop, setShowScrollTop] = useState(false);
@@ -62,6 +63,7 @@ export default function Home() {
       <ShopBySport />
       <WhyChooseUs />
       <TestimonialSection />
+      <FeatureBar />
       <Footer />
 
       {/* Scroll to Top Button */}
