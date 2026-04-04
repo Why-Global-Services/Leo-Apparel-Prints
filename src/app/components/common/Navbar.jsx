@@ -498,7 +498,7 @@ export default function Navbar() {
             </motion.button>
 
               <Link
-                href="/quote"
+                href="/bulk-enquiry"
                 className="group relative inline-flex items-center justify-center gap-2
                            bg-primary hover:bg-primary/90 text-white font-extrabold
                            text-xs sm:text-sm px-6 py-3 rounded-xl

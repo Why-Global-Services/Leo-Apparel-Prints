@@ -3,6 +3,7 @@ import "@/app/globals.css";
 
 import NavbarBottom from "./components/common/NavbarBottom";
 import Navbar from "./components/common/Navbar";
+import RouteLoader from "./components/common/RouteLoader";
 
 const poppins = Poppins({
   variable: "--font-poppins",
@@ -36,7 +37,10 @@ export default function RootLayout({ children }) {
         <Navbar />
         
         {/* Main Content */}
-        <main className="flex-1">{children}</main>
+         <RouteLoader>
+ <main className="flex-1">{children}</main>
+         </RouteLoader>
+       
       </body>
     </html>
   );

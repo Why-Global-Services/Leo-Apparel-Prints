@@ -43,6 +43,9 @@ export default async function ProductDetailPage({ params }) {
   console.log("Looking for product with ID:", id); // Debug line
   
   const product = products.find((p) => p.id === id);
+
+  console.log("product found", product); // Debug line
+  
   
   if (!product) {
     console.log(`Product with ID "${id}" not found. Available IDs:`, 
