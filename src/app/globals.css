@@ -55,6 +55,7 @@
   --color-foreground: var(--foreground);
   --color-primary: var(--primary);
   --color-secondary: var(--secondary);
+   --color-third: var(--third); 
 
   /* ✅ Now Tailwind's font-sans and font-alt resolve correctly */
   --font-sans: var(--font-primary);

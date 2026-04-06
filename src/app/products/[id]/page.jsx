@@ -23,6 +23,14 @@ import { notFound } from "next/navigation";
 import { products } from "@/data/products";
 import JerseyCustomizer from "@/app/components/products/JersyCustomizer";
 
+
+export async function generateStaticParams() {
+  return products.map((product) => ({
+    id: product.id,
+  }));
+}
+
+
 export async function generateMetadata({ params }) {
   // For Next.js 15+
   const { id } = await params;

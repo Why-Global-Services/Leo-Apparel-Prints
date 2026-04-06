@@ -193,7 +193,7 @@ export default function HowItWorks() {
             {/* CTA buttons */}
             <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full lg:w-auto">
               <Link
-                href="/customize"
+                href="/products"
                 className="group relative inline-flex items-center justify-center gap-2
                            bg-primary hover:bg-primary/90 text-white font-extrabold
                            text-xs sm:text-sm px-6 py-3 rounded-xl

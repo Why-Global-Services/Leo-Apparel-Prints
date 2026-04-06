@@ -421,7 +421,7 @@ import {
   ArrowRight
 } from "lucide-react";
 import { useRouter } from "next/navigation";
-import Image from "next/image";
+
 
 
 const SEGMENTS = ["Custom Sportswear", "Team Uniforms", "School Sports", "Corporate Sports"];
@@ -537,7 +537,7 @@ export default function HeroSection() {
       
       {/* ─── Background Image with Overlay ───────────────────────────────── */}
       <div className="absolute inset-0">
-         <Image
+         <img
                       src="/images/banners/banner.png"
                       alt="LEO CULT Sportswear"
                       width={500}
