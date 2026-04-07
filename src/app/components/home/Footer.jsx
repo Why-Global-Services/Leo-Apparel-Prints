@@ -137,9 +137,39 @@ export default function Footer() {
                 placeholder="EMAIL@LEOCULT.COM" 
                 className="w-full bg-transparent border-b border-white/20 py-2 text-white font-bold text-[11px] outline-none focus:border-primary transition-colors placeholder:text-white/20"
               />
-              <button className="w-full bg-primary text-third font-[1000] italic text-[11px] py-4 rounded-xl hover:scale-[1.02] active:scale-[0.98] transition-all uppercase tracking-widest mt-2">
-                Register
-              </button>
+             <button
+  className="group relative w-full inline-flex items-center justify-center gap-2
+  bg-gradient-to-r from-[#0EA5E9] via-[#0284C7] to-[#1E3A8A]
+  hover:from-[#1E3A8A] hover:via-[#0284C7] hover:to-[#0EA5E9]
+  text-white font-[1000] italic text-[11px]
+  py-4 rounded-xl
+  transition-all duration-500 shadow-md
+  hover:shadow-[0_0_15px_rgba(14,165,233,0.6)]
+  active:scale-[0.97]
+  uppercase tracking-widest overflow-hidden"
+>
+  {/* TEXT */}
+  <span className="relative z-10">Register</span>
+
+  {/* 🔥 GOLD ARROW (SAME AS CUSTOMIZE NOW) */}
+  <svg
+    className="relative z-10 w-3.5 h-3.5 transition-transform duration-300 group-hover:translate-x-1"
+    viewBox="0 0 14 14"
+    fill="none"
+  >
+    <path
+      d="M2 7h10M8 3.5L11.5 7 8 10.5"
+      stroke="#F5B800"
+      strokeWidth="1.8"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      style={{ filter: "drop-shadow(0 0 4px #F5B800)" }}
+    />
+  </svg>
+
+  {/* ✨ SAME SHINE EFFECT */}
+  <div className="absolute inset-0 -translate-x-full group-hover:translate-x-full transition-transform duration-700 bg-gradient-to-r from-transparent via-white/20 to-transparent" />
+</button>
             </div>
           </div>
         </div>

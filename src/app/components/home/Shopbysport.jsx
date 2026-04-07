@@ -89,9 +89,9 @@ export default function ShopBySport() {
               whileInView={{ scaleX: 1 }}
               viewport={{ once: true }}
               transition={{ duration: 0.5 }}
-              className="w-12 h-0.5 bg-gradient-to-r from-primary  to-secondary"
+              className="w-12 h-0.5 bg-gradient-to-r from-accent  to-[#003E9B]"
             />
-            <span className="text-xs font-bold tracking-[0.2em] text-black uppercase flex items-center gap-1">
+            <span className="text-xs font-bold tracking-[0.2em] text-[#003E9B] uppercase flex items-center gap-1">
               <Sparkles size={12} />
               Custom Sports Apparel
             </span>
@@ -100,7 +100,7 @@ export default function ShopBySport() {
               whileInView={{ scaleX: 1 }}
               viewport={{ once: true }}
               transition={{ duration: 0.5 }}
-              className="w-12 h-0.5 bg-gradient-to-r from-primary  to-secondary"
+              className="w-12 h-0.5 bg-gradient-to-r from-accent  to-[#003E9B]"
             />
           </div>
           <h2 className="text-4xl md:text-5xl font-black leading-tight">
@@ -220,14 +220,16 @@ export default function ShopBySport() {
               </div>
                           
               <Link
-              href="/customize"
-              className="group relative inline-flex items-center justify-center gap-2 
-              bg-gradient-to-r from-primary to-secondary 
-              text-white font-extrabold text-xs sm:text-sm 
-              px-6 sm:px-7 py-3 sm:py-3.5 rounded-xl 
-              transition-all duration-300 w-full sm:w-auto 
-              overflow-hidden shadow-lg hover:shadow-xl"
-            >
+              href="/products"
+              className="group relative inline-flex items-center justify-center gap-2
+  bg-gradient-to-r from-[#0EA5E9] via-[#0284C7] to-[#1E3A8A]
+  hover:from-[#1E3A8A] hover:via-[#0284C7] hover:to-[#0EA5E9]
+  text-white font-extrabold
+  text-xs sm:text-sm px-6 py-3 rounded-xl
+  transition-all duration-500 shadow-md
+  hover:shadow-[0_0_15px_rgba(14,165,233,0.6)]
+  w-full sm:w-auto overflow-hidden"
+>
               {/* Shine Layer */}
               <span
                 className="absolute inset-0 
@@ -353,13 +355,16 @@ export default function ShopBySport() {
             whileTap={{ scale: 0.95 }}
           >
        <Link
-  href="/customize"
-  className="group relative inline-flex items-center justify-center gap-2 
-  bg-gradient-to-r from-primary to-secondary 
-  text-white font-extrabold text-xs sm:text-sm 
-  px-6 sm:px-7 py-3 sm:py-1.5 rounded-xl 
-  transition-all duration-300 w-full sm:w-auto 
-  overflow-hidden shadow-lg hover:shadow-xl"
+  href="/products"
+className="group relative inline-flex items-center justify-center gap-2
+bg-gradient-to-r from-[#0EA5E9] via-[#0284C7] to-[#1E3A8A]
+hover:from-[#1E3A8A] hover:via-[#0284C7] hover:to-[#0EA5E9]
+text-white font-extrabold
+text-xs sm:text-sm px-6 py-3 rounded-xl
+transition-all duration-500 shadow-md
+hover:shadow-[0_0_15px_rgba(14,165,233,0.6)]
+whitespace-nowrap
+overflow-hidden"
 >
   {/* Shine Layer */}
   <span

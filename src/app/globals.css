@@ -4,18 +4,20 @@
 
 /* ------------------ ROOT VARIABLES ------------------ */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #020617;      /* 🔥 main dark */
+  --foreground: #E2E8F0;
 
-  
+  --primary: #F5B800;         /* gold */
+  --secondary: #E8960A;
 
---primary: #F59E0B;   /* Rich golden (main brand color) */
-  --secondary: #D97706; /* Deep gold / orange (gradient depth) */
-  --third: #1F2937;     /* Dark charcoal (premium text bg) */
+  --accent: #0EA5E9;          /* blue */
+  --accent-dark: #1E3A8A;     /* deep blue */
 
-  /* ✅ Use the variables Next.js injects from layout.js */
-  --font-primary: var(--font-poppins), sans-serif;
-  --font-secondary: var(--font-inter), sans-serif;
+  --nav-start: #09185b;
+  --nav-mid: #0B3C6D;
+  --nav-end: #1E3A8A;
+
+  --third: #0F172A;
 }
 
 /* ------------------ DARK MODE ------------------ */
@@ -26,7 +28,9 @@
 
 --primary: #F59E0B;   /* Rich golden (main brand color) */
   --secondary: #D97706; /* Deep gold / orange (gradient depth) */
-  --third: #1F2937;     /* Dark charcoal (premium text bg) */
+  --accent: #38BDF8;      /* brighter blue for dark UI */
+  --accent-dark: #0EA5E9; /* hover */
+  --third: #0F172A;       /* dark surface */
   }
 }
 
@@ -56,12 +60,75 @@
   --color-primary: var(--primary);
   --color-secondary: var(--secondary);
    --color-third: var(--third); 
+   --color-accent: var(--accent);   
+    --color-accent-dark: var(--accent-dark);  
 
   /* ✅ Now Tailwind's font-sans and font-alt resolve correctly */
   --font-sans: var(--font-primary);
   --font-alt: var(--font-secondary);
 }
 
+/* ── Add these to your globals.css ───────────────────────────────────────── */
+
+@keyframes stampDrop {
+  0% {
+    opacity: 0;
+    transform: scale(2.2) translateY(-10px);
+    filter: blur(8px);
+    color: #1a1a1a;
+    -webkit-text-fill-color: #1a1a1a;
+  }
+  55% {
+    opacity: 1;
+    transform: scale(0.88) translateY(2px);
+    filter: blur(0px);
+    color: #fff8c0;
+    -webkit-text-fill-color: #fff8c0;
+    text-shadow: 0 0 18px #f5b800, 0 0 40px #e8960a, 0 0 6px #fff4b0;
+  }
+  75% {
+    transform: scale(1.04) translateY(-1px);
+    color: #f5b800;
+    -webkit-text-fill-color: #f5b800;
+    text-shadow: 0 0 10px rgba(245, 184, 0, 0.5);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+    filter: blur(0);
+    text-shadow: 0 0 4px rgba(232, 150, 10, 0.25);
+    background: linear-gradient(175deg, #ffe566 0%, #f5a800 45%, #c47d0e 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+}
+
+/* Main title letters */
+.logo-letter {
+  display: inline-block;
+  opacity: 0;
+  color: #1a1a1a;
+  transform: scale(2.2) translateY(-8px);
+  filter: blur(6px);
+}
+
+.logo-letter.active {
+  animation: stampDrop 0.55s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+/* Tagline letters */
+.logo-tag-letter {
+  display: inline-block;
+  opacity: 0;
+  color: #1a1a1a;
+  transform: scale(1.8) translateY(-4px);
+  filter: blur(4px);
+}
+
+.logo-tag-letter.active {
+  animation: stampDrop 0.55s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
 /* ------------------ GLOBAL STYLES ------------------ */
 body {
   background: var(--background);

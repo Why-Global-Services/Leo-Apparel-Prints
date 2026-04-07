@@ -71,7 +71,7 @@ export default function WhyChooseUs() {
           className="order-1 lg:order-2"
         >
           {/* Eyebrow */}
-          <p className="text-primary font-semibold mb-3">
+          <p className="text-[#003E9B] font-semibold mb-3">
             Why Choose LEO CULT Sportswear?
           </p>
 

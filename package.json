@@ -7,7 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "build-htaaccess":"next-htaccess-generator build"
+    "build-htaaccess": "next-htaccess-generator build"
   },
   "dependencies": {
     "framer-motion": "^12.38.0",
