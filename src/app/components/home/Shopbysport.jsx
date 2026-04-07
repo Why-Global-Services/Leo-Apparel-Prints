@@ -248,13 +248,16 @@ export default function ShopBySport() {
                 viewBox="0 0 14 14"
                 fill="none"
               >
-                <path
-                  d="M2 7h10M8 3.5L11.5 7 8 10.5"
-                  stroke="white"
-                  strokeWidth="1.8"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
+               <path
+              d="M2 7h10M8 3.5L11.5 7 8 10.5"
+              stroke="#F5B800"
+              strokeWidth="1.8"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              style={{
+                filter: "drop-shadow(0 0 4px #F5B800)",
+              }}
+            />
               </svg>
             </Link>
             </div>
@@ -384,13 +387,16 @@ overflow-hidden"
     viewBox="0 0 14 14"
     fill="none"
   >
-    <path
-      d="M2 7h10M8 3.5L11.5 7 8 10.5"
-      stroke="white"
-      strokeWidth="1.8"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    />
+   <path
+  d="M2 7h10M8 3.5L11.5 7 8 10.5"
+  stroke="#F5B800"
+  strokeWidth="1.8"
+  strokeLinecap="round"
+  strokeLinejoin="round"
+  style={{
+    filter: "drop-shadow(0 0 4px #F5B800)",
+  }}
+/>
   </svg>
 </Link>
           </motion.div>
