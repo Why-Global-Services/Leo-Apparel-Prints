@@ -490,7 +490,7 @@ export default function HowItWorks() {
   {/* INNER BUTTON */}
   <div
     className="flex items-center justify-center gap-2
-    bg-white text-gray-800
+     text-white/90
     font-extrabold text-xs sm:text-sm
     px-6 py-3 rounded-xl
     transition-all duration-300
