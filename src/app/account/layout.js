@@ -2,7 +2,7 @@
 import Sidebar from "./components/Sidebar";
 
 export const metadata = {
-  title: "My Account | KingOpticart",
+  title: "My Account | Leo-Cult",
   description: "Manage your profile and preferences",
 };
 

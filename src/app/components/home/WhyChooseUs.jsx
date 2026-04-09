@@ -138,6 +138,7 @@
 import Image from "next/image";
 import { motion } from "framer-motion";
 import { Wind, Zap, ShieldCheck, Activity } from "lucide-react";
+import Link from "next/link";
 
 const FEATURES = [
   {
@@ -238,18 +239,21 @@ export default function WhyChooseUs() {
 
             {/* CTA Button - Centered */}
             <div className="flex justify-center mt-8 sm:mt-10">
-              <button className="btn btn-gradient btn-md btn-shine">
-                Shop Now
-                <svg className="w-4 h-4" viewBox="0 0 14 14" fill="none">
-                  <path
-                    d="M2 7h10M8 3.5L11.5 7 8 10.5"
-                    stroke="white"
-                    strokeWidth="1.8"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
-                </svg>
-              </button>
+            <Link
+              href="/products"
+              className="btn btn-gradient btn-md btn-shine inline-flex items-center gap-2 cursor-pointer"
+            >
+              Shop Now
+              <svg className="w-4 h-4" viewBox="0 0 14 14" fill="none">
+                <path
+                  d="M2 7h10M8 3.5L11.5 7 8 10.5"
+                  stroke="white"
+                  strokeWidth="1.8"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg>
+            </Link>
             </div>
           </motion.div>
 
@@ -380,18 +384,21 @@ export default function WhyChooseUs() {
 
             {/* Desktop CTA Button - Centered */}
             <div className="flex justify-center mt-10">
-              <button className="btn btn-gradient btn-md btn-shine">
-                Shop Now
-                <svg className="w-4 h-4" viewBox="0 0 14 14" fill="none">
-                  <path
-                    d="M2 7h10M8 3.5L11.5 7 8 10.5"
-                    stroke="white"
-                    strokeWidth="1.8"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
-                </svg>
-              </button>
+                   <Link
+              href="/products"
+              className="btn btn-gradient btn-md btn-shine inline-flex items-center gap-2 cursor-pointer"
+            >
+              Shop Now
+              <svg className="w-4 h-4" viewBox="0 0 14 14" fill="none">
+                <path
+                  d="M2 7h10M8 3.5L11.5 7 8 10.5"
+                  stroke="white"
+                  strokeWidth="1.8"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg>
+            </Link>
             </div>
           </motion.div>
         </div>
