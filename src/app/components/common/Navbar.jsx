@@ -1266,16 +1266,17 @@ export default function Navbar() {
         }`}
       >
         <div className="max-w-full mx-auto px-4 md:px-8 flex items-center justify-between h-[80px]">
-          <div className="flex items-center gap-3 h-full">
-            <Image 
-              src="/images/icons/mainlogo.jpeg"
-              alt="logo"
-              width={50}
-              height={30}
-              className="rounded-md"
-            />
-            <AnimatedLogo />
-          </div>
+          <Link href="/" className="flex items-center gap-3 h-full group">
+        <Image 
+          src="/images/icons/mainlogo.jpeg"
+          alt="logo"
+          width={50}
+          height={30}
+          className="rounded-md transition-transform duration-300 group-hover:scale-105"
+        />
+
+        <AnimatedLogo />
+      </Link>
 
           <nav className="hidden lg:flex items-center gap-1">
             {NAV_ITEMS.map((item) => (

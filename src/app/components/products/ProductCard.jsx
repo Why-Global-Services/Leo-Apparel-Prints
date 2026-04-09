@@ -179,15 +179,16 @@
 
 
 
-
 "use client";
 
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { ArrowRight, ShoppingBag, Palette } from "lucide-react";
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 
 export default function ProductCard({ product }) {
+  const router = useRouter();
   const [imageError, setImageError] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
   const [isCustomizing, setIsCustomizing] = useState(false);
@@ -200,8 +201,11 @@ export default function ProductCard({ product }) {
     e.preventDefault();
     e.stopPropagation();
     setIsCustomizing(true);
-    setTimeout(() => setIsCustomizing(false), 500);
-    console.log("Customize product:", product.name);
+    
+    // Navigate to product page with customization query parameter
+    setTimeout(() => {
+      router.push(`/products/${product.id}?customize=true`);
+    }, 200);
   };
 
   return (
