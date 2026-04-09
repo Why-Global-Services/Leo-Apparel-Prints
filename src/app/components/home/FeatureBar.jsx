@@ -88,18 +88,16 @@
 
 
 
-
 "use client";
 
-import { motion, useInView } from "framer-motion";
-import { useRef } from "react";
+import { motion } from "framer-motion";
 
 const FEATURES = [
   {
     title: "Inclusive Sizing",
     desc: "Men, Women & Youth — XS to 4XL available",
     icon: (
-      <svg viewBox="0 0 24 24" fill="none" strokeWidth="1.6">
+      <svg viewBox="0 0 24 24" fill="none" strokeWidth="1.6" stroke="currentColor">
         <path d="M3 6h18M3 12h18M3 18h18" />
         <rect x="1" y="3" width="4" height="4" rx="1" />
         <rect x="1" y="10" width="4" height="4" rx="1" />
@@ -111,7 +109,7 @@ const FEATURES = [
     title: "3D Design Tool",
     desc: "Full design freedom with real-time digital sampling",
     icon: (
-      <svg viewBox="0 0 24 24" fill="none" strokeWidth="1.6">
+      <svg viewBox="0 0 24 24" fill="none" strokeWidth="1.6" stroke="currentColor">
         <path d="M12 2L2 7l10 5 10-5-10-5z" />
         <path d="M2 17l10 5 10-5" />
         <path d="M2 12l10 5 10-5" />
@@ -122,7 +120,7 @@ const FEATURES = [
     title: "Repeat-Order Ready",
     desc: "Your custom design stays saved for quick reorders",
     icon: (
-      <svg viewBox="0 0 24 24" fill="none" strokeWidth="1.6">
+      <svg viewBox="0 0 24 24" fill="none" strokeWidth="1.6" stroke="currentColor">
         <path d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
       </svg>
     ),
@@ -131,7 +129,7 @@ const FEATURES = [
     title: "10–12 Days Delivery",
     desc: "Fast turnaround with end-to-end tracking",
     icon: (
-      <svg viewBox="0 0 24 24" fill="none" strokeWidth="1.6">
+      <svg viewBox="0 0 24 24" fill="none" strokeWidth="1.6" stroke="currentColor">
         <rect x="1" y="3" width="15" height="13" rx="1" />
         <path d="M16 8h4l3 3v5h-7V8z" />
         <circle cx="5.5" cy="18.5" r="2.5" />
@@ -143,30 +141,36 @@ const FEATURES = [
 
 export default function FeatureBar() {
   return (
-    <section className="bg-white py-20">
-      <div className="max-w-7xl mx-auto px-4">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+    <section className="bg-white py-12 sm:py-16 md:py-20 px-4 sm:px-6 lg:px-8 overflow-hidden">
+      <div className="max-w-7xl mx-auto">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-8">
           {FEATURES.map((feature, index) => (
             <motion.div
               key={feature.title}
               initial={{ opacity: 0, x: -30 }}
               whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true }}
               transition={{ duration: 0.5, delay: index * 0.1 }}
               className="group flex gap-4"
             >
+              {/* Left Side - Number and Icon */}
               <div className="shrink-0">
-                <div className="text-3xl font-bold text-[#003E9B]/20 group-hover:text-[#003E9B]/40 transition-colors">
+                <div className="text-3xl font-black text-primary-blue/20 group-hover:text-primary-blue/40 transition-colors font-primary">
                   {(index + 1).toString().padStart(2, '0')}
                 </div>
-                <div className="w-10 h-10 mt-2 stroke-[#003E9B] group-hover:stroke-[#003E9B]/70">
+                <div className="w-10 h-10 mt-2 text-primary-blue group-hover:text-primary-blue/70 transition-colors">
                   {feature.icon}
                 </div>
               </div>
+
+              {/* Right Side - Title and Description */}
               <div>
-                <h3 className="text-lg font-bold text-gray-900 mb-2 group-hover:text-[#003E9B] transition-colors">
+                <h3 className="text-lg font-bold text-gray-900 mb-2 group-hover:text-primary-blue transition-colors font-primary">
                   {feature.title}
                 </h3>
-                <p className="text-sm text-gray-500 leading-relaxed">{feature.desc}</p>
+                <p className="text-sm text-gray-500 leading-relaxed font-secondary">
+                  {feature.desc}
+                </p>
               </div>
             </motion.div>
           ))}

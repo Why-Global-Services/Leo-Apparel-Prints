@@ -21,9 +21,8 @@ import ProductGrid from "../components/products/ProductGrid";
 
 export default function ProductsClient() {
   return (
-    /* h-screen and overflow-hidden ensure the page itself never scrolls */
-    <main className="h-screen w-full overflow-hidden bg-white">
-        <ProductGrid />
+    <main className="h-screen w-full overflow-hidden bg-white flex flex-col">
+      <ProductGrid />
     </main>
   );
 }

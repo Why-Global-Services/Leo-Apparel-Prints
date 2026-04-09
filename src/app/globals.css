@@ -1,5 +1,3 @@
-
-
 @import "tailwindcss";
 
 /* ------------------ ROOT VARIABLES ------------------ */
@@ -9,6 +7,10 @@
 
   --primary: #F5B800;         /* gold */
   --secondary: #E8960A;
+  
+  --primary-blue: #003E9B;    /* 🔵 Primary blue color */
+  --primary-blue-dark: #002a6e; /* Darker blue for hover states */
+  --primary-blue-light: #e6f0ff; /* Light blue for backgrounds */
 
   --accent: #0EA5E9;          /* blue */
   --accent-dark: #1E3A8A;     /* deep blue */
@@ -18,6 +20,11 @@
   --nav-end: #1E3A8A;
 
   --third: #0F172A;
+  
+  /* Button Gradient Colors */
+  --gradient-start: #0EA5E9;
+  --gradient-mid: #0284C7;
+  --gradient-end: #1E3A8A;
 }
 
 /* ------------------ DARK MODE ------------------ */
@@ -25,15 +32,50 @@
   :root {
     --background: #0a0a0a;
     --foreground: #ededed;
-
---primary: #F59E0B;   /* Rich golden (main brand color) */
-  --secondary: #D97706; /* Deep gold / orange (gradient depth) */
-  --accent: #38BDF8;      /* brighter blue for dark UI */
-  --accent-dark: #0EA5E9; /* hover */
-  --third: #0F172A;       /* dark surface */
+    --primary: #F59E0B;   /* Rich golden (main brand color) */
+    --secondary: #D97706; /* Deep gold / orange (gradient depth) */
+    --primary-blue: #0052cc; /* Lighter blue for dark mode */
+    --primary-blue-dark: #003d99;
+    --primary-blue-light: #1a2a4a;
+    --accent: #38BDF8;      /* brighter blue for dark UI */
+    --accent-dark: #0EA5E9; /* hover */
+    --third: #0F172A;       /* dark surface */
+    --gradient-start: #38BDF8;
+    --gradient-mid: #0284C7;
+    --gradient-end: #1E3A8A;
   }
 }
 
+/* ------------------ FONT DEFINITIONS ------------------ */
+/* Primary Font - Poppins (for headings) */
+.font-primary {
+  font-family: var(--font-poppins), 'Poppins', sans-serif;
+}
+
+/* Secondary Font - Inter (for paragraphs and body text) */
+.font-secondary {
+  font-family: var(--font-inter), 'Inter', sans-serif;
+}
+
+/* Apply secondary font to body by default (for paragraphs) */
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-inter), 'Inter', sans-serif;
+}
+
+/* All headings (h1, h2, h3, h4, h5, h6) will use primary font */
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-poppins), 'Poppins', sans-serif;
+  font-weight: 700;
+}
+
+/* All paragraphs will use secondary font */
+p {
+  font-family: var(--font-inter), 'Inter', sans-serif;
+}
+
+/* ------------------ LOGO TEXT STYLES ------------------ */
 .logo-text {
   font-weight: 900;
   background: linear-gradient(
@@ -45,7 +87,6 @@
   );
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
-
 
   /* Optional glow */
   text-shadow: 
@@ -59,17 +100,186 @@
   --color-foreground: var(--foreground);
   --color-primary: var(--primary);
   --color-secondary: var(--secondary);
-   --color-third: var(--third); 
-   --color-accent: var(--accent);   
-    --color-accent-dark: var(--accent-dark);  
+  --color-primary-blue: var(--primary-blue);
+  --color-primary-blue-dark: var(--primary-blue-dark);
+  --color-primary-blue-light: var(--primary-blue-light);
+  --color-third: var(--third); 
+  --color-accent: var(--accent);   
+  --color-accent-dark: var(--accent-dark);
+  --color-gradient-start: var(--gradient-start);
+  --color-gradient-mid: var(--gradient-mid);
+  --color-gradient-end: var(--gradient-end);
 
-  /* ✅ Now Tailwind's font-sans and font-alt resolve correctly */
-  --font-sans: var(--font-primary);
-  --font-alt: var(--font-secondary);
+  /* Font mappings for Tailwind */
+  --font-sans: var(--font-poppins);
+  --font-alt: var(--font-inter);
 }
 
-/* ── Add these to your globals.css ───────────────────────────────────────── */
+/* ------------------ BUTTON STYLES ------------------ */
 
+/* Base Button Styles */
+.btn {
+  @apply inline-flex items-center justify-center gap-2 font-extrabold rounded-xl transition-all duration-300 overflow-hidden;
+  font-family: var(--font-poppins), 'Poppins', sans-serif;
+}
+
+/* Button Sizes */
+.btn-sm {
+  @apply px-4 py-2 text-xs;
+}
+
+.btn-md {
+  @apply px-6 py-3 text-sm;
+}
+
+.btn-lg {
+  @apply px-8 py-4 text-base;
+}
+
+/* Button Variants */
+.btn-primary {
+  background-color: var(--primary);
+  color: white;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+
+.btn-primary:hover {
+  background-color: var(--secondary);
+  transform: translateY(-2px);
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+}
+
+.btn-secondary {
+  background-color: var(--primary-blue);
+  color: white;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+
+.btn-secondary:hover {
+  background-color: var(--primary-blue-dark);
+  transform: translateY(-2px);
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+}
+
+.btn-outline {
+  border: 2px solid var(--primary);
+  color: var(--primary);
+  background: transparent;
+}
+
+.btn-outline:hover {
+  background-color: var(--primary);
+  color: white;
+  transform: translateY(-2px);
+}
+
+.btn-gradient {
+  background: linear-gradient(135deg, var(--gradient-start), var(--gradient-mid), var(--gradient-end));
+  color: white;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+
+.btn-gradient:hover {
+  background: linear-gradient(135deg, var(--gradient-end), var(--gradient-mid), var(--gradient-start));
+  transform: translateY(-2px);
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.2);
+}
+
+.btn-gradient-gold {
+  background: linear-gradient(135deg, #F5B800, #E8960A, #F5B800);
+  color: white;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+
+.btn-gradient-gold:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 15px -3px rgba(245, 184, 0, 0.3);
+}
+
+/* Shine Effect */
+.btn-shine {
+  position: relative;
+  overflow: hidden;
+}
+
+.btn-shine::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  transition: left 0.7s ease;
+}
+
+.btn-shine:hover::before {
+  left: 100%;
+}
+
+/* Disabled Button */
+.btn-disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+/* Full Width Button */
+.btn-full {
+  width: 100%;
+}
+
+/* ------------------ UTILITY CLASSES ------------------ */
+
+/* Primary Blue color utility classes */
+.bg-primary-blue {
+  background-color: var(--primary-blue);
+}
+
+.bg-primary-blue-dark {
+  background-color: var(--primary-blue-dark);
+}
+
+.bg-primary-blue-light {
+  background-color: var(--primary-blue-light);
+}
+
+.text-primary-blue {
+  color: var(--primary-blue);
+}
+
+.hover\:bg-primary-blue:hover {
+  background-color: var(--primary-blue);
+}
+
+.hover\:text-primary-blue:hover {
+  color: var(--primary-blue);
+}
+
+/* Gradient Backgrounds */
+.bg-gradient-blue {
+  background: linear-gradient(135deg, var(--gradient-start), var(--gradient-mid), var(--gradient-end));
+}
+
+.bg-gradient-gold {
+  background: linear-gradient(135deg, #F5B800, #E8960A, #F5B800);
+}
+
+/* Border Colors */
+.border-primary-blue {
+  border-color: var(--primary-blue);
+}
+
+/* Focus Rings */
+.focus-ring-primary {
+  @apply focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2;
+}
+
+.focus-ring-blue {
+  @apply focus:outline-none focus:ring-2 focus:ring-primary-blue focus:ring-offset-2;
+}
+
+/* ------------------ ANIMATIONS ------------------ */
 @keyframes stampDrop {
   0% {
     opacity: 0;
@@ -129,9 +339,54 @@
 .logo-tag-letter.active {
   animation: stampDrop 0.55s cubic-bezier(0.22, 1, 0.36, 1) forwards;
 }
-/* ------------------ GLOBAL STYLES ------------------ */
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: var(--font-primary);
+
+/* Button Hover Animation */
+@keyframes buttonPulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(14, 165, 233, 0.4);
+  }
+  70% {
+    box-shadow: 0 0 0 10px rgba(14, 165, 233, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(14, 165, 233, 0);
+  }
+}
+
+.btn-pulse {
+  animation: buttonPulse 1.5s infinite;
+}
+/* ------------------ CUSTOM SCROLLBAR ------------------ */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--third);
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(135deg, var(--gradient-start), var(--gradient-mid), var(--gradient-end));
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(135deg, var(--gradient-end), var(--gradient-mid), var(--gradient-start));
+}
+
+/* For Firefox */
+* {
+  scrollbar-width: auto;
+  scrollbar-color: var(--gradient-mid) var(--third);
+}
+
+/* For better visibility on smaller screens */
+@media (min-width: 768px) {
+  ::-webkit-scrollbar {
+    width: 12px;
+    height: 12px;
+  }
 }

@@ -234,7 +234,6 @@
 // }
 
 
-
 "use client";
 
 import { motion, useInView } from "framer-motion";
@@ -278,17 +277,17 @@ const GUARANTEES = [
   "10-day worldwide delivery",
 ];
 
-// ─── Single Stat ──────────────────────────────────────────────────────────────
+// ─── Single Stat - Simple Style ──────────────────────────────────────────────
 function StatItem({ perk, inView, index }) {
   return (
     <motion.div
       initial={{ opacity: 0, y: 10 }}
       animate={inView ? { opacity: 1, y: 0 } : {}}
       transition={{ duration: 0.4, delay: 0.25 + index * 0.08 }}
-      className="flex flex-col items-center lg:items-start"
+      className="flex flex-col items-center"
     >
-      {/* Number in primary gold color */}
-      <span className="text-[#003E9B] font-black text-2xl sm:text-3xl md:text-4xl tracking-tighter tabular-nums">
+      {/* Number in primary blue color */}
+      <span className="text-primary-blue font-black text-xl sm:text-2xl md:text-3xl lg:text-4xl tracking-tighter tabular-nums font-primary whitespace-nowrap">
         {perk.static ? (
           perk.display
         ) : (
@@ -303,7 +302,7 @@ function StatItem({ perk, inView, index }) {
           />
         )}
       </span>
-      <span className="text-[10px] sm:text-xs font-semibold uppercase tracking-wider text-gray-400 whitespace-nowrap mt-0.5">
+      <span className="text-[10px] sm:text-xs font-semibold uppercase tracking-wider text-gray-400 whitespace-nowrap mt-0.5 font-secondary">
         {perk.label}
       </span>
     </motion.div>
@@ -318,7 +317,7 @@ export default function HowItWorks() {
   return (
     <section
       ref={ref}
-      className="w-full bg-white overflow-x-hidden font-[family-name:var(--font-dm-sans)]"
+      className="w-full bg-white overflow-x-hidden font-secondary"
     >
       {/* ── TOP: Heading + Stats ── */}
       <div className="w-full border-b border-gray-100">
@@ -331,7 +330,7 @@ export default function HowItWorks() {
                 initial={{ opacity: 0 }}
                 animate={inView ? { opacity: 1 } : {}}
                 transition={{ duration: 0.4 }}
-                className="text-(--nav-end) text-[10px] sm:text-xs font-black tracking-[0.38em] uppercase mb-2 sm:mb-3"
+                className="text-primary-blue text-[10px] sm:text-xs font-black tracking-[0.38em] uppercase mb-2 sm:mb-3 font-secondary"
               >
                 How It Works
               </motion.p>
@@ -341,7 +340,7 @@ export default function HowItWorks() {
                 animate={inView ? { opacity: 1, y: 0 } : {}}
                 transition={{ duration: 0.55, delay: 0.07 }}
                 className="text-gray-900 font-black leading-[1.1] sm:leading-tight lg:leading-[0.93]
-                           text-3xl sm:text-4xl md:text-5xl lg:text-6xl tracking-tight"
+                           text-3xl sm:text-4xl md:text-5xl lg:text-6xl tracking-tight font-primary"
               >
                 From idea
                 <br />
@@ -349,17 +348,19 @@ export default function HowItWorks() {
               </motion.h2>
             </div>
 
-            {/* Stats with CountUp */}
-            <motion.div
-              initial={{ opacity: 0, y: 12 }}
-              animate={inView ? { opacity: 1, y: 0 } : {}}
-              transition={{ duration: 0.5, delay: 0.2 }}
-              className="flex flex-wrap gap-4 sm:gap-6 lg:gap-10"
-            >
-              {PERKS.map((p, i) => (
-                <StatItem key={p.label} perk={p} inView={inView} index={i} />
-              ))}
-            </motion.div>
+            {/* Stats - 2x2 Grid on Mobile, Single Row on Desktop */}
+            <div className="w-full lg:w-auto">
+              <motion.div
+                initial={{ opacity: 0, y: 12 }}
+                animate={inView ? { opacity: 1, y: 0 } : {}}
+                transition={{ duration: 0.5, delay: 0.2 }}
+                className="grid grid-cols-2 lg:flex lg:flex-row lg:justify-end gap-4 sm:gap-6 lg:gap-8"
+              >
+                {PERKS.map((p, i) => (
+                  <StatItem key={p.label} perk={p} inView={inView} index={i} />
+                ))}
+              </motion.div>
+            </div>
           </div>
         </div>
       </div>
@@ -378,15 +379,15 @@ export default function HowItWorks() {
               >
                 <div className="flex items-center gap-3 mb-3">
                   <span
-                    className={`font-black text-4xl sm:text-5xl tracking-tighter leading-none transition-colors ${
-                      step.highlight ? "text-[#003E9B]" : "text-gray-200"
+                    className={`font-black text-4xl sm:text-5xl tracking-tighter leading-none transition-colors font-primary ${
+                      step.highlight ? "text-primary-blue" : "text-gray-200"
                     }`}
                   >
                     {step.number}
                   </span>
                   <span
-                    className={`text-[8px] sm:text-[9px] font-black tracking-[0.28em] uppercase transition-colors ${
-                      step.highlight ? "text-[#003E9B]" : "text-gray-300"
+                    className={`text-[8px] sm:text-[9px] font-black tracking-[0.28em] uppercase transition-colors font-secondary ${
+                      step.highlight ? "text-primary-blue" : "text-gray-300"
                     }`}
                   >
                     {step.label}
@@ -397,16 +398,17 @@ export default function HowItWorks() {
                   initial={{ width: 0 }}
                   animate={inView ? { width: 40 } : {}}
                   transition={{ duration: 0.5, delay: 0.35 + i * 0.13 }}
-                  className={`h-0.5 mb-3 rounded-full ${
-                    step.highlight ? "bg-[#003E9B]" : "bg-gray-200"
+                  className={`h-0.5 mb-4 rounded-full ${
+                    step.highlight ? "bg-primary-blue" : "bg-gray-200"
                   }`}
                   style={{ width: 40 }}
                 />
 
-                <h3 className="text-gray-900 font-extrabold text-base sm:text-lg mb-1.5 leading-tight tracking-tight">
+                <h3 className="text-gray-900 font-extrabold text-xl sm:text-2xl md:text-2xl lg:text-3xl mb-3 leading-tight tracking-tight font-primary">
                   {step.title}
                 </h3>
-                <p className="text-gray-400 text-xs sm:text-sm leading-relaxed">
+                
+                <p className="text-gray-500 text-sm sm:text-base md:text-lg leading-relaxed font-secondary">
                   {step.desc}
                 </p>
 
@@ -428,13 +430,13 @@ export default function HowItWorks() {
           <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 lg:gap-8">
 
             {/* Guarantee tags */}
-            <div className="flex flex-wrap gap-2 justify-center lg:justify-start">
+            <div className="grid grid-cols-2 gap-3 max-w-md mx-auto md:flex md:flex-wrap md:max-w-none md:mx-0 justify-center lg:justify-start">
               {GUARANTEES.map((g) => (
                 <span
                   key={g}
-                  className="inline-flex items-center gap-1.5 text-[10px] sm:text-xs font-bold tracking-wide
+                  className="inline-flex items-center gap-1.5 text-[8px] md:text-xs font-bold tracking-wide
                              px-3 py-1.5 bg-white border border-gray-200 text-gray-600
-                             rounded-full whitespace-nowrap"
+                             rounded-full whitespace-nowrap font-secondary"
                 >
                   <span className="text-primary text-[10px]">✦</span>
                   {g}
@@ -442,79 +444,47 @@ export default function HowItWorks() {
               ))}
             </div>
 
-            {/* CTAs */}
+            {/* CTAs with White Arrows */}
             <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full lg:w-auto">
-
-            <Link
-  href="/products"
-  className="group relative inline-flex items-center justify-center gap-2
-  bg-gradient-to-r from-[#0EA5E9] via-[#0284C7] to-[#1E3A8A]
-  hover:from-[#1E3A8A] hover:via-[#0284C7] hover:to-[#0EA5E9]
-  text-white font-extrabold
-  text-xs sm:text-sm px-6 py-3 rounded-xl
-  transition-all duration-500 shadow-md
-  hover:shadow-[0_0_15px_rgba(14,165,233,0.6)]
-  w-full sm:w-auto overflow-hidden"
->
-  {/* TEXT */}
-  <span className="relative z-10">Customize Now</span>
-
-  {/* 🔥 GOLD ARROW */}
-  <svg
-    className="relative z-10 w-4 h-4 transition-all duration-300
-    group-hover:translate-x-1"
-    viewBox="0 0 14 14"
-    fill="none"
-  >
-    <path
-      d="M2 7h10M8 3.5L11.5 7 8 10.5"
-      stroke="#F5B800"
-      strokeWidth="1.8"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      style={{ filter: "drop-shadow(0 0 4px #F5B800)" }}
-    />
-  </svg>
-
-  {/* ✨ SHINE EFFECT */}
-  <div className="absolute inset-0 -translate-x-full group-hover:translate-x-full transition-transform duration-700 bg-gradient-to-r from-transparent via-white/20 to-transparent" />
-</Link>
-<Link
-  href="/upload-design"
-  className="group relative inline-flex items-center justify-center gap-2
-  px-[1px] py-[1px] rounded-xl
-  bg-primary
-  hover:bg-primary
-  w-full sm:w-auto transition-all duration-300"
->
-  {/* INNER BUTTON */}
-  <div
-    className="flex items-center justify-center gap-2
-     text-white/90
-    font-extrabold text-xs sm:text-sm
-    px-6 py-3 rounded-xl
-    transition-all duration-300
-    group-hover:bg-primary group-hover:text-white"
-  >
-    {/* TEXT */}
-    <span>Upload Design</span>
-
-    {/* ICON */}
-    <svg
-      className="w-4 h-4 transition-transform duration-300 group-hover:translate-x-1"
-      viewBox="0 0 14 14"
-      fill="none"
-    >
-      <path
-        d="M2 7h10M8 3.5L11.5 7 8 10.5"
-        stroke="currentColor"
-        strokeWidth="1.8"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </svg>
-  </div>
-</Link>
+              <Link
+                href="/products"
+                className="btn btn-gradient btn-md btn-shine text-center inline-flex items-center justify-center gap-2"
+              >
+                <span>Customize Now</span>
+                <svg 
+                  className="w-4 h-4 transition-transform duration-300 group-hover:translate-x-1" 
+                  viewBox="0 0 14 14" 
+                  fill="none"
+                >
+                  <path
+                    d="M2 7h10M8 3.5L11.5 7 8 10.5"
+                    stroke="white"
+                    strokeWidth="1.8"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                </svg>
+              </Link>
+              
+              <Link
+                href="/upload-design"
+                className="btn btn-outline btn-md text-center inline-flex items-center justify-center gap-2 group"
+              >
+                <span>Upload Design</span>
+                <svg 
+                  className="w-4 h-4 transition-transform duration-300 group-hover:translate-x-1" 
+                  viewBox="0 0 14 14" 
+                  fill="none"
+                >
+                  <path
+                    d="M2 7h10M8 3.5L11.5 7 8 10.5"
+                    stroke="white"
+                    strokeWidth="1.8"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                </svg>
+              </Link>
             </div>
           </div>
         </div>

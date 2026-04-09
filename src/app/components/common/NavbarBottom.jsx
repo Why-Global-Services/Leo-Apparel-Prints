@@ -184,7 +184,6 @@
 
 
 
-
 "use client";
 
 import { useEffect, useState } from "react";
@@ -222,12 +221,12 @@ export default function NavbarBottom() {
 
   return (
     <div
-className={`fixed top-0 left-0 right-0 
-bg-gradient-to-r from-[var(--nav-start)] via-[var(--nav-mid)] to-[var(--nav-end)]
-text-white z-50 transition-transform duration-300 
-shadow-lg border-b border-white/10 ${
-  hide ? "-translate-y-full" : "translate-y-0"
-}`}
+      className={`fixed top-0 left-0 right-0 
+      bg-gradient-to-r from-[var(--nav-start)] via-[var(--nav-mid)] to-[var(--nav-end)]
+      text-white z-50 transition-transform duration-300 
+      shadow-lg border-b border-white/10 ${
+        hide ? "-translate-y-full" : "translate-y-0"
+      }`}
     >
       <div className="w-full px-4 py-2 sm:py-1.5">
 
@@ -240,7 +239,7 @@ shadow-lg border-b border-white/10 ${
               <div className="bg-white/10 border border-white/20 p-2 rounded-full backdrop-blur group-hover:bg-primary transition">
                 <FaCube className="text-primary text-base group-hover:text-white transition" />
               </div>
-              <span className="text-sm font-medium group-hover:text-primary transition">
+              <span className="text-sm font-medium group-hover:text-primary transition font-secondary">
                 Design in 3D
               </span>
             </div>
@@ -251,7 +250,7 @@ shadow-lg border-b border-white/10 ${
               <div className="bg-white/10 border border-white/20 p-2 rounded-full backdrop-blur group-hover:bg-primary transition">
                 <FaShippingFast className="text-primary text-base group-hover:text-white transition" />
               </div>
-              <span className="text-sm font-medium group-hover:text-primary transition">
+              <span className="text-sm font-medium group-hover:text-primary transition font-secondary">
                 Free Worldwide Shipping
               </span>
             </div>
@@ -266,7 +265,7 @@ shadow-lg border-b border-white/10 ${
               <div className="bg-white/10 border border-white/20 p-2 rounded-full backdrop-blur group-hover:bg-primary transition">
                 <FaPhoneAlt className="text-primary text-base group-hover:text-white transition" />
               </div>
-              <span className="text-sm font-medium group-hover:text-primary transition">
+              <span className="text-sm font-medium group-hover:text-primary transition font-secondary">
                 +1 847 624 2660
               </span>
             </a>
@@ -280,7 +279,7 @@ shadow-lg border-b border-white/10 ${
               <div className="bg-white/10 border border-white/20 p-2 rounded-full backdrop-blur group-hover:bg-primary transition">
                 <FaHeadset className="text-primary text-base group-hover:text-white transition" />
               </div>
-              <span className="text-sm font-medium group-hover:text-primary transition">
+              <span className="text-sm font-medium group-hover:text-primary transition font-secondary">
                 Contact Us
               </span>
             </Link>
@@ -294,14 +293,14 @@ shadow-lg border-b border-white/10 ${
               <div className="bg-white/10 border border-white/20 p-2 rounded-full backdrop-blur group-hover:bg-primary transition">
                 <FaQuestion className="text-primary text-base group-hover:text-white transition" />
               </div>
-              <span className="text-sm font-medium group-hover:text-primary transition">
+              <span className="text-sm font-medium group-hover:text-primary transition font-secondary">
                 FAQ
               </span>
             </Link>
           </div>
         </div>
 
-        {/* Mobile */}
+        {/* Mobile - Scrolling Marquee */}
         <div className="lg:hidden overflow-hidden relative w-full">
           <div
             className={`flex items-center gap-6 py-1 marquee-track ${
@@ -324,12 +323,12 @@ shadow-lg border-b border-white/10 ${
                 {feature.link ? (
                   <Link
                     href={feature.link}
-                    className="text-xs font-medium group-hover:text-primary transition whitespace-nowrap"
+                    className="text-xs font-medium group-hover:text-primary transition whitespace-nowrap font-secondary"
                   >
                     {feature.text}
                   </Link>
                 ) : (
-                  <span className="text-xs font-medium group-hover:text-primary transition whitespace-nowrap">
+                  <span className="text-xs font-medium group-hover:text-primary transition whitespace-nowrap font-secondary">
                     {feature.text}
                   </span>
                 )}
@@ -340,7 +339,7 @@ shadow-lg border-b border-white/10 ${
 
       </div>
 
-      {/* Marquee Animation */}
+      {/* Global Marquee Animation Styles */}
       <style jsx global>{`
         @keyframes marqueeAnimation {
           0% {

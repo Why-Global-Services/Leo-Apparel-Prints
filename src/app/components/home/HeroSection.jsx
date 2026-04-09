@@ -410,8 +410,6 @@
 //   );
 // }
 
-
-
 "use client";
 
 import { useState, useRef, useEffect } from "react";
@@ -426,6 +424,7 @@ import {
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
+import Link from "next/link";
 
 const SEGMENTS = ["Custom Sportswear", "Team Uniforms", "School Sports", "Corporate Sports"];
 const SPORTS   = ["Cricket", "Soccer", "Tennis", "Badminton", "Basketball", "Hockey", "Pickleball"];
@@ -624,25 +623,18 @@ export default function HeroSection() {
   };
 
   return (
-    /* 
-      KEY FIX: h-screen + overflow-hidden on the section itself
-      prevents any scrollbar from appearing on any screen size.
-    */
     <section className="relative w-full h-screen overflow-hidden bg-black">
-
       {/* Background */}
       <AutoScrollCarousel />
 
-      {/* ── Content — centred inside full viewport height ── */}
+      {/* ── Content ── */}
       <div className="relative z-10 h-full flex flex-col items-center justify-center px-4 sm:px-6 lg:px-8">
-
         <motion.div
           initial={{ opacity: 0, y: 24 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, ease: "easeOut" }}
           className="w-full max-w-5xl mx-auto"
         >
-          {/* Glass card */}
           <div className="relative rounded-2xl overflow-visible">
             {/* Glass bg layers */}
             <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-white/10 via-white/5 to-transparent backdrop-blur-xl" />
@@ -651,7 +643,6 @@ export default function HeroSection() {
 
             {/* ── DESKTOP (md+) ── */}
             <div className="hidden md:block relative px-8 py-8 lg:px-10 lg:py-9">
-
               {/* Heading */}
               <motion.div
                 className="text-center mb-7"
@@ -659,8 +650,7 @@ export default function HeroSection() {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.2, duration: 0.5 }}
               >
-                <h1 className="font-bold text-white leading-tight">
-                  {/* Responsive font sizes — never overflow */}
+                <h1 className="font-bold text-white leading-tight font-primary">
                   <span className="block text-3xl lg:text-4xl xl:text-5xl">
                     Create Your
                   </span>
@@ -699,19 +689,24 @@ export default function HeroSection() {
                   onChange={setApparel}
                 />
 
-                {/* CTA */}
+                {/* Desktop Get Started Button with Linear Gradient */}
                 <motion.button
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.97 }}
                   onClick={handleSubmit}
                   disabled={!isFormValid || isSubmitting}
-                  className={`w-full rounded-xl font-semibold text-white text-sm transition-all duration-300 flex items-center justify-center gap-2 ${
+                  className={`w-full rounded-xl font-semibold text-white text-sm transition-all duration-300 flex items-center justify-center gap-2 overflow-hidden group ${
                     isFormValid && !isSubmitting
-                      ? "bg-gradient-to-r from-primary to-secondary hover:shadow-xl hover:shadow-primary/30 cursor-pointer"
+                      ? "bg-gradient-to-r from-[#0EA5E9] via-[#0284C7] to-[#1E3A8A] hover:shadow-xl hover:shadow-primary/30 cursor-pointer"
                       : "bg-gray-600/40 cursor-not-allowed opacity-50"
                   }`}
                   style={{ minHeight: "52px" }}
                 >
+                  {/* Shine Effect */}
+                  {isFormValid && !isSubmitting && (
+                    <div className="absolute inset-0 -translate-x-full group-hover:translate-x-full transition-transform duration-700 bg-gradient-to-r from-transparent via-white/20 to-transparent" />
+                  )}
+                  
                   {isSubmitting ? (
                     <motion.div
                       animate={{ rotate: 360 }}
@@ -720,8 +715,8 @@ export default function HeroSection() {
                     />
                   ) : (
                     <>
-                      <span>Get Started</span>
-                      <ArrowRight size={16} />
+                      <span className="relative z-10">Get Started</span>
+                      <ArrowRight size={16} className="relative z-10 text-white" />
                     </>
                   )}
                 </motion.button>
@@ -741,7 +736,7 @@ export default function HeroSection() {
                 )}
               </AnimatePresence>
 
-              {/* Trust badges — only shown when form valid */}
+              {/* Trust badges */}
               <AnimatePresence>
                 {isFormValid && (
                   <motion.div
@@ -761,17 +756,17 @@ export default function HeroSection() {
               </AnimatePresence>
             </div>
 
-            {/* ── MOBILE (< md) ── */}
-            <div className="md:hidden relative px-5 py-7">
+            {/* ── MOBILE (< md) - Customize Now Button with Linear Gradient ── */}
+            <div className="md:hidden relative px-5 py-8">
               <motion.div
                 initial={{ opacity: 0, y: 16 }}
                 animate={{ opacity: 1, y: 0 }}
                 className="text-center"
               >
-                <h1 className="font-bold text-white leading-tight mb-6">
-                  <span className="block text-2xl sm:text-3xl">Create Your</span>
+                <h1 className="font-bold text-white leading-tight mb-4 font-primary">
+                  <span className="block text-3xl sm:text-4xl">Create Your</span>
                   <span
-                    className="block text-2xl sm:text-3xl mt-1
+                    className="block text-3xl sm:text-4xl mt-2
                       bg-[linear-gradient(to_bottom,#FFF9C4,#FFD54F,#FF9800,#E65100)]
                       bg-clip-text text-transparent
                       drop-shadow-[0_2px_4px_rgba(0,0,0,0.4)]"
@@ -780,61 +775,53 @@ export default function HeroSection() {
                   </span>
                 </h1>
 
-                {/* Mobile dropdowns stacked */}
-                <div className="space-y-3 mb-5">
-                  <PremiumDropdown
-                    icon={Briefcase}
-                    placeholder="Select Segment"
-                    options={SEGMENTS}
-                    value={segment}
-                    onChange={setSegment}
-                  />
-                  <PremiumDropdown
-                    icon={Medal}
-                    placeholder="Select Sport"
-                    options={SPORTS}
-                    value={sport}
-                    onChange={setSport}
-                  />
-                  <PremiumDropdown
-                    icon={Palette}
-                    placeholder="Select Apparel"
-                    options={APPAREL}
-                    value={apparel}
-                    onChange={setApparel}
-                  />
+                <p className="text-gray-300 text-sm mb-6 max-w-xs mx-auto font-secondary">
+                  Design your dream sportswear in minutes
+                </p>
+
+                {/* Mobile Customize Now Button with Linear Gradient */}
+                <Link href="/products">
+                  <motion.button
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.97 }}
+                    className="group relative w-full inline-flex items-center justify-center gap-2
+                               bg-gradient-to-r from-[#0EA5E9] via-[#0284C7] to-[#1E3A8A]
+                               hover:from-[#1E3A8A] hover:via-[#0284C7] hover:to-[#0EA5E9]
+                               text-white font-extrabold
+                               text-sm sm:text-base px-6 py-3.5 rounded-xl
+                               transition-all duration-500 shadow-md
+                               hover:shadow-[0_0_15px_rgba(14,165,233,0.6)]
+                               overflow-hidden"
+                  >
+                    {/* Shine Effect */}
+                    <span className="absolute inset-0 -translate-x-full group-hover:translate-x-full transition-transform duration-700 bg-gradient-to-r from-transparent via-white/20 to-transparent" />
+                    
+                    <span className="relative z-10">Customize Now</span>
+                    <svg 
+                      className="relative z-10 w-4 h-4 transition-transform duration-300 group-hover:translate-x-1" 
+                      viewBox="0 0 14 14" 
+                      fill="none"
+                    >
+                      <path
+                        d="M2 7h10M8 3.5L11.5 7 8 10.5"
+                        stroke="white"
+                        strokeWidth="1.8"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      />
+                    </svg>
+                  </motion.button>
+                </Link>
+
+                {/* Trust badges for mobile */}
+                <div className="mt-6 flex flex-wrap items-center justify-center gap-4 text-xs text-gray-400 font-secondary">
+                  {["Premium Quality", "Free Design Support", "Quick Delivery"].map((t) => (
+                    <span key={t} className="flex items-center gap-1.5">
+                      <div className="w-1 h-1 bg-primary rounded-full" />
+                      {t}
+                    </span>
+                  ))}
                 </div>
-
-                <motion.button
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.97 }}
-                  onClick={handleSubmit}
-                  disabled={!isFormValid || isSubmitting}
-                  className={`w-full py-3.5 rounded-xl font-semibold text-white text-sm transition-all duration-300 flex items-center justify-center gap-2 ${
-                    isFormValid && !isSubmitting
-                      ? "bg-gradient-to-r from-primary to-secondary hover:shadow-xl cursor-pointer"
-                      : "bg-gray-600/40 cursor-not-allowed opacity-50"
-                  }`}
-                >
-                  {isSubmitting ? (
-                    <motion.div
-                      animate={{ rotate: 360 }}
-                      transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
-                      className="w-5 h-5 border-2 border-white border-t-transparent rounded-full"
-                    />
-                  ) : (
-                    <>
-                      <span>Get Started</span>
-                      <ArrowRight size={16} />
-                    </>
-                  )}
-                </motion.button>
-
-                {!isFormValid && (
-                  <p className="text-xs text-primary/70 mt-3">
-                    Complete all fields to continue
-                  </p>
-                )}
               </motion.div>
             </div>
           </div>

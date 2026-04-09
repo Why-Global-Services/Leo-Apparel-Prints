@@ -89,9 +89,9 @@ export default function ShopBySport() {
               whileInView={{ scaleX: 1 }}
               viewport={{ once: true }}
               transition={{ duration: 0.5 }}
-              className="w-12 h-0.5 bg-gradient-to-r from-accent  to-[#003E9B]"
+              className="w-12 h-0.5 bg-gradient-to-r from-accent to-primary-blue"
             />
-            <span className="text-xs font-bold tracking-[0.2em] text-[#003E9B] uppercase flex items-center gap-1">
+            <span className="text-xs font-bold tracking-[0.2em] text-primary-blue uppercase flex items-center gap-1 font-secondary">
               <Sparkles size={12} />
               Custom Sports Apparel
             </span>
@@ -100,35 +100,25 @@ export default function ShopBySport() {
               whileInView={{ scaleX: 1 }}
               viewport={{ once: true }}
               transition={{ duration: 0.5 }}
-              className="w-12 h-0.5 bg-gradient-to-r from-accent  to-[#003E9B]"
+              className="w-12 h-0.5 bg-gradient-to-r from-accent to-primary-blue"
             />
           </div>
-          <h2 className="text-4xl md:text-5xl font-black leading-tight">
+          <h2 className="text-4xl md:text-5xl font-black leading-tight font-primary">
             <span className="text-gray-900">SHOP BY </span>
             <span className="relative inline-block">
-              <span className="absolute inset-0 " />
-             <span className="relative inline-block">
-
-  {/* Glow Layer (secondary color) */}
-  <span className="
-    absolute inset-0 
-    text-secondary 
-    blur-[6px] opacity-60
-  ">
-    LEO CULT
-  </span>
-
-  {/* Main Text */}
-  <span className="
-    relative  text-primary
-  ">
-    LEO CULT
-  </span>
-
-</span>
+              <span className="relative inline-block">
+                {/* Glow Layer (secondary color) */}
+                <span className="absolute inset-0 text-secondary blur-[6px] opacity-60">
+                  SPORT
+                </span>
+                {/* Main Text */}
+                <span className="relative text-primary">
+                  SPORT
+                </span>
+              </span>
             </span>
           </h2>
-          <p className="text-gray-500 mt-3 max-w-2xl mx-auto">
+          <p className="text-gray-500 mt-3 max-w-2xl mx-auto font-secondary">
             Discover premium custom sportswear tailored for your sport. Professional quality, personalized design.
           </p>
         </motion.div>
@@ -157,22 +147,22 @@ export default function ShopBySport() {
                 
                 {/* Content */}
                 <div className="absolute bottom-0 left-0 right-0 p-5">
-                  <h3 className="text-2xl font-black text-white mb-2">
+                  <h3 className="text-2xl font-black text-white mb-2 font-primary">
                     {sport.name}
                   </h3>
                   <div className="flex flex-wrap gap-2 mb-3">
                     {sport.features.map((feature, idx) => (
-                      <span key={idx} className="text-white/70 text-xs">
+                      <span key={idx} className="text-white/70 text-xs font-secondary">
                         {idx > 0 && "•"} {feature}
                       </span>
                     ))}
                   </div>
                   <Link
                     href={sport.href}
-                    className="inline-flex items-center gap-2 text-white/80 hover:text-white text-sm font-semibold transition-all group/link"
+                    className="inline-flex items-center gap-2 text-white/80 hover:text-white text-sm font-semibold transition-all group/link font-secondary"
                   >
                     <span>Explore</span>
-                    <ArrowRight size={14} className="group-hover/link:translate-x-1 transition-transform" />
+                    <ArrowRight size={14} className="group-hover/link:translate-x-1 transition-transform text-white" />
                   </Link>
                 </div>
               </motion.div>
@@ -197,10 +187,10 @@ export default function ShopBySport() {
             
             {/* Content */}
             <div className="absolute bottom-0 left-0 right-0 p-8">
-              <h3 className="text-4xl md:text-5xl font-black text-white mb-3">
+              <h3 className="text-4xl md:text-5xl font-black text-white mb-3 font-primary">
                 {centerSport.name}
               </h3>
-              <p className="text-white/80 text-sm mb-4 max-w-md leading-relaxed">
+              <p className="text-white/80 text-sm mb-4 max-w-md leading-relaxed font-secondary">
                 {centerSport.desc}
               </p>
               
@@ -212,7 +202,7 @@ export default function ShopBySport() {
                     initial={{ opacity: 0, scale: 0.8 }}
                     whileInView={{ opacity: 1, scale: 1 }}
                     transition={{ delay: 0.3 + idx * 0.1 }}
-                    className="bg-white/20 backdrop-blur-sm text-white text-xs px-3 py-1 rounded-full"
+                    className="bg-white/20 backdrop-blur-sm text-white text-xs px-3 py-1 rounded-full font-secondary"
                   >
                     {feature}
                   </motion.span>
@@ -220,46 +210,20 @@ export default function ShopBySport() {
               </div>
                           
               <Link
-              href="/products"
-              className="group relative inline-flex items-center justify-center gap-2
-  bg-gradient-to-r from-[#0EA5E9] via-[#0284C7] to-[#1E3A8A]
-  hover:from-[#1E3A8A] hover:via-[#0284C7] hover:to-[#0EA5E9]
-  text-white font-extrabold
-  text-xs sm:text-sm px-6 py-3 rounded-xl
-  transition-all duration-500 shadow-md
-  hover:shadow-[0_0_15px_rgba(14,165,233,0.6)]
-  w-full sm:w-auto overflow-hidden"
->
-              {/* Shine Layer */}
-              <span
-                className="absolute inset-0 
-                bg-gradient-to-r from-transparent via-white/30 to-transparent 
-                translate-x-[-100%] 
-                group-hover:translate-x-[100%] 
-                transition-transform duration-1000 ease-out"
-              />
-
-              {/* Text */}
-              <span className="relative z-10">Customize Now</span>
-
-              {/* Arrow */}
-              <svg
-                className="relative z-10 w-3.5 h-3.5 transition-transform duration-300 group-hover:translate-x-1"
-                viewBox="0 0 14 14"
-                fill="none"
+                href="/products"
+                className="btn btn-gradient btn-md btn-shine inline-flex"
               >
-               <path
-              d="M2 7h10M8 3.5L11.5 7 8 10.5"
-              stroke="#F5B800"
-              strokeWidth="1.8"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              style={{
-                filter: "drop-shadow(0 0 4px #F5B800)",
-              }}
-            />
-              </svg>
-            </Link>
+                Customize Now
+                <svg className="w-4 h-4" viewBox="0 0 14 14" fill="none">
+                  <path
+                    d="M2 7h10M8 3.5L11.5 7 8 10.5"
+                    stroke="white"
+                    strokeWidth="1.8"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                </svg>
+              </Link>
             </div>
           </motion.div>
 
@@ -284,22 +248,22 @@ export default function ShopBySport() {
                 
                 {/* Content */}
                 <div className="absolute bottom-0 right-0 left-0 p-5">
-                  <h3 className="text-2xl font-black text-white mb-2 text-right">
+                  <h3 className="text-2xl font-black text-white mb-2 text-right font-primary">
                     {sport.name}
                   </h3>
                   <div className="flex flex-wrap gap-2 mb-3 justify-end">
                     {sport.features.map((feature, idx) => (
-                      <span key={idx} className="text-white/70 text-xs">
+                      <span key={idx} className="text-white/70 text-xs font-secondary">
                         {feature}{idx < sport.features.length - 1 && " •"}
                       </span>
                     ))}
                   </div>
                   <Link
                     href={sport.href}
-                    className="inline-flex items-center gap-2 text-white/80 hover:text-white text-sm font-semibold transition-all group/link float-right"
+                    className="inline-flex items-center gap-2 text-white/80 hover:text-white text-sm font-semibold transition-all group/link float-right font-secondary"
                   >
                     <span>Explore</span>
-                    <ArrowRight size={14} className="group-hover/link:translate-x-1 transition-transform" />
+                    <ArrowRight size={14} className="group-hover/link:translate-x-1 transition-transform text-white" />
                   </Link>
                 </div>
               </motion.div>
@@ -322,8 +286,8 @@ export default function ShopBySport() {
                 <TrendingUp size={18} className="text-red-600" />
               </div>
               <div>
-                <div className="font-bold text-gray-900">40,000+</div>
-                <div className="text-gray-500 text-xs">Teams Kitted Worldwide</div>
+                <div className="font-bold text-gray-900 font-primary">40,000+</div>
+                <div className="text-gray-500 text-xs font-secondary">Teams Kitted Worldwide</div>
               </div>
             </div>
             
@@ -334,8 +298,8 @@ export default function ShopBySport() {
                 <Clock size={18} className="text-blue-600" />
               </div>
               <div>
-                <div className="font-bold text-gray-900">10-Day</div>
-                <div className="text-gray-500 text-xs">Delivery Guarantee</div>
+                <div className="font-bold text-gray-900 font-primary">10-Day</div>
+                <div className="text-gray-500 text-xs font-secondary">Delivery Guarantee</div>
               </div>
             </div>
             
@@ -346,8 +310,8 @@ export default function ShopBySport() {
                 <Award size={18} className="text-purple-600" />
               </div>
               <div>
-                <div className="font-bold text-gray-900">Free Design</div>
-                <div className="text-gray-500 text-xs">On Every Order</div>
+                <div className="font-bold text-gray-900 font-primary">Free Design</div>
+                <div className="text-gray-500 text-xs font-secondary">On Every Order</div>
               </div>
             </div>
           </div>
@@ -357,48 +321,21 @@ export default function ShopBySport() {
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
           >
-       <Link
-  href="/products"
-className="group relative inline-flex items-center justify-center gap-2
-bg-gradient-to-r from-[#0EA5E9] via-[#0284C7] to-[#1E3A8A]
-hover:from-[#1E3A8A] hover:via-[#0284C7] hover:to-[#0EA5E9]
-text-white font-extrabold
-text-xs sm:text-sm px-6 py-3 rounded-xl
-transition-all duration-500 shadow-md
-hover:shadow-[0_0_15px_rgba(14,165,233,0.6)]
-whitespace-nowrap
-overflow-hidden"
->
-  {/* Shine Layer */}
-  <span
-    className="absolute inset-0 
-    bg-gradient-to-r from-transparent via-white/30 to-transparent 
-    translate-x-[-100%] 
-    group-hover:translate-x-[100%] 
-    transition-transform duration-1000 ease-out"
-  />
-
-  {/* Text */}
-  <span className="relative z-10">Customize Now</span>
-
-  {/* Arrow */}
-  <svg
-    className="relative z-10 w-3.5 h-3.5 transition-transform duration-300 group-hover:translate-x-1"
-    viewBox="0 0 14 14"
-    fill="none"
-  >
-   <path
-  d="M2 7h10M8 3.5L11.5 7 8 10.5"
-  stroke="#F5B800"
-  strokeWidth="1.8"
-  strokeLinecap="round"
-  strokeLinejoin="round"
-  style={{
-    filter: "drop-shadow(0 0 4px #F5B800)",
-  }}
-/>
-  </svg>
-</Link>
+            <Link
+              href="/products"
+              className="btn btn-gradient btn-md btn-shine whitespace-nowrap"
+            >
+              Customize Now
+              <svg className="w-4 h-4" viewBox="0 0 14 14" fill="none">
+                <path
+                  d="M2 7h10M8 3.5L11.5 7 8 10.5"
+                  stroke="white"
+                  strokeWidth="1.8"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg>
+            </Link>
           </motion.div>
         </motion.div>
 

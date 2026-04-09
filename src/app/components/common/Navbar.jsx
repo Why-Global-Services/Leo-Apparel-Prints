@@ -731,11 +731,6 @@
 
 
 
-
-
-
-
-
 "use client";
 
 import { useState, useEffect, useRef } from "react";
@@ -877,7 +872,7 @@ function CricketPanel() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.25, delay: ci * 0.05 }}
             >
-              <h3 className="text-sm font-bold text-gray-900 tracking-wider mb-6 uppercase">
+              <h3 className="text-sm font-bold text-gray-900 tracking-wider mb-6 uppercase font-primary">
                 {col.title}
               </h3>
               <ul className="space-y-3.5">
@@ -890,7 +885,7 @@ function CricketPanel() {
                   >
                     <Link
                       href={link.href}
-                      className="text-[15px] text-gray-600 hover:text-primary transition-colors block"
+                      className="text-[15px] text-gray-600 hover:text-primary transition-colors block font-secondary"
                     >
                       {link.name}
                     </Link>
@@ -919,7 +914,7 @@ function SportsIndiaPanel() {
               transition={{ duration: 0.3, delay: i * 0.05 }}
             >
               <Link href={item.href}>
-                <h3 className="text-lg font-bold text-gray-900 mb-5 hover:text-primary transition-colors">
+                <h3 className="text-lg font-bold text-gray-900 mb-5 hover:text-primary transition-colors font-primary">
                   {item.name}
                 </h3>
               </Link>
@@ -929,7 +924,7 @@ function SportsIndiaPanel() {
                   <Link
                     key={idx}
                     href={accessory.href}
-                    className="block text-[14.5px] text-gray-600 hover:text-primary transition-colors"
+                    className="block text-[14.5px] text-gray-600 hover:text-primary transition-colors font-secondary"
                   >
                     {accessory.name}
                   </Link>
@@ -938,7 +933,7 @@ function SportsIndiaPanel() {
 
               <Link
                 href={item.href}
-                className="mt-6 text-primary text-sm font-medium hover:underline inline-block"
+                className="mt-6 text-primary text-sm font-medium hover:underline inline-block font-secondary"
               >
                 View all →
               </Link>
@@ -965,7 +960,7 @@ function ResourcesPanel() {
             >
               <Link
                 href={item.href}
-                className="block text-[15px] text-gray-600 hover:text-primary transition-colors py-1.5 px-4"
+                className="block text-[15px] text-gray-600 hover:text-primary transition-colors py-1.5 px-4 font-secondary"
               >
                 {item.name}
               </Link>
@@ -999,7 +994,7 @@ function MobileItem({ item }) {
     <div className="border-b border-gray-100">
       <button
         onClick={() => setOpen((v) => !v)}
-        className="flex items-center justify-between w-full py-4 text-base font-semibold text-gray-800"
+        className="flex items-center justify-between w-full py-4 text-base font-semibold text-gray-800 font-primary"
       >
         {item.label}
         <ChevronDown size={18} strokeWidth={2.5} className={`transition-transform duration-200 ${open ? "rotate-180" : ""}`} />
@@ -1018,7 +1013,7 @@ function MobileItem({ item }) {
                 <Link
                   key={link.name}
                   href={link.href}
-                  className="block text-sm text-gray-600 hover:text-primary py-1.5 transition-colors"
+                  className="block text-sm text-gray-600 hover:text-primary py-1.5 transition-colors font-secondary"
                 >
                   {link.name}
                 </Link>
@@ -1063,8 +1058,8 @@ function CartDrawer({ isOpen, onClose }) {
             className="fixed right-0 top-0 bottom-0 w-full max-w-md bg-white shadow-2xl z-[70] flex flex-col"
           >
             <div className="p-5 border-b flex justify-between items-center">
-              <h2 className="text-xl font-bold text-gray-900">Shopping Cart</h2>
-              <button onClick={onClose} className="p-2 hover:bg-gray-100 rounded-full">
+              <h2 className="text-xl font-bold text-black font-primary">Shopping Cart</h2>
+              <button onClick={onClose} className="p-2 hover:bg-gray-100 rounded-full  bg-gray-200 text-primary-blue">
                 <X size={22} />
               </button>
             </div>
@@ -1073,39 +1068,91 @@ function CartDrawer({ isOpen, onClose }) {
               {cartItems.length === 0 ? (
                 <div className="text-center py-16">
                   <ShoppingBag size={60} className="mx-auto text-gray-300 mb-4" />
-                  <p className="text-gray-500">Your cart is empty</p>
+                  <p className="text-gray-500 font-secondary">Your cart is empty</p>
                 </div>
               ) : (
                 <div className="space-y-6">
                   {cartItems.map((item) => (
-                    <div key={item.id} className="flex gap-4 border-b pb-5">
-                      <div className="w-20 h-20 bg-gray-100 rounded-lg" />
-                      <div className="flex-1">
-                        <p className="font-medium text-gray-800">{item.name}</p>
-                        <p className="text-sm text-gray-500 mt-1">{item.sport}</p>
-                        <div className="flex justify-between items-center mt-4">
-                          <span className="font-semibold text-primary">${item.price}</span>
-                          <div className="flex items-center gap-3">
-                            <button className="w-7 h-7 border rounded hover:bg-gray-100">-</button>
-                            <span className="font-medium">{item.quantity}</span>
-                            <button className="w-7 h-7 border rounded hover:bg-gray-100">+</button>
-                          </div>
-                        </div>
+                    <div
+                  key={item.id}
+                  className="flex gap-4 p-4 rounded-2xl border border-gray-200 bg-white shadow-sm hover:shadow-md transition-all duration-300"
+                >
+                  {/* Product Image */}
+                  <div className="w-20 h-20 bg-gray-100 rounded-xl" />
+
+                  {/* Content */}
+                  <div className="flex-1">
+                    <p className="font-semibold text-gray-800 font-primary">
+                      {item.name}
+                    </p>
+
+                    <p className="text-sm text-gray-500 font-secondary">
+                      {item.sport}
+                    </p>
+
+                    {/* Price + Quantity */}
+                    <div className="flex justify-between items-center mt-3">
+                      <span className="font-bold text-primary-blue">
+                        ₹{item.price}
+                      </span>
+
+                      <div className="flex items-center gap-2 ">
+                        <button className="w-7 h-7 rounded  hover:bg-gray-200 bg-primary-blue">-</button>
+                        <span className="font-medium text-black">{item.quantity}</span>
+                        <button className="w-7 h-7 rounded  hover:bg-gray-200 bg-primary-blue">+</button>
                       </div>
                     </div>
+
+                    {/* 🔥 Customize Button */}
+                    <button className="btn btn-gradient btn-sm btn-shine mt-3">
+                      Customize
+                      <svg className="w-3 h-3" viewBox="0 0 14 14" fill="none">
+                        <path
+                          d="M2 7h10M8 3.5L11.5 7 8 10.5"
+                          stroke="white"
+                          strokeWidth="1.8"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        />
+                      </svg>
+                    </button>
+                  </div>
+                </div>
                   ))}
                 </div>
               )}
             </div>
 
-            <div className="p-5 border-t bg-gray-50">
-              <div className="flex justify-between mb-4 text-lg">
-                <span>Subtotal</span>
-                <span className="font-bold">${total.toFixed(2)}</span>
+            <div className="p-5 border-t bg-gray-50 border-gray-300">
+              <div className="flex justify-between mb-4 text-lg text-secondary">
+                <span className="font-secondary">Subtotal</span>
+                <span className="font-bold font-primary">${total.toFixed(2)}</span>
               </div>
-              <button className="w-full bg-primary text-white py-3.5 rounded-xl font-semibold hover:bg-primary/90">
-                Checkout
-              </button>
+             <button className="group relative w-full btn btn-gradient btn-lg btn-shine overflow-hidden">
+  
+            {/* Text */}
+            <span className="relative z-10 flex items-center gap-2 justify-center">
+              Proceed to Checkout
+
+              <svg
+                className="w-4 h-4 transition-transform duration-300 group-hover:translate-x-1"
+                viewBox="0 0 14 14"
+                fill="none"
+              >
+                <path
+                  d="M2 7h10M8 3.5L11.5 7 8 10.5"
+                  stroke="white"
+                  strokeWidth="1.8"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg>
+            </span>
+
+            {/* 🔥 Moving Shine Effect */}
+            <span className="absolute inset-0 -translate-x-full group-hover:translate-x-full transition-transform duration-700 bg-gradient-to-r from-transparent via-white/30 to-transparent" />
+
+          </button>
             </div>
           </motion.div>
         </>
@@ -1113,101 +1160,50 @@ function CartDrawer({ isOpen, onClose }) {
     </AnimatePresence>
   );
 }
+
+
 function AnimatedLogo() {
-  const primaryColor = "#F59E0B";
-  const black = "#000000";
-
-  // Smaller Scale Dimensions
-  const fontSize = "20px";      // Tightened from 22px
-  const tracking = "3px";      // Tightened from 4px
-  const subtitleSize = "6px";
-
-  const sliceVariants = {
-    initial: { opacity: 0, x: -4 },
-    animate: (i) => ({
-      opacity: [0, 1, 0.8, 1],
-      x: 0,
-      transition: {
-        delay: i * 0.1,
-        duration: 0.3,
-        repeat: Infinity,
-        repeatDelay: 3,
-      },
-    }),
-  };
+  const letters = "LEOCULT".split("");
+  
+  // Define your colors here for easy tweaking
+  const primaryBlue = "#2563EB"; 
+  const darkGray = "#1F2937";
 
   return (
-    <div className="flex flex-col items-start cursor-default group select-none">
-      <div className="relative">
-        {/* Base Layer */}
-        <h1
-          style={{
-            fontSize: fontSize,
-            fontWeight: 950, // Extra bold for smaller size visibility
-            letterSpacing: tracking,
-            color: primaryColor,
-            lineHeight: "1",
-            fontFamily: "inherit", 
-            textTransform: "uppercase",
-          }}
-        >
-          LEO CULT
-        </h1>
-
-        {/* Animation Slices */}
-        {[0, 1, 2].map((i) => (
-          <motion.h1
+    <div className="flex flex-col items-center">
+      <div className="flex items-center">
+        {letters.map((l, i) => (
+          <motion.span
             key={i}
-            custom={i}
-            variants={sliceVariants}
-            initial="initial"
-            animate="animate"
-            className="absolute inset-0 pointer-events-none"
-            style={{
-              fontSize: fontSize,
-              fontWeight: 950,
-              letterSpacing: tracking,
-              lineHeight: "1",
-              color: primaryColor,
-              textShadow: `0px 0px 5px ${primaryColor}33`,
-              // Precise 3-way split
-              clipPath: `inset(${i * 33.3}% 0 ${(2 - i) * 33.3}% 0)`,
+            animate={{ 
+              y: [0, -4, 0],
+              // LEO: Cycles B/W (Black to Gray)
+              // CULT: Cycles through the Primary Blue
+              color: i < 3 
+                ? ["#000", "#6B7280", "#000"] 
+                : [primaryBlue, "#60A5FA", primaryBlue]
             }}
+            transition={{
+              duration: 2.5,
+              repeat: Infinity,
+              delay: i * 0.1,
+              ease: "easeInOut"
+            }}
+            // ml-2 adds the space before 'C'
+            className={`font-primary text-[22px] font-black italic tracking-tighter ${
+              i === 3 ? "ml-2" : ""
+            }`}
           >
-            LEO CULT
-          </motion.h1>
+            {l}
+          </motion.span>
         ))}
       </div>
-
-      {/* Slim Underline */}
-      <div className="relative w-full h-[1.5px] mt-1 bg-gray-100 rounded-full overflow-hidden">
-        <motion.div
-          animate={{ x: ["-100%", "100%"] }}
-          transition={{
-            duration: 2,
-            repeat: Infinity,
-            ease: "easeInOut",
-            repeatDelay: 1
-          }}
-          className="absolute inset-0 w-1/2 h-full"
-          style={{
-            background: `linear-gradient(90deg, transparent, ${primaryColor}, transparent)`
-          }}
-        />
-      </div>
-
-      <motion.span
-        animate={{ opacity: [0.5, 1, 0.5] }}
-        transition={{ duration: 3, repeat: Infinity }}
-        className="font-black uppercase mt-0.5"
-        style={{ 
-          fontSize: subtitleSize, 
-          letterSpacing: "4.5px", 
-          color: black 
-        }}
-      >
-        WEAR THE POWER
-      </motion.span>
+      
+      <motion.div 
+        animate={{ width: ["20%", "100%", "20%"] }}
+        transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+        className="h-[2px] bg-blue-600 mt-1"
+      />
     </div>
   );
 }
@@ -1261,13 +1257,11 @@ export default function Navbar() {
 
   return (
     <>
-      {/* Fixed Header */}
       <header
         ref={headerRef}
-       className={`fixed left-0 right-0 z-40 
-bg-[#f2f7fb]
-backdrop-blur-md 
-transition-all duration-300 border-b border-blue-100 ${
+        className={`fixed left-0 right-0 z-40 
+          bg-[#f2f7fb] backdrop-blur-md 
+          transition-all duration-300 border-b border-blue-100 ${
           scrolled ? "top-0 shadow-lg" : "top-[40px] pt-3"
         }`}
       >
@@ -1283,7 +1277,6 @@ transition-all duration-300 border-b border-blue-100 ${
             <AnimatedLogo />
           </div>
 
-          {/* Desktop Navigation */}
           <nav className="hidden lg:flex items-center gap-1">
             {NAV_ITEMS.map((item) => (
               <div
@@ -1293,8 +1286,8 @@ transition-all duration-300 border-b border-blue-100 ${
                 className="relative"
               >
                 <button
-                  className={`flex items-center gap-1.5 px-6 py-3 text-[15px] font-medium transition-colors ${
-                    activeMenu === item.id ? "text-gray-900" : "text-gray-700 hover:text-primary transition"
+                  className={`flex items-center gap-1.5 px-6 py-3 text-[15px] font-medium transition-colors font-primary ${
+                    activeMenu === item.id ? "text-gray-900" : "text-gray-700 hover:text-primary"
                   }`}
                 >
                   {item.label}
@@ -1312,14 +1305,14 @@ transition-all duration-300 border-b border-blue-100 ${
             ))}
           </nav>
 
-          {/* Right Side Icons */}
           <div className="hidden lg:flex items-center gap-4">
             <motion.button
               whileHover={{ scale: 1.1 }}
               whileTap={{ scale: 0.95 }}
               className="p-2.5 text-gray-600 hover:text-primary transition rounded-full"
             >
-              <User size={26} strokeWidth={1.7} />
+               <Link href="/account"> <User size={26} strokeWidth={1.7} /> </Link>
+
             </motion.button>
 
             <motion.button
@@ -1333,45 +1326,28 @@ transition-all duration-300 border-b border-blue-100 ${
                 2
               </span>
             </motion.button>
+            
             <Link
-  href="/bulk-enquiry"
-  className="group relative inline-flex items-center justify-center gap-2
-  bg-gradient-to-r from-[#0EA5E9] via-[#0284C7] to-[#1E3A8A]
-  hover:from-[#1E3A8A] hover:via-[#0284C7] hover:to-[#0EA5E9]
-  text-white font-extrabold
-  text-xs sm:text-sm px-6 py-3 rounded-xl
-  transition-all duration-500 shadow-md
-  hover:shadow-[0_0_15px_rgba(14,165,233,0.6)]
-  overflow-hidden"
->
-  {/* TEXT */}
-  <span className="relative z-10">Bulk Order</span>
-
-  {/* 🔥 NEW ARROW (SMOOTH SLIDE) */}
-  <svg
-    className="relative z-10 w-4 h-4 transition-all duration-300
-    group-hover:translate-x-2 group-hover:opacity-90"
-    viewBox="0 0 14 14"
-    fill="none"
-  >
-    <path
-      d="M2 7h10M8 3.5L11.5 7 8 10.5"
-      stroke="#F5B800"
-      strokeWidth="1.8"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      style={{
-        filter: "drop-shadow(0 0 4px #F5B800)",
-      }}
-    />
-  </svg>
-
-  {/* ✨ SHINE EFFECT */}
-  <div className="absolute inset-0 -translate-x-full group-hover:translate-x-full transition-transform duration-700 bg-gradient-to-r from-transparent via-white/20 to-transparent" />
-</Link>
+              href="/bulk-enquiry"
+              className="btn btn-gradient btn-md btn-shine inline-flex"
+            >
+              Bulk Order
+              <svg
+                className="w-4 h-4 transition-all duration-300 group-hover:translate-x-2"
+                viewBox="0 0 14 14"
+                fill="none"
+              >
+                <path
+                  d="M2 7h10M8 3.5L11.5 7 8 10.5"
+                  stroke="white"
+                  strokeWidth="1.8"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg>
+            </Link>
           </div>
 
-          {/* Mobile Menu Button */}
           <button
             onClick={() => setMobileOpen(!mobileOpen)}
             className="lg:hidden p-2 text-gray-700"
@@ -1380,7 +1356,6 @@ transition-all duration-300 border-b border-blue-100 ${
           </button>
         </div>
 
-        {/* Mobile Menu Dropdown */}
         <AnimatePresence>
           {mobileOpen && (
             <motion.div
@@ -1395,8 +1370,8 @@ transition-all duration-300 border-b border-blue-100 ${
                 ))}
                 <div className="pt-4 space-y-3">
                   <Link
-                    href="/profile"
-                    className="flex items-center justify-center gap-2 w-full py-3 border border-gray-200 rounded-lg text-gray-700 font-medium text-sm hover:border-primary hover:text-primary"
+                    href="/account"
+                    className="flex items-center justify-center gap-2 w-full py-3 border border-gray-200 rounded-lg text-gray-700 font-medium text-sm hover:border-primary hover:text-primary font-primary"
                   >
                     <User size={18} /> Profile
                   </Link>
@@ -1405,40 +1380,25 @@ transition-all duration-300 border-b border-blue-100 ${
                       setCartOpen(true);
                       setMobileOpen(false);
                     }}
-                    className="flex items-center justify-center gap-2 w-full py-3 border border-gray-200 rounded-lg text-gray-700 font-medium text-sm hover:border-primary hover:text-primary"
+                    className="flex items-center justify-center gap-2 w-full py-3 border border-gray-200 rounded-lg text-gray-700 font-medium text-sm hover:border-primary hover:text-primary font-primary"
                   >
                     <ShoppingBag size={18} /> Cart
                   </button>
-                 <Link
-  href="/bulk-enquiry"
-  className="group relative flex items-center justify-center gap-2
-  w-full py-3.5 rounded-xl
-  bg-gradient-to-r from-[#0EA5E9] via-[#0284C7] to-[#1E3A8A]
-  text-white font-bold text-sm
-  transition-all duration-300 shadow-md
-  overflow-hidden"
->
-  {/* TEXT */}
-  <span className="relative z-10">Bulk Order</span>
-
-  {/* 🔥 GOLD ARROW (SMALL + CLEAN) */}
-  <svg
-    className="relative z-10 w-4 h-4 transition-transform duration-300 group-hover:translate-x-1"
-    viewBox="0 0 14 14"
-    fill="none"
-  >
-    <path
-      d="M2 7h10M8 3.5L11.5 7 8 10.5"
-      stroke="#F5B800"
-      strokeWidth="1.8"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    />
-  </svg>
-
-  {/* ✨ LIGHT SHINE */}
-  <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition duration-500 bg-gradient-to-r from-transparent via-white/20 to-transparent" />
-</Link>
+                  <Link
+                    href="/bulk-enquiry"
+                    className="btn btn-gradient btn-md btn-shine w-full text-center"
+                  >
+                    Bulk Order
+                    <svg className="w-4 h-4 transition-transform duration-300 group-hover:translate-x-1" viewBox="0 0 14 14" fill="none">
+                      <path
+                        d="M2 7h10M8 3.5L11.5 7 8 10.5"
+                        stroke="white"
+                        strokeWidth="1.8"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      />
+                    </svg>
+                  </Link>
                 </div>
               </div>
             </motion.div>
@@ -1446,14 +1406,11 @@ transition-all duration-300 border-b border-blue-100 ${
         </AnimatePresence>
       </header>
 
-      {/* Spacer to push content below fixed header */}
       <div className="h-[120px]" />
 
-      {/* Mega Menu - Positioned below fixed header */}
       <AnimatePresence>
         {activeMenu && (
           <>
-            {/* Backdrop */}
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
@@ -1464,7 +1421,6 @@ transition-all duration-300 border-b border-blue-100 ${
               onMouseEnter={onLeave}
             />
             
-            {/* Menu Panel */}
             <motion.div
               initial={{ opacity: 0, y: -10 }}
               animate={{ opacity: 1, y: 0 }}
@@ -1483,7 +1439,6 @@ transition-all duration-300 border-b border-blue-100 ${
         )}
       </AnimatePresence>
 
-      {/* Cart Drawer */}
       <CartDrawer isOpen={cartOpen} onClose={() => setCartOpen(false)} />
     </>
   );

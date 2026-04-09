@@ -1,142 +1,525 @@
+// "use client";
+
+// import { useState, useMemo, useCallback } from "react";
+// import ProductCard from "./ProductCard";
+// import { products } from "@/data/products";
+// import {
+//   Search,
+//   SlidersHorizontal,
+//   X,
+//   Target,
+//   Activity,
+//   Zap,
+//   ShoppingBag,
+//   ChevronDown,
+//   Upload,
+// } from "lucide-react";
+
+// const menuStructure = [
+//   { id: "all", label: "All Gear", icon: <Activity size={15} />, subs: [] },
+//   { id: "sports", label: "Sports", icon: <Target size={15} />, subs: ["Football", "Cricket", "Tennis", "Basketball"] },
+//   { id: "clothes", label: "Clothes", icon: <Activity size={15} />, subs: ["T-Shirts", "Hoodies", "Shorts", "Pants"] },
+//   { id: "athleisure", label: "Athleisure", icon: <Zap size={15} />, subs: ["Compression", "Joggers", "Jackets"] },
+//   { id: "accessories", label: "Accessories", icon: <ShoppingBag size={15} />, subs: ["Gym Bags", "Bottles", "Socks"] },
+// ];
+
+// // ✅ Defined OUTSIDE parent — prevents remount on state change (fixes search typing bug)
+// function SidebarContent({
+//   searchTerm,
+//   onSearchChange,
+//   selectedMainCat,
+//   onMainCatChange,
+//   selectedSubCat,
+//   onSubCatChange,
+// }) {
+//   return (
+//     <div className="flex flex-col gap-4">
+//       {/* Search Input */}
+//       <div className="relative group">
+//         <input
+//           type="text"
+//           placeholder="SEARCH PRODUCTS..."
+//           value={searchTerm}
+//           onChange={(e) => onSearchChange(e.target.value)}
+//           autoComplete="off"
+//           className="w-full bg-white border border-slate-200 rounded-lg px-4 py-2.5 text-[10px] sm:text-[11px] font-black tracking-widest outline-none focus:border-[#003E9B] focus:ring-2 focus:ring-[#003E9B]/20 transition-all text-black placeholder:text-slate-400 shadow-sm pr-10 font-secondary"
+//         />
+//         <Search
+//           size={13}
+//           className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-[#003E9B] pointer-events-none transition-colors"
+//         />
+//         {searchTerm && (
+//           <button
+//             onClick={() => onSearchChange("")}
+//             className="absolute right-8 top-1/2 -translate-y-1/2 text-slate-400 hover:text-[#003E9B] transition-colors"
+//           >
+//             <X size={13} />
+//           </button>
+//         )}
+//       </div>
+
+//       {/* Navigation */}
+//       <nav className="flex flex-col gap-0.5">
+//         {menuStructure.map((cat) => (
+//           <div key={cat.id} className="flex flex-col">
+//             {/* Main category button */}
+//             <button
+//               onClick={() => onMainCatChange(cat.id)}
+//               className={`flex items-center justify-between px-3 py-2 transition-all duration-200 font-primary rounded-lg ${
+//                 selectedMainCat === cat.id
+//                   ? "text-white shadow-md shadow-[#003E9B]/20"
+//                   : "text-slate-700 hover:text-[#003E9B]"
+//               }`}
+//               style={
+//                 selectedMainCat === cat.id
+//                   ? {
+//                       background:
+//                         "linear-gradient(135deg, var(--gradient-start), var(--gradient-mid), var(--gradient-end))",
+//                     }
+//                   : { background: "transparent" }
+//               }
+//               onMouseEnter={(e) => {
+//                 if (selectedMainCat !== cat.id) {
+//                   e.currentTarget.style.background = "rgba(0,62,155,0.06)";
+//                 }
+//               }}
+//               onMouseLeave={(e) => {
+//                 if (selectedMainCat !== cat.id) {
+//                   e.currentTarget.style.background = "transparent";
+//                 }
+//               }}
+//             >
+//               <div className="flex items-center gap-2">
+//                 <span
+//                   className={`transition-colors flex-shrink-0 ${
+//                     selectedMainCat === cat.id ? "text-white" : "text-slate-400"
+//                   }`}
+//                 >
+//                   {cat.icon}
+//                 </span>
+//                 <span className="text-[10px] sm:text-[11px] font-black uppercase tracking-widest">
+//                   {cat.label}
+//                 </span>
+//               </div>
+//               {cat.subs.length > 0 && (
+//                 <ChevronDown
+//                   size={11}
+//                   className={`transition-transform duration-300 flex-shrink-0 ${
+//                     selectedMainCat === cat.id
+//                       ? "rotate-180 text-white"
+//                       : "text-slate-400"
+//                   }`}
+//                 />
+//               )}
+//             </button>
+
+//             {/* Sub-categories */}
+//             {selectedMainCat === cat.id && cat.subs.length > 0 && (
+//               <div className="flex flex-col ml-6 mt-0.5 border-l-2 border-[#003E9B]/20 py-0.5">
+//                 {cat.subs.map((sub) => (
+//                   <button
+//                     key={sub}
+//                     onClick={() =>
+//                       onSubCatChange(selectedSubCat === sub ? "" : sub)
+//                     }
+//                     className={`text-left text-[9px] sm:text-[10px] font-black tracking-widest uppercase px-3 py-1.5 transition-all duration-200 font-secondary rounded-md ${
+//                       selectedSubCat === sub
+//                         ? "bg-[#003E9B]/10 text-[#003E9B] border-l-2 border-[#003E9B] -ml-0.5"
+//                         : "text-slate-400 hover:text-[#003E9B] hover:bg-[#003E9B]/5"
+//                     }`}
+//                   >
+//                     {sub}
+//                   </button>
+//                 ))}
+//               </div>
+//             )}
+//           </div>
+//         ))}
+//       </nav>
+
+//       {/* Active Filters */}
+//       {(selectedMainCat !== "all" || selectedSubCat || searchTerm) && (
+//         <div className="pt-3 border-t border-gray-100">
+//           <p className="text-[9px] font-bold text-gray-400 uppercase tracking-wider mb-2 font-secondary">
+//             Active Filters
+//           </p>
+//           <div className="flex flex-wrap gap-1.5">
+//             {selectedMainCat !== "all" && (
+//               <span className="text-[8px] bg-[#003E9B]/10 text-[#003E9B] px-2.5 py-1 rounded-full font-secondary font-bold">
+//                 {menuStructure.find((c) => c.id === selectedMainCat)?.label}
+//               </span>
+//             )}
+//             {selectedSubCat && (
+//               <span className="text-[8px] bg-[#003E9B]/10 text-[#003E9B] px-2.5 py-1 rounded-full font-secondary font-bold">
+//                 {selectedSubCat}
+//               </span>
+//             )}
+//             {searchTerm && (
+//               <span className="text-[8px] bg-[#003E9B]/10 text-[#003E9B] px-2.5 py-1 rounded-full font-secondary font-bold">
+//                 "{searchTerm}"
+//               </span>
+//             )}
+//           </div>
+//         </div>
+//       )}
+//     </div>
+//   );
+// }
+
+// export default function ProductGrid() {
+//   const [searchTerm, setSearchTerm] = useState("");
+//   const [selectedMainCat, setSelectedMainCat] = useState("all");
+//   const [selectedSubCat, setSelectedSubCat] = useState("");
+//   const [isFilterOpen, setIsFilterOpen] = useState(false);
+
+//   const handleMainCatChange = useCallback(
+//     (id) => {
+//       if (selectedMainCat === id) {
+//         setSelectedMainCat("all");
+//         setSelectedSubCat("");
+//       } else {
+//         setSelectedMainCat(id);
+//         setSelectedSubCat("");
+//       }
+//     },
+//     [selectedMainCat]
+//   );
+
+//   const handleSubCatChange = useCallback((sub) => {
+//     setSelectedSubCat(sub);
+//   }, []);
+
+//   const filteredProducts = useMemo(() => {
+//     let filtered = [...products];
+//     if (searchTerm.trim()) {
+//       filtered = filtered.filter((p) =>
+//         p.name.toLowerCase().includes(searchTerm.toLowerCase().trim())
+//       );
+//     }
+//     if (selectedMainCat !== "all") {
+//       filtered = filtered.filter(
+//         (p) => p.category?.toLowerCase() === selectedMainCat
+//       );
+//     }
+//     if (selectedSubCat) {
+//       filtered = filtered.filter(
+//         (p) =>
+//           p.sport?.toLowerCase() === selectedSubCat.toLowerCase() ||
+//           p.subCategory?.toLowerCase() === selectedSubCat.toLowerCase()
+//       );
+//     }
+//     return filtered;
+//   }, [searchTerm, selectedMainCat, selectedSubCat]);
+
+//   const sidebarProps = {
+//     searchTerm,
+//     onSearchChange: setSearchTerm,
+//     selectedMainCat,
+//     onMainCatChange: handleMainCatChange,
+//     selectedSubCat,
+//     onSubCatChange: handleSubCatChange,
+//   };
+
+//   return (
+//     <div className="bg-white h-full w-full overflow-hidden flex flex-col">
+
+//       {/* ✅ DESKTOP HEADER — hidden on mobile entirely */}
+//       <div className="hidden sm:block sticky top-0 z-20 bg-white border-b border-gray-100 shadow-sm">
+//         <div className="w-full mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-5">
+//           <div className="flex items-center justify-between gap-4">
+//             <div>
+//               <h1 className="text-xl sm:text-2xl lg:text-3xl text-black font-bold italic uppercase tracking-tighter font-primary">
+//                 Performance{" "}
+//                 <span className="text-primary">Collection</span>
+//               </h1>
+//               <p className="text-[8px] sm:text-[9px] font-black text-primary-blue uppercase tracking-[0.2em] mt-1 font-secondary">
+//                 Showing {filteredProducts.length} Premium Results
+//               </p>
+//             </div>
+//             <button className="btn btn-gradient btn-sm inline-flex whitespace-nowrap">
+//               <Upload size={14} />
+//               Upload Design
+//             </button>
+//           </div>
+//         </div>
+//       </div>
+
+//       {/* ✅ MOBILE HEADER — clean, just two buttons spread apart, NO title clutter */}
+//       <div className="sm:hidden sticky top-0 z-20 bg-white border-b border-gray-100 shadow-sm">
+//         <div className="px-4 py-3 flex items-center justify-between gap-3">
+//           {/* Upload — gradient from globals.css vars */}
+//           <button
+//             className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest text-white shadow-md transition-all active:scale-95 font-primary"
+//             style={{
+//               background:
+//                 "linear-gradient(135deg, var(--gradient-start), var(--gradient-mid), var(--gradient-end))",
+//             }}
+//           >
+//             <Upload size={14} />
+//             Upload Design
+//           </button>
+
+//           {/* Filter — solid primary-blue from globals.css */}
+//           <button
+//             onClick={() => setIsFilterOpen(true)}
+//             className="flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest text-white shadow-md transition-all active:scale-95 font-primary"
+//             style={{ background: "var(--primary-blue)" }}
+//           >
+//             <SlidersHorizontal size={14} />
+//             Filter
+//           </button>
+//         </div>
+//       </div>
+
+//       {/* MAIN CONTENT */}
+//       <div className="flex-1 overflow-hidden">
+//         <div className="w-full mx-auto px-4 sm:px-6 lg:px-8 h-full">
+//           <div className="flex flex-col lg:flex-row gap-5 lg:gap-8 h-full py-4 sm:py-6">
+
+//             {/* DESKTOP SIDEBAR */}
+//             <aside className="hidden lg:block w-52 xl:w-60 shrink-0 overflow-y-auto sidebar-scroll pr-2">
+//               <SidebarContent {...sidebarProps} />
+//             </aside>
+
+//             {/* PRODUCT GRID */}
+//             <main className="flex-1 overflow-y-auto main-scroll pb-10">
+//               {filteredProducts.length === 0 ? (
+//                 <div className="flex flex-col items-center justify-center min-h-[400px] text-center py-10">
+//                   <div className="bg-gray-50 rounded-full p-8 mb-4">
+//                     <Search size={40} className="text-gray-300" />
+//                   </div>
+//                   <h3 className="text-base sm:text-lg font-bold text-gray-900 mb-2 font-primary">
+//                     No products found
+//                   </h3>
+//                   <p className="text-xs sm:text-sm text-gray-500 mb-4 font-secondary max-w-md">
+//                     We couldn't find any products matching "{searchTerm}"
+//                   </p>
+//                   <button
+//                     onClick={() => {
+//                       setSearchTerm("");
+//                       setSelectedMainCat("all");
+//                       setSelectedSubCat("");
+//                     }}
+//                     className="text-[#003E9B] text-xs sm:text-sm font-bold uppercase tracking-wider hover:underline font-secondary"
+//                   >
+//                     Clear all filters
+//                   </button>
+//                 </div>
+//               ) : (
+//                 /* ✅ Mobile: 1 col | sm+: 2 col | xl: 3 col */
+//                 <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3 sm:gap-5 lg:gap-6">
+//                   {filteredProducts.map((product) => (
+//                     <ProductCard key={product.id} product={product} />
+//                   ))}
+//                 </div>
+//               )}
+//             </main>
+//           </div>
+//         </div>
+//       </div>
+
+//       {/* ✅ SCROLLBAR STYLES — uses CSS vars from globals.css */}
+//       <style jsx global>{`
+//         /* Sidebar — ultra-thin gradient scroll */
+//         .sidebar-scroll::-webkit-scrollbar { width: 3px; }
+//         .sidebar-scroll::-webkit-scrollbar-track { background: transparent; }
+//         .sidebar-scroll::-webkit-scrollbar-thumb {
+//           background: linear-gradient(180deg, var(--gradient-start), var(--gradient-mid), var(--gradient-end));
+//           border-radius: 99px;
+//         }
+//         .sidebar-scroll { scrollbar-width: thin; scrollbar-color: var(--gradient-mid) transparent; }
+
+//         /* Main content — slightly larger gradient scroll */
+//         .main-scroll::-webkit-scrollbar { width: 5px; }
+//         .main-scroll::-webkit-scrollbar-track { background: #f1f5f9; border-radius: 10px; }
+//         .main-scroll::-webkit-scrollbar-thumb {
+//           background: linear-gradient(180deg, var(--gradient-start), var(--gradient-mid), var(--gradient-end));
+//           border-radius: 10px;
+//         }
+//         .main-scroll::-webkit-scrollbar-thumb:hover {
+//           background: linear-gradient(180deg, var(--gradient-end), var(--gradient-mid), var(--gradient-start));
+//         }
+//         .main-scroll { scrollbar-width: thin; scrollbar-color: var(--gradient-mid) #f1f5f9; }
+
+//         @media (min-width: 640px) {
+//           .main-scroll::-webkit-scrollbar { width: 6px; }
+//         }
+//       `}</style>
+
+//       {/* MOBILE FILTER DRAWER */}
+//       {isFilterOpen && (
+//         <div className="fixed inset-0 z-[100] lg:hidden">
+//           <div
+//             className="absolute inset-0 bg-black/40 backdrop-blur-sm"
+//             onClick={() => setIsFilterOpen(false)}
+//           />
+//           <div className="absolute right-0 top-0 bottom-0 w-72 max-w-[82vw] bg-white shadow-2xl flex flex-col">
+//             {/* Drawer header — gradient using global vars */}
+//             <div
+//               className="px-5 py-4 flex justify-between items-center flex-shrink-0"
+//               style={{
+//                 background:
+//                   "linear-gradient(135deg, var(--gradient-start), var(--gradient-mid), var(--gradient-end))",
+//               }}
+//             >
+//               <span className="text-xs font-black tracking-widest uppercase font-primary text-white">
+//                 Filter Gear
+//               </span>
+//               <button
+//                 onClick={() => setIsFilterOpen(false)}
+//                 className="text-white/80 hover:text-white transition-colors p-0.5"
+//               >
+//                 <X size={18} />
+//               </button>
+//             </div>
+
+//             {/* Drawer sidebar content */}
+//             <div className="flex-1 overflow-y-auto p-4 sidebar-scroll">
+//               <SidebarContent {...sidebarProps} />
+//             </div>
+
+//             {/* Drawer footer — result count */}
+//             <div className="px-5 py-3 border-t border-gray-100 bg-gray-50 flex-shrink-0">
+//               <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest text-center font-secondary">
+//                 {filteredProducts.length} Premium Results
+//               </p>
+//             </div>
+//           </div>
+//         </div>
+//       )}
+//     </div>
+//   );
+// }
+
+
+
+
 "use client";
 
-import { useState, useMemo, useRef, useEffect } from "react";
+import { useState, useMemo, useCallback } from "react";
 import ProductCard from "./ProductCard";
 import { products } from "@/data/products";
-import { 
-  Search, 
-  SlidersHorizontal, 
-  X, 
-  Target, 
-  Activity, 
-  Zap, 
-  ShoppingBag, 
+import {
+  Search,
+  SlidersHorizontal,
+  X,
+  Target,
+  Activity,
+  Zap,
+  ShoppingBag,
   ChevronDown,
   Upload,
-  Sparkles
 } from "lucide-react";
 
-export default function ProductGrid() {
-  const [searchTerm, setSearchTerm] = useState("");
-  const [selectedMainCat, setSelectedMainCat] = useState("all");
-  const [selectedSubCat, setSelectedSubCat] = useState("");
-  const [isFilterOpen, setIsFilterOpen] = useState(false);
-  const searchInputRef = useRef(null);
+const menuStructure = [
+  { id: "all", label: "All Gear", icon: <Activity size={15} />, subs: [] },
+  { id: "sports", label: "Sports", icon: <Target size={15} />, subs: ["Football", "Cricket", "Tennis", "Basketball"] },
+  { id: "clothes", label: "Clothes", icon: <Activity size={15} />, subs: ["T-Shirts", "Hoodies", "Shorts", "Pants"] },
+  { id: "athleisure", label: "Athleisure", icon: <Zap size={15} />, subs: ["Compression", "Joggers", "Jackets"] },
+  { id: "accessories", label: "Accessories", icon: <ShoppingBag size={15} />, subs: ["Gym Bags", "Bottles", "Socks"] },
+];
 
-  // Layout structure for the sidebar navigation
-  const menuStructure = [
-    { id: "all", label: "All Gear", icon: <Activity size={16} />, subs: [] },
-    { id: "sports", label: "Sports", icon: <Target size={16} />, subs: ["Football", "Cricket", "Tennis", "Basketball"] },
-    { id: "clothes", label: "Clothes", icon: <Activity size={16} />, subs: ["T-Shirts", "Hoodies", "Shorts", "Pants"] },
-    { id: "athleisure", label: "Athleisure", icon: <Zap size={16} />, subs: ["Compression", "Joggers", "Jackets"] },
-    { id: "accessories", label: "Accessories", icon: <ShoppingBag size={16} />, subs: ["Gym Bags", "Bottles", "Socks"] },
-  ];
-
-  // Logic to filter products based on search and category selection
-  const filteredProducts = useMemo(() => {
-    let filtered = [...products];
-    if (searchTerm && searchTerm.trim()) {
-      filtered = filtered.filter(p => 
-        p.name.toLowerCase().includes(searchTerm.toLowerCase().trim())
-      );
-    }
-    if (selectedMainCat !== "all") {
-      filtered = filtered.filter(p => p.category.toLowerCase() === selectedMainCat);
-    }
-    if (selectedSubCat) {
-      filtered = filtered.filter(p => 
-        p.sport?.toLowerCase() === selectedSubCat.toLowerCase() || 
-        p.subCategory?.toLowerCase() === selectedSubCat.toLowerCase()
-      );
-    }
-    return filtered;
-  }, [searchTerm, selectedMainCat, selectedSubCat]);
-
-  const handleSearchChange = (e) => {
-    const value = e.target.value;
-    setSearchTerm(value);
-  };
-
-  const handleUploadDesign = () => {
-    console.log("Upload design clicked");
-    // Trigger file upload or open modal
-    // You can implement your upload logic here
-  };
-
-  const SidebarContent = () => (
-    <div className="flex flex-col gap-8">
-      {/* SEARCH BAR - Fixed Visibility */}
+function SidebarContent({
+  searchTerm,
+  onSearchChange,
+  selectedMainCat,
+  onMainCatChange,
+  selectedSubCat,
+  onSubCatChange,
+}) {
+  return (
+    <div className="flex flex-col gap-4">
+      {/* Search Input */}
       <div className="relative group">
         <input
-          ref={searchInputRef}
           type="text"
           placeholder="SEARCH PRODUCTS..."
           value={searchTerm}
-          onChange={handleSearchChange}
-          className="w-full bg-white border border-slate-300 rounded-md px-4 py-2.5 text-[10px] font-black tracking-widest outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all text-black placeholder:text-slate-400 shadow-sm pr-10"
+          onChange={(e) => onSearchChange(e.target.value)}
+          autoComplete="off"
+          className="w-full bg-white border border-slate-200 rounded-lg px-4 py-2.5 text-[10px] sm:text-[11px] font-black tracking-widest outline-none focus:border-[#003E9B] focus:ring-2 focus:ring-[#003E9B]/20 transition-all text-black placeholder:text-slate-400 shadow-sm pr-10 font-secondary"
         />
-        <Search size={14} className="absolute right-3 top-3 text-slate-400 group-focus-within:text-primary pointer-events-none" />
-        
-        {/* Clear search button */}
+        <Search
+          size={13}
+          className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-[#003E9B] pointer-events-none transition-colors"
+        />
         {searchTerm && (
           <button
-            onClick={() => setSearchTerm("")}
-            className="absolute right-8 top-2.5 text-slate-400 hover:text-primary transition-colors"
+            onClick={() => onSearchChange("")}
+            className="absolute right-8 top-1/2 -translate-y-1/2 text-slate-400 hover:text-[#003E9B] transition-colors"
           >
-            <X size={14} />
+            <X size={13} />
           </button>
         )}
       </div>
 
-      {/* CATEGORY ACCORDION */}
-      <nav className="flex flex-col gap-2">
+      {/* Navigation */}
+      <nav className="flex flex-col gap-0.5">
         {menuStructure.map((cat) => (
           <div key={cat.id} className="flex flex-col">
             <button
-              onClick={() => {
-                if (selectedMainCat === cat.id) {
-                  setSelectedMainCat("all"); 
-                  setSelectedSubCat("");
-                } else {
-                  setSelectedMainCat(cat.id);
-                  setSelectedSubCat("");
+              onClick={() => onMainCatChange(cat.id)}
+              className={`flex items-center justify-between px-3 py-2 transition-all duration-200 font-primary rounded-lg ${
+                selectedMainCat === cat.id
+                  ? "text-white shadow-md shadow-[#003E9B]/20"
+                  : "text-slate-700 hover:text-[#003E9B]"
+              }`}
+              style={
+                selectedMainCat === cat.id
+                  ? {
+                      background:
+                        "linear-gradient(135deg, var(--gradient-start), var(--gradient-mid), var(--gradient-end))",
+                    }
+                  : { background: "transparent" }
+              }
+              onMouseEnter={(e) => {
+                if (selectedMainCat !== cat.id) {
+                  e.currentTarget.style.background = "rgba(0,62,155,0.06)";
                 }
               }}
-              className={`flex items-center justify-between p-3 transition-all duration-300 ${
-                selectedMainCat === cat.id 
-                  ? "bg-primary text-white rounded-lg shadow-lg shadow-primary/20" 
-                  : "text-black hover:bg-gray-100 rounded-md"
-              }`}
+              onMouseLeave={(e) => {
+                if (selectedMainCat !== cat.id) {
+                  e.currentTarget.style.background = "transparent";
+                }
+              }}
             >
-              <div className="flex items-center gap-3">
-                <span className="text-xs font-black uppercase tracking-widest">
+              <div className="flex items-center gap-2">
+                <span
+                  className={`transition-colors flex-shrink-0 ${
+                    selectedMainCat === cat.id ? "text-white" : "text-slate-400"
+                  }`}
+                >
+                  {cat.icon}
+                </span>
+                <span className="text-[10px] sm:text-[11px] font-black uppercase tracking-widest">
                   {cat.label}
                 </span>
               </div>
               {cat.subs.length > 0 && (
-                <ChevronDown 
-                  size={12} 
-                  className={`transition-transform duration-300 ${
-                    selectedMainCat === cat.id ? "rotate-180" : ""
-                  }`} 
+                <ChevronDown
+                  size={11}
+                  className={`transition-transform duration-300 flex-shrink-0 ${
+                    selectedMainCat === cat.id
+                      ? "rotate-180 text-white"
+                      : "text-slate-400"
+                  }`}
                 />
               )}
             </button>
 
-            {/* Sub-categories */}
             {selectedMainCat === cat.id && cat.subs.length > 0 && (
-              <div className="flex flex-col ml-4 mt-2 border-l-2 border-primary/20 gap-1 py-1 animate-in slide-in-from-left-2 duration-300">
+              <div className="flex flex-col ml-6 mt-0.5 border-l-2 border-[#003E9B]/20 py-0.5">
                 {cat.subs.map((sub) => (
                   <button
                     key={sub}
-                    onClick={() => setSelectedSubCat(sub)}
-                    className={`
-                      text-left text-[10px] font-black tracking-widest uppercase px-4 py-2 transition-all duration-200
-                      ${selectedSubCat === sub 
-                        ? "text-primary scale-105" 
-                        : "text-black/50 hover:text-black hover:pl-6" 
-                      }
-                    `}
+                    onClick={() =>
+                      onSubCatChange(selectedSubCat === sub ? "" : sub)
+                    }
+                    className={`text-left text-[9px] sm:text-[10px] font-black tracking-widest uppercase px-3 py-1.5 transition-all duration-200 font-secondary rounded-md ${
+                      selectedSubCat === sub
+                        ? "bg-[#003E9B]/10 text-[#003E9B] border-l-2 border-[#003E9B] -ml-0.5"
+                        : "text-slate-400 hover:text-[#003E9B] hover:bg-[#003E9B]/5"
+                    }`}
                   >
                     {sub}
                   </button>
@@ -146,113 +529,355 @@ export default function ProductGrid() {
           </div>
         ))}
       </nav>
+
+      {/* Active Filters */}
+      {(selectedMainCat !== "all" || selectedSubCat || searchTerm) && (
+        <div className="pt-3 border-t border-gray-100">
+          <p className="text-[9px] font-bold text-gray-400 uppercase tracking-wider mb-2 font-secondary">
+            Active Filters
+          </p>
+          <div className="flex flex-wrap gap-1.5">
+            {selectedMainCat !== "all" && (
+              <span className="text-[8px] bg-[#003E9B]/10 text-[#003E9B] px-2.5 py-1 rounded-full font-secondary font-bold">
+                {menuStructure.find((c) => c.id === selectedMainCat)?.label}
+              </span>
+            )}
+            {selectedSubCat && (
+              <span className="text-[8px] bg-[#003E9B]/10 text-[#003E9B] px-2.5 py-1 rounded-full font-secondary font-bold">
+                {selectedSubCat}
+              </span>
+            )}
+            {searchTerm && (
+              <span className="text-[8px] bg-[#003E9B]/10 text-[#003E9B] px-2.5 py-1 rounded-full font-secondary font-bold">
+                "{searchTerm}"
+              </span>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
+}
+
+export default function ProductGrid() {
+  const [searchTerm, setSearchTerm] = useState("");
+  const [selectedMainCat, setSelectedMainCat] = useState("all");
+  const [selectedSubCat, setSelectedSubCat] = useState("");
+  const [isFilterOpen, setIsFilterOpen] = useState(false);
+
+  const handleMainCatChange = useCallback(
+    (id) => {
+      if (selectedMainCat === id) {
+        setSelectedMainCat("all");
+        setSelectedSubCat("");
+      } else {
+        setSelectedMainCat(id);
+        setSelectedSubCat("");
+      }
+    },
+    [selectedMainCat]
+  );
+
+  const handleSubCatChange = useCallback((sub) => {
+    setSelectedSubCat(sub);
+  }, []);
+
+  const filteredProducts = useMemo(() => {
+    let filtered = [...products];
+    if (searchTerm.trim()) {
+      filtered = filtered.filter((p) =>
+        p.name.toLowerCase().includes(searchTerm.toLowerCase().trim())
+      );
+    }
+    if (selectedMainCat !== "all") {
+      filtered = filtered.filter(
+        (p) => p.category?.toLowerCase() === selectedMainCat
+      );
+    }
+    if (selectedSubCat) {
+      filtered = filtered.filter(
+        (p) =>
+          p.sport?.toLowerCase() === selectedSubCat.toLowerCase() ||
+          p.subCategory?.toLowerCase() === selectedSubCat.toLowerCase()
+      );
+    }
+    return filtered;
+  }, [searchTerm, selectedMainCat, selectedSubCat]);
+
+  const sidebarProps = {
+    searchTerm,
+    onSearchChange: setSearchTerm,
+    selectedMainCat,
+    onMainCatChange: handleMainCatChange,
+    selectedSubCat,
+    onSubCatChange: handleSubCatChange,
+  };
 
   return (
-    <div className="bg-white h-full w-full overflow-hidden text-foreground">
-      <div className="max-w-7xl mx-auto px-6 h-full flex flex-col py-2">
-        
-        {/* HEADER SECTION with Upload Button */}
-        <header className="flex justify-between items-end shrink-0 mb-8 flex-wrap gap-4">
-          <div>
-            <h1 className="text-3xl text-black font-semibold italic uppercase tracking-tighter">
-              Performance <span className="text-primary">Collection</span>
-            </h1>
-            <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mt-1">
-              Showing {filteredProducts.length} Premium Results
-            </p>
-          </div>
-          
-          <div className="flex items-center gap-3">
-            {/* Upload Design Button */}
-            <button
-              onClick={handleUploadDesign}
-              className="group relative overflow-hidden bg-gradient-to-r from-primary to-secondary text-white px-5 py-2.5 rounded-full text-[10px] font-black uppercase tracking-wider flex items-center gap-2 shadow-lg hover:shadow-xl transition-all duration-300"
-            >
-              <div className="absolute inset-0 bg-gradient-to-r from-secondary to-primary opacity-0 group-hover:opacity-100 hover:cursor-pointer transition-opacity duration-300" />
-              <Upload size={14} className="relative z-10" />
-              <span className="relative z-10">Upload Design</span>
-            </button>
-            
-            {/* Mobile Refine Button */}
-            <button 
-              onClick={() => setIsFilterOpen(true)} 
-              className="lg:hidden flex items-center gap-2 bg-black text-white px-5 py-2.5 rounded-full text-[10px] font-bold uppercase hover:bg-gray-800 transition-colors"
-            >
-              <SlidersHorizontal size={14} /> Refine
+    <div className="bg-white h-full w-full overflow-hidden flex flex-col">
+
+      {/* DESKTOP HEADER */}
+      <div className="hidden sm:block sticky top-0 z-20 bg-white border-b border-gray-100 shadow-sm">
+        <div className="w-full mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-5">
+          <div className="flex items-center justify-between gap-4">
+            <div>
+              <h1 className="text-xl sm:text-2xl lg:text-3xl text-black font-bold italic uppercase tracking-tighter font-primary">
+                Performance{" "}
+                <span className="text-primary">Collection</span>
+              </h1>
+              <p className="text-[8px] sm:text-[9px] font-black text-primary-blue uppercase tracking-[0.2em] mt-1 font-secondary">
+                Showing {filteredProducts.length} Premium Results
+              </p>
+            </div>
+            <button className="btn btn-gradient btn-sm inline-flex whitespace-nowrap">
+              <Upload size={14} />
+              Upload Design
             </button>
           </div>
-        </header>
-
-        <div className="flex flex-1 gap-12 overflow-hidden">
-          {/* DESKTOP SIDEBAR */}
-          <aside className="hidden lg:block w-60 shrink-0 overflow-y-auto pr-4 custom-scrollbar">
-            <SidebarContent />
-          </aside>
-
-          {/* PRODUCT GRID */}
-          <main className="flex-1 overflow-y-auto pr-2 custom-scrollbar pb-10">
-            {filteredProducts.length === 0 ? (
-              <div className="flex flex-col items-center justify-center h-96 text-center">
-                <div className="bg-gray-50 rounded-full p-8 mb-4">
-                  <Search size={48} className="text-gray-300" />
-                </div>
-                <h3 className="text-lg font-bold text-gray-900 mb-2">No products found</h3>
-                <p className="text-sm text-gray-500 mb-4">
-                  We couldn't find any products matching "{searchTerm}"
-                </p>
-                <button
-                  onClick={() => {
-                    setSearchTerm("");
-                    setSelectedMainCat("all");
-                    setSelectedSubCat("");
-                  }}
-                  className="text-primary text-sm font-bold uppercase tracking-wider hover:underline"
-                >
-                  Clear all filters
-                </button>
-              </div>
-            ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-6">
-                {filteredProducts.map((product) => (
-                  <ProductCard key={product.id} product={product} />
-                ))}
-              </div>
-            )}
-          </main>
         </div>
       </div>
 
-      {/* CUSTOM SCROLLBAR STYLING */}
+      {/* ✅ MOBILE HEADER — fully transparent, no bg fill, animated shimmer-border buttons */}
+      <div className="sm:hidden sticky top-0 z-20">
+        <div className="px-4 py-3 flex items-center justify-between gap-3">
+
+          {/* Upload Design — animated gradient shimmer border, transparent fill */}
+          <button className="mobile-btn-upload flex-1 flex items-center justify-center gap-2">
+            <Upload size={14} />
+            <span>Upload Design</span>
+          </button>
+
+          {/* Filter — animated blue shimmer border, transparent fill */}
+          <button
+            onClick={() => setIsFilterOpen(true)}
+            className="mobile-btn-filter flex items-center justify-center gap-2 px-5"
+          >
+            <SlidersHorizontal size={14} />
+            <span>Filter</span>
+          </button>
+        </div>
+      </div>
+
+      {/* MAIN CONTENT */}
+      <div className="flex-1 overflow-hidden">
+        <div className="w-full mx-auto px-4 sm:px-6 lg:px-8 h-full">
+          <div className="flex flex-col lg:flex-row gap-5 lg:gap-8 h-full py-4 sm:py-6">
+
+            {/* ✅ DESKTOP SIDEBAR — fixed height with proper scrollbar */}
+            <aside
+              className="hidden lg:flex lg:flex-col w-52 xl:w-60 shrink-0 pr-2"
+              style={{ maxHeight: "calc(100vh - 90px)", position: "sticky", top: "90px" }}
+            >
+              <div className="flex-1 overflow-y-auto sidebar-scroll min-h-0">
+                <SidebarContent {...sidebarProps} />
+              </div>
+            </aside>
+
+            {/* PRODUCT GRID */}
+            <main className="flex-1 overflow-y-auto main-scroll pb-10">
+              {filteredProducts.length === 0 ? (
+                <div className="flex flex-col items-center justify-center min-h-[400px] text-center py-10">
+                  <div className="bg-gray-50 rounded-full p-8 mb-4">
+                    <Search size={40} className="text-gray-300" />
+                  </div>
+                  <h3 className="text-base sm:text-lg font-bold text-gray-900 mb-2 font-primary">
+                    No products found
+                  </h3>
+                  <p className="text-xs sm:text-sm text-gray-500 mb-4 font-secondary max-w-md">
+                    We couldn't find any products matching "{searchTerm}"
+                  </p>
+                  <button
+                    onClick={() => {
+                      setSearchTerm("");
+                      setSelectedMainCat("all");
+                      setSelectedSubCat("");
+                    }}
+                    className="text-[#003E9B] text-xs sm:text-sm font-bold uppercase tracking-wider hover:underline font-secondary"
+                  >
+                    Clear all filters
+                  </button>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3 sm:gap-5 lg:gap-6">
+                  {filteredProducts.map((product) => (
+                    <ProductCard key={product.id} product={product} />
+                  ))}
+                </div>
+              )}
+            </main>
+          </div>
+        </div>
+      </div>
+
       <style jsx global>{`
-        .custom-scrollbar::-webkit-scrollbar { width: 4px; }
-        .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
-        .custom-scrollbar::-webkit-scrollbar-thumb { 
-          background: var(--primary); 
-          border-radius: 10px; 
+
+        /* ══════════════════════════════════════════
+           MOBILE BUTTONS — transparent animated
+        ══════════════════════════════════════════ */
+
+        .mobile-btn-upload,
+        .mobile-btn-filter {
+          position: relative;
+          padding: 10px 0;
+          border-radius: 14px;
+          font-size: 10px;
+          font-weight: 900;
+          letter-spacing: 0.12em;
+          text-transform: uppercase;
+          font-family: var(--font-primary, sans-serif);
+          background: transparent;
+          border: none;
+          cursor: pointer;
+          -webkit-tap-highlight-color: transparent;
+          transition: transform 0.15s ease;
+          /* pseudo-border via box-shadow simulation using outline */
+          z-index: 0;
         }
-        .custom-scrollbar::-webkit-scrollbar-thumb:hover { 
-          background: var(--secondary); 
+
+        /* Animated gradient border via ::before pseudo */
+        .mobile-btn-upload::before,
+        .mobile-btn-filter::before {
+          content: "";
+          position: absolute;
+          inset: 0;
+          border-radius: 14px;
+          padding: 2px;
+          background-size: 300% 300%;
+          -webkit-mask:
+            linear-gradient(#fff 0 0) content-box,
+            linear-gradient(#fff 0 0);
+          -webkit-mask-composite: xor;
+          mask-composite: exclude;
+          animation: borderSpin 2.5s linear infinite;
+          z-index: -1;
+        }
+
+        /* Upload: gradient animated border */
+        .mobile-btn-upload::before {
+          background-image: linear-gradient(
+            135deg,
+            var(--gradient-start),
+            var(--gradient-mid),
+            var(--gradient-end),
+            var(--gradient-mid),
+            var(--gradient-start)
+          );
+        }
+        .mobile-btn-upload {
+          color: var(--gradient-start);
+        }
+
+        /* Filter: primary blue animated border */
+        .mobile-btn-filter::before {
+          background-image: linear-gradient(
+            135deg,
+            var(--primary-blue),
+            #1565c0,
+            #003080,
+            #1565c0,
+            var(--primary-blue)
+          );
+        }
+        .mobile-btn-filter {
+          color: var(--primary-blue);
+        }
+
+        @keyframes borderSpin {
+          0%   { background-position: 0% 50%; }
+          50%  { background-position: 100% 50%; }
+          100% { background-position: 0% 50%; }
+        }
+
+        /* Active press */
+        .mobile-btn-upload:active,
+        .mobile-btn-filter:active {
+          transform: scale(0.96);
+        }
+
+        /* ══════════════════════════════════════════
+           SIDEBAR SCROLLBAR — thin gradient
+        ══════════════════════════════════════════ */
+        .sidebar-scroll::-webkit-scrollbar { width: 3px; }
+        .sidebar-scroll::-webkit-scrollbar-track { background: transparent; }
+        .sidebar-scroll::-webkit-scrollbar-thumb {
+          background: linear-gradient(
+            180deg,
+            var(--gradient-start),
+            var(--gradient-mid),
+            var(--gradient-end)
+          );
+          border-radius: 99px;
+        }
+        .sidebar-scroll {
+          scrollbar-width: thin;
+          scrollbar-color: var(--gradient-mid) transparent;
+        }
+
+        /* ══════════════════════════════════════════
+           MAIN CONTENT SCROLLBAR
+        ══════════════════════════════════════════ */
+        .main-scroll::-webkit-scrollbar { width: 5px; }
+        .main-scroll::-webkit-scrollbar-track { background: #f1f5f9; border-radius: 10px; }
+        .main-scroll::-webkit-scrollbar-thumb {
+          background: linear-gradient(
+            180deg,
+            var(--gradient-start),
+            var(--gradient-mid),
+            var(--gradient-end)
+          );
+          border-radius: 10px;
+        }
+        .main-scroll::-webkit-scrollbar-thumb:hover {
+          background: linear-gradient(
+            180deg,
+            var(--gradient-end),
+            var(--gradient-mid),
+            var(--gradient-start)
+          );
+        }
+        .main-scroll { scrollbar-width: thin; scrollbar-color: var(--gradient-mid) #f1f5f9; }
+
+        @media (min-width: 640px) {
+          .main-scroll::-webkit-scrollbar { width: 6px; }
         }
       `}</style>
 
-      {/* MOBILE OVERLAY MENU */}
+      {/* MOBILE FILTER DRAWER */}
       {isFilterOpen && (
         <div className="fixed inset-0 z-[100] lg:hidden">
-          <div 
-            className="absolute inset-0 bg-black/40 backdrop-blur-sm" 
-            onClick={() => setIsFilterOpen(false)} 
+          <div
+            className="absolute inset-0 bg-black/40 backdrop-blur-sm"
+            onClick={() => setIsFilterOpen(false)}
           />
-          <div className="absolute right-0 top-0 bottom-0 w-80 bg-white p-8 shadow-2xl animate-in slide-in-from-right duration-300">
-            <div className="flex justify-between items-center mb-10">
-              <span className="text-xs font-black tracking-widest uppercase">Filter Gear</span>
-              <X 
-                onClick={() => setIsFilterOpen(false)} 
-                className="cursor-pointer text-slate-900 hover:text-primary transition-colors" 
-              />
+          <div className="absolute right-0 top-0 bottom-0 w-72 max-w-[82vw] bg-white shadow-2xl flex flex-col">
+            <div
+              className="px-5 py-4 flex justify-between items-center flex-shrink-0"
+              style={{
+                background:
+                  "linear-gradient(135deg, var(--gradient-start), var(--gradient-mid), var(--gradient-end))",
+              }}
+            >
+              <span className="text-xs font-black tracking-widest uppercase font-primary text-white">
+                Filter Gear
+              </span>
+              <button
+                onClick={() => setIsFilterOpen(false)}
+                className="text-white/80 hover:text-white transition-colors p-0.5"
+              >
+                <X size={18} />
+              </button>
             </div>
-            <SidebarContent />
+
+            {/* ✅ Scrollable drawer content */}
+            <div className="flex-1 overflow-y-auto p-4 sidebar-scroll min-h-0">
+              <SidebarContent {...sidebarProps} />
+            </div>
+
+            <div className="px-5 py-3 border-t border-gray-100 bg-gray-50 flex-shrink-0">
+              <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest text-center font-secondary">
+                {filteredProducts.length} Premium Results
+              </p>
+            </div>
           </div>
         </div>
       )}
