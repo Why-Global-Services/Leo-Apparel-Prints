@@ -380,14 +380,14 @@ export default function HowItWorks() {
                 <div className="flex items-center gap-3 mb-3">
                   <span
                     className={`font-black text-4xl sm:text-5xl tracking-tighter leading-none transition-colors font-primary ${
-                      step.highlight ? "text-primary-blue" : "text-gray-200"
+                      step.highlight ? "text-primary-blue" : "text-primary-blue"
                     }`}
                   >
                     {step.number}
                   </span>
                   <span
                     className={`text-[8px] sm:text-[9px] font-black tracking-[0.28em] uppercase transition-colors font-secondary ${
-                      step.highlight ? "text-primary-blue" : "text-gray-300"
+                      step.highlight ? "text-primary-blue" : "text-primary-blue"
                     }`}
                   >
                     {step.label}
@@ -399,7 +399,7 @@ export default function HowItWorks() {
                   animate={inView ? { width: 40 } : {}}
                   transition={{ duration: 0.5, delay: 0.35 + i * 0.13 }}
                   className={`h-0.5 mb-4 rounded-full ${
-                    step.highlight ? "bg-primary-blue" : "bg-gray-200"
+                    step.highlight ? "bg-primary-blue" : "bg-primary-blue"
                   }`}
                   style={{ width: 40 }}
                 />

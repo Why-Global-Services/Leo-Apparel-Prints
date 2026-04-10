@@ -747,11 +747,7 @@ const CRICKET_MENU = {
       title: "BUILD YOUR KIT",
       links: [
         { name: "Playing Jersey", href: "/cricket/playing-jersey" },
-        { name: "White T-Shirts", href: "/cricket/white-tshirts" },
-        { name: "Umpire T-Shirts", href: "/cricket/umpire-tshirts" },
-        { name: "White Trousers", href: "/cricket/white-trousers" },
-        { name: "Playing Trousers", href: "/cricket/playing-trousers" },
-        { name: "Caps & Accessories", href: "/cricket/caps-accessories" },
+        { name: "White T-Shirts & Trousers", href: "/cricket/white-tshirts" },
       ],
     },
     {
@@ -759,16 +755,6 @@ const CRICKET_MENU = {
       links: [
         { name: "Training Jersey", href: "/cricket/training-jersey" },
         { name: "Training Shorts", href: "/cricket/training-shorts" },
-        { name: "Training Tanks", href: "/cricket/training-tanks" },
-      ],
-    },
-    {
-      title: "ATHLEISURE",
-      links: [
-        { name: "Jacket", href: "/cricket/jacket" },
-        { name: "Hoodie", href: "/cricket/hoodie" },
-        { name: "Travel Trousers", href: "/cricket/travel-trousers" },
-        { name: "& More", href: "/cricket/more" },
       ],
     },
     {
@@ -788,8 +774,7 @@ const SPORTS_INDIA_MENU = [
     accessories: [
       { name: "Cricket Jersey", href: "/cricket/playing-jersey" },
       { name: "Cricket Trousers", href: "/cricket/playing-trousers" },
-      { name: "Cricket Cap", href: "/cricket/caps-accessories" },
-      { name: "Batting Gloves", href: "/cricket/accessories" }
+      { name: "Cricket Shorts", href: "/cricket/caps-accessories" },
     ]
   },
   { 
@@ -797,19 +782,17 @@ const SPORTS_INDIA_MENU = [
     href: "/sports/soccer", 
     accessories: [
       { name: "Soccer Jersey", href: "/soccer/jersey" },
+      { name: "Soccer Trousers", href: "/soccer/trousers" },
       { name: "Soccer Shorts", href: "/soccer/shorts" },
-      { name: "Soccer Socks", href: "/soccer/socks" },
-      { name: "Shin Guards", href: "/soccer/guards" }
     ]
   },
   { 
     name: "Tennis", 
     href: "/sports/tennis", 
     accessories: [
-      { name: "Tennis Polo", href: "/tennis/polo" },
-      { name: "Tennis Skirt", href: "/tennis/skirt" },
-      { name: "Tennis Shorts", href: "/tennis/shorts" },
-      { name: "Headband", href: "/tennis/headband" }
+      { name: "Tennis Jersey", href: "/tennis/jersey" },
+      { name: "Tennis Trousers", href: "/tennis/trousers" },
+      { name: "Tennis Shorts ", href: "/tennis/shorts" },
     ]
   },
   { 
@@ -817,9 +800,8 @@ const SPORTS_INDIA_MENU = [
     href: "/sports/badminton", 
     accessories: [
       { name: "Badminton Jersey", href: "/badminton/jersey" },
-      { name: "Badminton Shorts", href: "/badminton/shorts" },
-      { name: "Wristband", href: "/badminton/wristband" },
-      { name: "Headband", href: "/badminton/headband" }
+      { name: "Badminton Trousers", href: "/badminton/trousers" },
+      { name: "Wristband Shorts", href: "/badminton/wristband" },
     ]
   },
   { 
@@ -827,26 +809,14 @@ const SPORTS_INDIA_MENU = [
     href: "/sports/pickleball", 
     accessories: [
       { name: "Pickleball Jersey", href: "/pickleball/jersey" },
+      { name: "Pickleball Trousers", href: "/pickleball/Trousers" },
       { name: "Pickleball Shorts", href: "/pickleball/shorts" },
-      { name: "Pickleball Cap", href: "/pickleball/cap" },
-      { name: "Visor", href: "/pickleball/visor" }
-    ]
-  },
-  { 
-    name: "Athleisure", 
-    href: "/sports/athleisure", 
-    accessories: [
-      { name: "Hoodie", href: "/athleisure/hoodie" },
-      { name: "Joggers", href: "/athleisure/joggers" },
-      { name: "Training Top", href: "/athleisure/top" },
-      { name: "Training Shorts", href: "/athleisure/shorts" }
     ]
   },
 ];
 
 const RESOURCES_MENU = [
   { name: "Size Guide", href: "/size-guide" },
-  { name: "Fabric DNA", href: "/fabric-dna" },
   { name: "FAQ", href: "/faq" },
   { name: "Price Estimator", href: "/price-estimator" },
   { name: "Catalog", href: "/catalog" },
@@ -863,8 +833,8 @@ const NAV_ITEMS = [
 function CricketPanel() {
   return (
     <div className="w-full bg-white">
-      <div className="max-w-7xl mx-auto px-8 py-12">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-x-10 gap-y-12">
+      <div className="max-w-7xl mx-auto px-58 py-12">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-10 gap-y-12">
           {CRICKET_MENU.columns.map((col, ci) => (
             <motion.div
               key={col.title}
@@ -904,8 +874,8 @@ function CricketPanel() {
 function SportsIndiaPanel() {
   return (
     <div className="w-full bg-white">
-      <div className="max-w-7xl mx-auto px-8 py-12">
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-x-8 gap-y-12">
+      <div className="max-w-7xl mx-auto px-28 py-12">
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-x-8 gap-y-12">
           {SPORTS_INDIA_MENU.map((item, i) => (
             <motion.div
               key={item.name}

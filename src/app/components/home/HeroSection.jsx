@@ -426,9 +426,9 @@ import { useRouter } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
 
-const SEGMENTS = ["Custom Sportswear", "Team Uniforms", "School Sports", "Corporate Sports"];
+const SEGMENTS = ["Custom Sportswear", "Uniforms"];
 const SPORTS   = ["Cricket", "Soccer", "Tennis", "Badminton", "Basketball", "Hockey", "Pickleball"];
-const APPAREL  = ["Jersey / T-Shirt", "Shorts", "Full Kit", "Polo Shirt", "Hoodie", "Track Pants", "Cap"];
+const APPAREL  = ["Jersey / T-Shirt", "Shorts", "Track Pants"];
 
 const BANNER_IMAGES = [
   {
