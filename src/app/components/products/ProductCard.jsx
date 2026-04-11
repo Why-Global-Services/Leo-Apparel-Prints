@@ -471,7 +471,7 @@ export default function ProductCard({ product }) {
           </div>
 
           {/* Customization Options Preview */}
-          {product.customizable && product.customizable.length > 0 && (
+          {/* {product.customizable && product.customizable.length > 0 && (
             <div className="flex flex-wrap gap-1 mb-2 sm:mb-3 lg:mb-2">
               {product.customizable.slice(0, 3).map((option, index) => (
                 <span key={index} className="text-[7px] sm:text-[8px] lg:text-[7px] bg-gray-100 text-gray-600 px-1.5 py-0.5 rounded-full uppercase tracking-wider font-medium font-secondary">
@@ -484,7 +484,7 @@ export default function ProductCard({ product }) {
                 </span>
               )}
             </div>
-          )}
+          )} */}
 
           {/* Footer */}
           <div className="mt-auto pt-2 sm:pt-3 lg:pt-2 border-t border-gray-100 flex justify-between items-center">

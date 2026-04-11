@@ -390,3 +390,37 @@ p {
     height: 12px;
   }
 }
+
+/* login page Animation */
+
+@keyframes floatJersey {
+  0% { transform: translateY(0px) rotate(0deg); }
+  50% { transform: translateY(-12px) rotate(1deg); }
+  100% { transform: translateY(0px) rotate(0deg); }
+}
+
+@keyframes autoRotateSlow {
+  0% { transform: rotateY(-10deg); }
+  50% { transform: rotateY(10deg); }
+  100% { transform: rotateY(-10deg); }
+}
+
+.leoGradient {
+  font-size: 22px;
+  font-weight: 900;
+  letter-spacing: 6px;
+
+  background: linear-gradient(270deg, #0EA5E9, #F5B800, #0EA5E9);
+  background-size: 400% 400%;
+
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+
+  animation: gradientMove 6s ease infinite;
+}
+
+@keyframes gradientMove {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}

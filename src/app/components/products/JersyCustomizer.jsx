@@ -1875,16 +1875,6 @@
 
 
 
-
-
-
-
-
-
-
-
-
-
 'use client';
 
 import { useState, useCallback, useEffect } from 'react';
@@ -1929,15 +1919,6 @@ const SLEEVE_COLORS = [
   { name: 'Black',      code: '#000000' },
 ];
 
-const TRIM_COLORS = [
-  { name: 'White',  code: '#FFFFFF' },
-  { name: 'Black',  code: '#000000' },
-  { name: 'Gold',   code: '#D97706' },
-  { name: 'Red',    code: '#DC2626' },
-  { name: 'Navy',   code: '#1D3557' },
-  { name: 'Silver', code: '#94A3B8' },
-];
-
 const TEXT_COLORS = [
   '#FFFFFF','#000000','#E8820C','#DC2626',
   '#1D3557','#F59E0B','#FFFF00','#00FF88',
@@ -1963,6 +1944,7 @@ const COLLAR_TYPES  = [
   { id: 'polo',  label: 'Polo',   icon: '⊓' },
   { id: 'hood',  label: 'Hood',   icon: '∩' },
 ];
+
 const FABRIC_TYPES  = [
   { id: 'climatech', label: 'ClimateTech Pro',  desc: 'UV protection & elite moisture management' },
   { id: 'coolweave', label: 'CoolWeave Lite',   desc: 'Lightweight breathable performance fabric' },
@@ -1970,53 +1952,33 @@ const FABRIC_TYPES  = [
   { id: 'interlock', label: 'Interlock Knit',   desc: 'Durable two-layer knit for heavy use' },
   { id: 'jacquard',  label: 'Jacquard Weave',   desc: 'Premium textured weave, pattern-defined' },
 ];
-const FIT_TYPES     = [
-  { id: 'slim',    label: 'Slim Fit' },
-  { id: 'regular', label: 'Regular Fit' },
-  { id: 'loose',   label: 'Loose Fit' },
-  { id: 'athletic',label: 'Athletic Fit' },
-];
-const SLEEVE_LENGTHS = [
-  { id: 'short',    label: 'Short Sleeve' },
-  { id: 'long',     label: 'Long Sleeve' },
-  { id: 'sleeveless',label: 'Sleeveless' },
-];
-const PATTERN_TYPES = [
-  { id: 'solid',    label: 'Solid' },
-  { id: 'gradient', label: 'Gradient' },
-  { id: 'stripes',  label: 'Stripes' },
-  { id: 'raglan',   label: 'Raglan' },
-  { id: 'panel',    label: 'Side Panel' },
-];
-const PIPING_TYPES  = [
-  { id: 'none',     label: 'None' },
-  { id: 'shoulder', label: 'Shoulder' },
-  { id: 'side',     label: 'Side Seam' },
-  { id: 'sleeve',   label: 'Sleeve Edge' },
-  { id: 'full',     label: 'Full Trim' },
-];
+
 const NAME_STYLES   = [
   { id: 'none',    label: 'None' },
   { id: 'straight',label: 'Straight' },
   { id: 'curved',  label: 'Curved' },
   { id: 'arched',  label: 'Arched' },
 ];
+
 const NUMBER_POSITIONS = [
   { id: 'back',  label: 'Back Only' },
   { id: 'front', label: 'Front Only' },
   { id: 'both',  label: 'Both Sides' },
 ];
+
 const BADGE_POSITIONS = [
   { id: 'left',  label: 'Left Chest' },
   { id: 'center',label: 'Center' },
   { id: 'right', label: 'Right Chest' },
 ];
+
 const TEXT_EFFECTS  = [
   { id: 'none',    label: 'None' },
   { id: 'outline', label: 'Outline' },
   { id: 'shadow',  label: 'Shadow' },
   { id: 'both',    label: 'Outline+Shadow' },
 ];
+
 const SPORT_TYPES = [
   { id: 'cricket',    label: 'Cricket' },
   { id: 'football',   label: 'Football' },
@@ -2026,11 +1988,12 @@ const SPORT_TYPES = [
 ];
 
 const SIZES = ['XS','S','M','L','XL','XXL','3XL','4XL'];
-const STEPS = [
+
+// Main navigation tabs
+const MAIN_TABS = [
   { id:'style',  label:'Style',  Icon: Paintbrush },
-  { id:'colors', label:'Colors', Icon: Paintbrush },
   { id:'logos',  label:'Logos',  Icon: Shield },
-  { id:'text',   label:'Text',   Icon: Type },
+  { id:'nameNumber', label:'Name & Number', Icon: Type },
   { id:'order',  label:'Order',  Icon: ShoppingBag },
 ];
 
@@ -2048,13 +2011,61 @@ const isLight = (hex) => {
 };
 
 // ─────────────────────────────────────────────────────────────────────────────
-// JERSEY 2D SVG
+// PRODUCT IMAGE COMPONENT
+// ─────────────────────────────────────────────────────────────────────────────
+
+const ProductImageViewer = ({ jerseyColor, view, product, children }) => {
+  const productImage = view === "front"
+    ? product?.mainImage || product?.image || "/images/jerseys/jersey-front.png"
+    : product?.hoverImage || product?.backImage || product?.mainImage || product?.image || "/images/jerseys/jersey-back.png";
+  
+  return (
+    <div style={{ 
+      position: 'relative', 
+      width: '100%', 
+      height: '100%',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      background: 'linear-gradient(135deg,#EEF2F7,#E2E8F0)'
+    }}>
+      <img 
+        src={productImage} 
+        alt={`Jersey ${view} view`}
+        style={{
+          maxWidth: '85%',
+          maxHeight: '85%',
+          objectFit: 'contain',
+          filter: 'drop-shadow(0 10px 30px rgba(0,0,0,0.22))'
+        }}
+        onError={(e) => {
+          e.target.src = "/images/jerseys/jersey-front.png";
+        }}
+      />
+      <div style={{
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        backgroundColor: jerseyColor,
+        opacity: 0.35,
+        mixBlendMode: 'multiply',
+        pointerEvents: 'none',
+        borderRadius: '12px'
+      }} />
+      {children}
+    </div>
+  );
+};
+
+// ─────────────────────────────────────────────────────────────────────────────
+// JERSEY 2D SVG (kept for compatibility)
 // ─────────────────────────────────────────────────────────────────────────────
 
 const JerseySVG = (props) => {
   const {
-    jerseyColor, sleeveColor, collarType, pattern, patternColor,
-    pipingType, pipingColor, sleeveLength,
+    jerseyColor, sleeveColor, collarType,
     view,
     clubLogo, clubLogoPos, clubLogoSize,
     sponsorLogo, sponsorLogoSize,
@@ -2073,45 +2084,6 @@ const JerseySVG = (props) => {
   const slv = sleeveColor || jerseyColor;
   const seam = isLight(jerseyColor) ? 'rgba(0,0,0,0.12)' : 'rgba(255,255,255,0.10)';
 
-  // Pattern defs
-  const patDefs = [];
-  let bodyFill = jerseyColor;
-  if (pattern === 'gradient') {
-    patDefs.push(
-      <linearGradient key="jg" id="jg" x1="0" y1="0" x2="0" y2="1">
-        <stop offset="0%" stopColor={jerseyColor}/>
-        <stop offset="100%" stopColor={patternColor||slv}/>
-      </linearGradient>
-    );
-    bodyFill = 'url(#jg)';
-  } else if (pattern === 'stripes') {
-    patDefs.push(
-      <pattern key="sp" id="sp" x="0" y="0" width="24" height="24" patternUnits="userSpaceOnUse">
-        <rect width="12" height="24" fill={jerseyColor}/>
-        <rect x="12" width="12" height="24" fill={patternColor||slv}/>
-      </pattern>
-    );
-    bodyFill = 'url(#sp)';
-  } else if (pattern === 'raglan') {
-    patDefs.push(
-      <linearGradient key="rl" id="rl" x1="0" y1="0" x2="1" y2="0">
-        <stop offset="0%"   stopColor={patternColor||slv}/>
-        <stop offset="28%"  stopColor={jerseyColor}/>
-        <stop offset="72%"  stopColor={jerseyColor}/>
-        <stop offset="100%" stopColor={patternColor||slv}/>
-      </linearGradient>
-    );
-    bodyFill = 'url(#rl)';
-  }
-
-  // Collar path
-  const collarPath = collarType==='v-neck'
-    ? 'M128,48 L150,76 L172,48'
-    : collarType==='round'
-    ? 'M122,47 Q150,58 178,47'
-    : null;
-
-  // Text rendering helpers
   const textFilter = (eff) => eff==='shadow'||eff==='both' ? 'url(#ts)' : undefined;
   const textStroke = (eff, col, w) =>
     eff==='outline'||eff==='both'
@@ -2121,7 +2093,6 @@ const JerseySVG = (props) => {
   const nameY   = 85 + (nameVertical/100)*160;
   const numberY = nameY + (showName && nameText && nameStyleId!=='none' ? nameSize + 14 : 0) + numberSize*0.85;
 
-  // badge x
   const bx = clubLogoPos==='center' ? 150 - clubLogoSize/2
             : clubLogoPos==='right'  ? 196
             : 80;
@@ -2129,7 +2100,6 @@ const JerseySVG = (props) => {
   return (
     <svg viewBox="0 0 300 380" style={{ width:'100%', height:'100%', filter:'drop-shadow(0 10px 30px rgba(0,0,0,0.22))' }}>
       <defs>
-        {patDefs}
         <filter id="lf" x="-15%" y="-15%" width="130%" height="130%">
           <feDropShadow dx="0" dy="0" stdDeviation="3" floodColor="rgba(255,255,255,0.6)"/>
         </filter>
@@ -2138,59 +2108,25 @@ const JerseySVG = (props) => {
         </filter>
       </defs>
 
-      {/* ground ellipse */}
       <ellipse cx="150" cy="374" rx="80" ry="6" fill="rgba(0,0,0,0.13)"/>
 
-      {/* LEFT sleeve */}
       <path d="M65,40 L8,80 L18,155 L56,140 L56,100 Z" fill={slv} stroke={seam} strokeWidth="1"/>
       <path d="M65,40 L28,68 L22,115 L38,108 Z" fill="rgba(255,255,255,0.12)"/>
 
-      {/* RIGHT sleeve */}
       <path d="M235,40 L292,80 L282,155 L244,140 L244,100 Z" fill={slv} stroke={seam} strokeWidth="1"/>
       <path d="M235,40 L272,68 L278,115 L262,108 Z" fill="rgba(255,255,255,0.12)"/>
 
-      {/* BODY */}
       <path d="M65,40 L56,100 L56,342 L244,342 L244,100 L235,40 L200,20 Q175,48 150,48 Q125,48 100,20 Z"
-        fill={bodyFill} stroke={seam} strokeWidth="1.2"/>
+        fill={jerseyColor} stroke={seam} strokeWidth="1.2"/>
 
-      {/* body highlights */}
       <path d="M108,22 Q130,48 150,48 Q170,48 192,22 L186,18 Q165,44 150,44 Q135,44 114,18 Z" fill="rgba(255,255,255,0.18)"/>
       <path d="M57,100 L62,342 L67,342 L63,100 Z" fill="rgba(255,255,255,0.07)"/>
 
-      {/* SIDE PANEL */}
-      {pattern==='panel' && (
-        <>
-          <path d="M56,100 L56,342 L88,342 L88,100 Z" fill={patternColor||slv} opacity="0.85"/>
-          <path d="M212,100 L212,342 L244,342 L244,100 Z" fill={patternColor||slv} opacity="0.85"/>
-        </>
-      )}
-
-      {/* PIPING */}
-      {(pipingType==='shoulder'||pipingType==='full') && <>
-        <path d="M100,20 Q118,36 132,44" fill="none" stroke={pipingColor||'#fff'} strokeWidth="3"/>
-        <path d="M200,20 Q182,36 168,44" fill="none" stroke={pipingColor||'#fff'} strokeWidth="3"/>
-      </>}
-      {(pipingType==='side'||pipingType==='full') && <>
-        <line x1="56" y1="100" x2="56" y2="342" stroke={pipingColor||'#fff'} strokeWidth="2.5"/>
-        <line x1="244" y1="100" x2="244" y2="342" stroke={pipingColor||'#fff'} strokeWidth="2.5"/>
-      </>}
-      {(pipingType==='sleeve'||pipingType==='full') && <>
-        <path d="M8,80 L18,155" fill="none" stroke={pipingColor||'#fff'} strokeWidth="2.5"/>
-        <path d="M292,80 L282,155" fill="none" stroke={pipingColor||'#fff'} strokeWidth="2.5"/>
-      </>}
-
-      {/* COLLAR */}
       {collarType==='polo' && <rect x="122" y="44" width="56" height="16" rx="3" fill={slv} stroke={seam} strokeWidth="1.5"/>}
       {collarType==='hood' && <path d="M118,40 Q150,10 182,40" fill="none" stroke={seam} strokeWidth="4" strokeLinecap="round"/>}
-      {collarPath && <path d={collarPath} fill="none" stroke={seam} strokeWidth="3.5" strokeLinecap="round"/>}
+      {collarType==='v-neck' && <path d="M128,48 L150,76 L172,48" fill="none" stroke={seam} strokeWidth="3.5" strokeLinecap="round"/>}
+      {collarType==='round' && <path d="M122,47 Q150,58 178,47" fill="none" stroke={seam} strokeWidth="3.5" strokeLinecap="round"/>}
 
-      {/* LONG SLEEVE extension */}
-      {sleeveLength==='long' && <>
-        <rect x="0" y="152" width="22" height="50" rx="2" fill={slv}/>
-        <rect x="278" y="152" width="22" height="50" rx="2" fill={slv}/>
-      </>}
-
-      {/* ══ FRONT ══ */}
       {view==='front' && <>
         {clubLogo && (
           <image href={clubLogo} x={bx} y="78" width={clubLogoSize} height={clubLogoSize} filter="url(#lf)"/>
@@ -2204,7 +2140,6 @@ const JerseySVG = (props) => {
             filter="url(#lf)"
           />
         )}
-        {/* number on front */}
         {showNumber && numberText && (numberPosition==='front'||numberPosition==='both') && (
           <text x="150" y="260" textAnchor="middle"
             fontFamily={nfs.fontFamily} fontSize={42} fontWeight={nfs.fontWeight}
@@ -2215,13 +2150,11 @@ const JerseySVG = (props) => {
         )}
       </>}
 
-      {/* ══ BACK ══ */}
       {view==='back' && <>
         {sponsorBackLogo && (
           <image href={sponsorBackLogo} x="90" y="78" width="120" height="40" preserveAspectRatio="xMidYMid meet" filter="url(#lf)"/>
         )}
 
-        {/* PLAYER NAME */}
         {showName && nameText && nameStyleId!=='none' && (() => {
           const common = {
             fontFamily: ns.fontFamily, fontSize: nameSize,
@@ -2257,7 +2190,6 @@ const JerseySVG = (props) => {
           );
         })()}
 
-        {/* PLAYER NUMBER */}
         {showNumber && numberText && numberPosition!=='front' && (
           <text x="150" y={numberY} textAnchor="middle"
             fontFamily={nfs.fontFamily} fontSize={numberSize} fontWeight={nfs.fontWeight}
@@ -2267,7 +2199,6 @@ const JerseySVG = (props) => {
           >{numberText}</text>
         )}
 
-        {/* TEAM NAME */}
         {showTeam && teamName && (
           <text x="150" y="318" textAnchor="middle"
             fontFamily={tfs.fontFamily} fontSize="11" fontWeight="800" letterSpacing="4"
@@ -2285,77 +2216,87 @@ const JerseySVG = (props) => {
 
 export default function JerseyCustomizer({ product }) {
   const [mounted, setMounted]   = useState(false);
-  const [step, setStep]         = useState(0);
+  const [activeTab, setActiveTab] = useState('style');
   const [view, setView]         = useState('front');
-  const [viewMode, setViewMode] = useState('glb');
+  const [viewMode, setViewMode] = useState('product');
   const [isZoomed, setIsZoomed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
 
   // Style
-  const [fabric,       setFabric]       = useState('climatech');
-  const [fit,          setFit]          = useState('regular');
-  const [sleeveLength, setSleeveLength] = useState('short');
-  const [collarType,   setCollarType]   = useState('round');
-  const [pattern,      setPattern]      = useState('solid');
-  const [patternColor, setPatternColor] = useState('#DC2626');
-  const [pipingType,   setPipingType]   = useState('none');
-  const [pipingColor,  setPipingColor]  = useState('#FFFFFF');
+  const [fabric, setFabric] = useState('climatech');
+  const [collarType, setCollarType] = useState('round');
 
-  // Colors - Changed initial base color to Black (#000000)
+  // Colors
   const [jerseyColor, setJerseyColor] = useState('#FFFFFF');
   const [sleeveColor, setSleeveColor] = useState('#111111');
   const [collarColor, setCollarColor] = useState('#111111');
-  const [trimColor,   setTrimColor]   = useState('#FFFFFF');
 
   // Logos
-  const [clubLogo,       setClubLogo]       = useState(null);
-  const [clubLogoPos,    setClubLogoPos]    = useState('left');
-  const [clubLogoSize,   setClubLogoSize]   = useState(52);
-  const [sponsorLogo,    setSponsorLogo]    = useState(null);
-  const [sponsorLogoSize,setSponsorLogoSize]= useState(110);
-  const [sponsorBackLogo,setSponsorBackLogo]= useState(null);
+  const [clubLogo, setClubLogo] = useState(null);
+  const [clubLogoPos, setClubLogoPos] = useState('left');
+  const [clubLogoSize, setClubLogoSize] = useState(52);
+  const [sponsorLogo, setSponsorLogo] = useState(null);
+  const [sponsorLogoSize, setSponsorLogoSize] = useState(110);
+  const [sponsorBackLogo, setSponsorBackLogo] = useState(null);
 
   // Name
-  const [showName,        setShowName]        = useState(true);
-  const [nameText,        setNameText]        = useState('PLAYER');
-  const [nameStyleId,     setNameStyleId]     = useState('straight');
-  const [nameFont,        setNameFont]        = useState('collegiate');
-  const [nameColor,       setNameColor]       = useState('#FFFFFF');
-  const [nameSize,        setNameSize]        = useState(22);
-  const [nameVertical,    setNameVertical]    = useState(20);
-  const [nameEffect,      setNameEffect]      = useState('none');
+  const [showName, setShowName] = useState(true);
+  const [nameText, setNameText] = useState('PLAYER');
+  const [nameStyleId, setNameStyleId] = useState('straight');
+  const [nameFont, setNameFont] = useState('collegiate');
+  const [nameColor, setNameColor] = useState('#FFFFFF');
+  const [nameSize, setNameSize] = useState(22);
+  const [nameVertical, setNameVertical] = useState(20);
+  const [nameEffect, setNameEffect] = useState('none');
   const [nameEffectColor, setNameEffectColor] = useState('#000000');
-  const [nameOutlineWidth,setNameOutlineWidth]= useState(1.5);
+  const [nameOutlineWidth, setNameOutlineWidth] = useState(1.5);
 
   // Number
-  const [showNumber,        setShowNumber]        = useState(true);
-  const [numberText,        setNumberText]        = useState('10');
-  const [numberFont,        setNumberFont]        = useState('block');
-  const [numberColor,       setNumberColor]       = useState('#F59E0B');
-  const [numberSize,        setNumberSize]        = useState(72);
-  const [numberPosition,    setNumberPosition]    = useState('back');
-  const [numberEffect,      setNumberEffect]      = useState('none');
+  const [showNumber, setShowNumber] = useState(true);
+  const [numberText, setNumberText] = useState('10');
+  const [numberFont, setNumberFont] = useState('block');
+  const [numberColor, setNumberColor] = useState('#F59E0B');
+  const [numberSize, setNumberSize] = useState(72);
+  const [numberPosition, setNumberPosition] = useState('back');
+  const [numberEffect, setNumberEffect] = useState('none');
   const [numberEffectColor, setNumberEffectColor] = useState('#000000');
 
   // Team
-  const [showTeam,  setShowTeam]  = useState(false);
-  const [teamName,  setTeamName]  = useState('YOUR TEAM');
+  const [showTeam, setShowTeam] = useState(false);
+  const [teamName, setTeamName] = useState('YOUR TEAM');
   const [teamColor, setTeamColor] = useState('#FFFFFF');
-  const [teamFont,  setTeamFont]  = useState('sport');
+  const [teamFont, setTeamFont] = useState('sport');
 
   // Order
   const [selectedSize, setSelectedSize] = useState('L');
-  const [quantity,     setQuantity]     = useState(10);
-  const [sport,        setSport]        = useState('cricket');
+  const [quantity, setQuantity] = useState(10);
+  const [sport, setSport] = useState('cricket');
 
   // Accordion state
   const [sec, setSec] = useState({
-    fabric:true, fit:false, sleeveLen:false, collar:false, pattern:false, piping:false,
-    base:true, sleeveCol:false, collarCol:false, trim:false,
-    club:true, sponsor:false, sponsorBack:false,
-    name:true, number:false, team:false,
+    fabric: true,
+    collar: false,
+    base: true,
+    sleeveCol: false,
+    collarCol: false,
+    club: true,
+    sponsor: false,
+    sponsorBack: false,
+    name: true,
+    number: false,
+    team: false,
   });
   const tog = (k) => setSec(p => ({ ...p, [k]: !p[k] }));
+
+  // Chip style constant - moved here to be available before JSX
+  const chip = { 
+    background: 'rgba(255,255,255,0.95)', 
+    backdropFilter: 'blur(14px)', 
+    border: '1px solid rgba(255,255,255,0.7)', 
+    boxShadow: '0 4px 14px rgba(0,0,0,0.10)', 
+    borderRadius: 10, 
+    padding: '8px 12px' 
+  };
 
   useEffect(() => { setMounted(true); }, []);
 
@@ -2363,26 +2304,44 @@ export default function JerseyCustomizer({ product }) {
     const file = e.target.files[0];
     if (!file) return;
     if (!file.type.startsWith('image/')) { alert('Please upload an image file'); return; }
-    if (file.size > 8 * 1024 * 1024)    { alert('Max file size is 8 MB'); return; }
+    if (file.size > 8 * 1024 * 1024) { alert('Max file size is 8 MB'); return; }
     const reader = new FileReader();
     reader.onloadend = () => setter(reader.result);
     reader.readAsDataURL(file);
   }, []);
 
   const reset = () => {
-    setJerseyColor('#000000'); // Changed to black
-    setSleeveColor('#111111'); setCollarColor('#111111'); setTrimColor('#FFFFFF');
-    setCollarType('round'); setPattern('solid'); setPipingType('none');
-    setFabric('climatech'); setFit('regular'); setSleeveLength('short');
-    setClubLogo(null); setSponsorLogo(null); setSponsorBackLogo(null);
-    setClubLogoPos('left'); setClubLogoSize(52); setSponsorLogoSize(110);
-    setNameText('PLAYER'); setNameFont('collegiate'); setNameColor('#FFFFFF');
-    setNameSize(22); setNameVertical(20); setNameEffect('none'); setNameStyleId('straight');
-    setNumberText('10'); setNumberFont('block'); setNumberColor('#F59E0B');
-    setNumberSize(72); setNumberPosition('back'); setNumberEffect('none');
-    setShowTeam(false); setShowName(true); setShowNumber(true);
-    setTeamName('YOUR TEAM'); setTeamColor('#FFFFFF');
-    setSelectedSize('L'); setQuantity(10);
+    setJerseyColor('#FFFFFF');
+    setSleeveColor('#111111');
+    setCollarColor('#111111');
+    setCollarType('round');
+    setFabric('climatech');
+    setClubLogo(null);
+    setSponsorLogo(null);
+    setSponsorBackLogo(null);
+    setClubLogoPos('left');
+    setClubLogoSize(52);
+    setSponsorLogoSize(110);
+    setNameText('PLAYER');
+    setNameFont('collegiate');
+    setNameColor('#FFFFFF');
+    setNameSize(22);
+    setNameVertical(20);
+    setNameEffect('none');
+    setNameStyleId('straight');
+    setNumberText('10');
+    setNumberFont('block');
+    setNumberColor('#F59E0B');
+    setNumberSize(72);
+    setNumberPosition('back');
+    setNumberEffect('none');
+    setShowTeam(false);
+    setShowName(true);
+    setShowNumber(true);
+    setTeamName('YOUR TEAM');
+    setTeamColor('#FFFFFF');
+    setSelectedSize('L');
+    setQuantity(10);
   };
 
   // ─────────────────────────────────────────────────────────────────────────
@@ -2470,7 +2429,7 @@ export default function JerseyCustomizer({ product }) {
         <button onClick={() => document.getElementById(uid).click()} style={{
           width:'100%', padding:'16px', border:'2px dashed #CBD5E1', borderRadius:10, cursor:'pointer',
           background:'#F8FAFC', display:'flex', alignItems:'center', justifyContent:'center', gap:8,
-          fontSize:11, fontWeight:700, color:'#000000', // Changed to black
+          fontSize:11, fontWeight:700, color:'#000000',
         }}><Upload size={15}/> Upload Image</button>
       )}
       {hint && <p style={{ fontSize:9, color:'#64748B', marginTop:5 }}>{hint}</p>}
@@ -2508,7 +2467,7 @@ export default function JerseyCustomizer({ product }) {
             padding:'9px 13px', borderRadius:10, cursor:'pointer',
             border:`2px solid ${sel?'#003E9B':'#E2E8F0'}`,
             background: sel?'rgba(0,62,155,0.09)':'#F8FAFC',
-            fontSize:10, fontWeight:700, color:sel?'#003E9B':'#000000', // Changed to black
+            fontSize:10, fontWeight:700, color:sel?'#003E9B':'#000000',
           }}>{lbl}</button>
         );
       })}
@@ -2528,13 +2487,11 @@ export default function JerseyCustomizer({ product }) {
   );
 
   // ─────────────────────────────────────────────────────────────────────────
-  // STEP CONTENT
+  // TAB CONTENT
   // ─────────────────────────────────────────────────────────────────────────
 
-  const renderContent = () => {
-
-    /* ── STEP 0: STYLE ────────────────────────────────────────────────── */
-    if (step===0) return (
+  const renderTabContent = () => {
+    if (activeTab === 'style') return (
       <div>
         <Section k="fabric" title="Fabric Technology" badge={FABRIC_TYPES.find(f=>f.id===fabric)?.label}>
           {FABRIC_TYPES.map(f => (
@@ -2547,14 +2504,6 @@ export default function JerseyCustomizer({ product }) {
               <div style={{ fontSize:9, color:'#64748B', marginTop:3 }}>{f.desc}</div>
             </button>
           ))}
-        </Section>
-
-        <Section k="fit" title="Fit Type" badge={FIT_TYPES.find(f=>f.id===fit)?.label}>
-          <Pills items={FIT_TYPES} selected={fit} onSelect={setFit}/>
-        </Section>
-
-        <Section k="sleeveLen" title="Sleeve Length" badge={SLEEVE_LENGTHS.find(s=>s.id===sleeveLength)?.label}>
-          <Pills items={SLEEVE_LENGTHS} selected={sleeveLength} onSelect={setSleeveLength}/>
         </Section>
 
         <Section k="collar" title="Collar Style" badge={COLLAR_TYPES.find(c=>c.id===collarType)?.label}>
@@ -2575,67 +2524,25 @@ export default function JerseyCustomizer({ product }) {
           </div>
         </Section>
 
-        <Section k="pattern" title="Pattern Design" badge={PATTERN_TYPES.find(p=>p.id===pattern)?.label}>
-          <Pills items={PATTERN_TYPES} selected={pattern} onSelect={setPattern}/>
-          {pattern!=='solid' && (
-            <div>
-              <div style={{ fontSize:10, fontWeight:700, color:'#64748B', marginBottom:7 }}>Accent / Secondary Color</div>
-              <ColorGrid colors={JERSEY_COLORS} selected={patternColor} onSelect={setPatternColor} cols={8}/>
-            </div>
-          )}
-        </Section>
-
-        <Section k="piping" title="Piping & Trim" badge={PIPING_TYPES.find(p=>p.id===pipingType)?.label}>
-          <Pills items={PIPING_TYPES} selected={pipingType} onSelect={setPipingType}/>
-          {pipingType!=='none' && (
-            <div>
-              <div style={{ fontSize:10, fontWeight:700, color:'#64748B', marginBottom:7 }}>Piping Color</div>
-              <ColorGrid colors={TRIM_COLORS} selected={pipingColor} onSelect={setPipingColor} cols={6}/>
-            </div>
-          )}
-        </Section>
-      </div>
-    );
-
-    /* ── STEP 1: COLORS ───────────────────────────────────────────────── */
-    if (step===1) return (
-      <div>
         <Section k="base" title="Base Colour" badge={JERSEY_COLORS.find(c=>c.code===jerseyColor)?.name}>
           <ColorGrid colors={JERSEY_COLORS} selected={jerseyColor} onSelect={setJerseyColor} cols={8}/>
-          <input type="color" value={jerseyColor} onChange={e=>setJerseyColor(e.target.value)} style={{ width:'100%', height:36, borderRadius:8, border:'1px solid #E2E8F0', cursor:'pointer', padding:2 }}/>
+          <input type="color" value={jerseyColor} onChange={e=>setJerseyColor(e.target.value)} style={{ width:'100%', height:36, borderRadius:8, border:'1px solid #E2E8F0', cursor:'pointer', padding:2, marginTop:8 }}/>
         </Section>
 
         <Section k="sleeveCol" title="Sleeve Colour" badge={JERSEY_COLORS.find(c=>c.code===sleeveColor)?.name}>
           <ColorGrid colors={SLEEVE_COLORS} selected={sleeveColor} onSelect={setSleeveColor} cols={8}/>
-          <input type="color" value={sleeveColor} onChange={e=>setSleeveColor(e.target.value)} style={{ width:'100%', height:36, borderRadius:8, border:'1px solid #E2E8F0', cursor:'pointer', padding:2 }}/>
-          <button onClick={() => setSleeveColor(jerseyColor)} style={{ fontSize:10, fontWeight:700, color:'#003E9B', background:'rgba(0,62,155,0.08)', border:'1px solid rgba(0,62,155,0.25)', borderRadius:8, padding:'9px', cursor:'pointer', width:'100%' }}>↔ Match Base Colour</button>
+          <input type="color" value={sleeveColor} onChange={e=>setSleeveColor(e.target.value)} style={{ width:'100%', height:36, borderRadius:8, border:'1px solid #E2E8F0', cursor:'pointer', padding:2, marginTop:8 }}/>
+          <button onClick={() => setSleeveColor(jerseyColor)} style={{ fontSize:10, fontWeight:700, color:'#003E9B', background:'rgba(0,62,155,0.08)', border:'1px solid rgba(0,62,155,0.25)', borderRadius:8, padding:'9px', cursor:'pointer', width:'100%', marginTop:8 }}>↔ Match Base Colour</button>
         </Section>
 
         <Section k="collarCol" title="Collar Colour" badge={JERSEY_COLORS.find(c=>c.code===collarColor)?.name}>
           <ColorGrid colors={JERSEY_COLORS} selected={collarColor} onSelect={setCollarColor} cols={8}/>
-          <input type="color" value={collarColor} onChange={e=>setCollarColor(e.target.value)} style={{ width:'100%', height:36, borderRadius:8, border:'1px solid #E2E8F0', cursor:'pointer', padding:2 }}/>
+          <input type="color" value={collarColor} onChange={e=>setCollarColor(e.target.value)} style={{ width:'100%', height:36, borderRadius:8, border:'1px solid #E2E8F0', cursor:'pointer', padding:2, marginTop:8 }}/>
         </Section>
-
-        <Section k="trim" title="Trim / Cuff Colour">
-          <ColorGrid colors={TRIM_COLORS} selected={trimColor} onSelect={setTrimColor} cols={6}/>
-        </Section>
-
-        <div style={{ padding:'12px 14px', background:'#F0F7FF', borderRadius:12, border:'1px solid #BFDBFE' }}>
-          <div style={{ fontSize:10, fontWeight:700, color:'#1D4ED8', marginBottom:9 }}>🎨 Live Colour Preview</div>
-          <div style={{ display:'flex', gap:10, flexWrap:'wrap' }}>
-            {[['Base',jerseyColor],['Sleeve',sleeveColor],['Collar',collarColor],['Trim',trimColor]].map(([l,c]) => (
-              <div key={l} style={{ display:'flex', flexDirection:'column', alignItems:'center', gap:4 }}>
-                <div style={{ width:32, height:32, borderRadius:8, background:c, border:'2px solid #E2E8F0', boxShadow:'0 2px 6px rgba(0,0,0,0.15)' }}/>
-                <span style={{ fontSize:9, color:'#64748B', fontWeight:600 }}>{l}</span>
-              </div>
-            ))}
-          </div>
-        </div>
       </div>
     );
 
-    /* ── STEP 2: LOGOS ────────────────────────────────────────────────── */
-    if (step===2) return (
+    if (activeTab === 'logos') return (
       <div>
         <Section k="club" title="Club Badge">
           <UploadSlot label="Club / Team Badge (Front)" hint="PNG transparent bg, min 300×300px" state={clubLogo} setter={setClubLogo} uid="up-club"/>
@@ -2677,17 +2584,14 @@ export default function JerseyCustomizer({ product }) {
             • PNG/SVG with <b>transparent background</b> preferred<br/>
             • Minimum <b>300 DPI</b> for crisp sublimation print<br/>
             • Max file size: <b>8 MB</b><br/>
-            • Switch to <b>2D → Back View</b> to preview back logos
+            • Switch to <b>Back View</b> to preview back logos
           </div>
         </div>
       </div>
     );
 
-    /* ── STEP 3: TEXT ─────────────────────────────────────────────────── */
-    if (step===3) return (
+    if (activeTab === 'nameNumber') return (
       <div>
-
-        {/* PLAYER NAME */}
         <Section k="name" title="Player Name">
           <Toggle value={showName} onChange={setShowName} label="Show Player Name"/>
           {showName && <>
@@ -2697,16 +2601,16 @@ export default function JerseyCustomizer({ product }) {
             </div>
 
             <div>
-              <div style={{ fontSize:10, fontWeight:700, color:'#64748B', marginBottom:7 }}>Text Layout / Arc</div>
+              <div style={{ fontSize:10, fontWeight:700, color:'#64748B', marginBottom:7 }}>Name Style</div>
               <Pills items={NAME_STYLES} selected={nameStyleId} onSelect={setNameStyleId}/>
             </div>
 
             <div>
-              <div style={{ fontSize:10, fontWeight:700, color:'#64748B', marginBottom:7 }}>Font Style (9 options)</div>
+              <div style={{ fontSize:10, fontWeight:700, color:'#64748B', marginBottom:7 }}>Font Style</div>
               <FontGrid selectedId={nameFont} onSelect={setNameFont}/>
             </div>
 
-            <ColorPicker label="Text Color" value={nameColor} onChange={setNameColor}/>
+            <ColorPicker label="Name Color" value={nameColor} onChange={setNameColor}/>
 
             <div>
               <div style={{ fontSize:10, fontWeight:700, color:'#64748B', marginBottom:7 }}>Text Effect</div>
@@ -2721,13 +2625,22 @@ export default function JerseyCustomizer({ product }) {
           </>}
         </Section>
 
-        {/* PLAYER NUMBER */}
         <Section k="number" title="Player Number">
           <Toggle value={showNumber} onChange={setShowNumber} label="Show Player Number"/>
           {showNumber && <>
             <div>
               <div style={{ fontSize:10, fontWeight:700, color:'#64748B', marginBottom:6 }}>Number</div>
               <input value={numberText} onChange={e=>setNumberText(e.target.value)} maxLength={3} placeholder="10" style={{ width:'100%', padding:'11px 13px', border:'1.5px solid #E2E8F0', borderRadius:9, fontSize:13, fontWeight:700, color:'#000000', boxSizing:'border-box' }}/>
+            </div>
+
+            <div>
+              <div style={{ fontSize:10, fontWeight:700, color:'#64748B', marginBottom:7 }}>Number Style</div>
+              <Pills items={['None', 'Block', 'Outline', 'Shadow']} selected={numberEffect === 'none' ? 'None' : numberEffect === 'outline' ? 'Outline' : numberEffect === 'shadow' ? 'Shadow' : 'Block'} onSelect={(val) => {
+                if (val === 'None') setNumberEffect('none');
+                else if (val === 'Outline') setNumberEffect('outline');
+                else if (val === 'Shadow') setNumberEffect('shadow');
+                else setNumberEffect('outline');
+              }}/>
             </div>
 
             <div>
@@ -2742,18 +2655,10 @@ export default function JerseyCustomizer({ product }) {
 
             <ColorPicker label="Number Color" value={numberColor} onChange={setNumberColor}/>
 
-            <div>
-              <div style={{ fontSize:10, fontWeight:700, color:'#64748B', marginBottom:7 }}>Text Effect</div>
-              <Pills items={TEXT_EFFECTS} selected={numberEffect} onSelect={setNumberEffect}/>
-            </div>
-
-            {numberEffect!=='none' && <ColorPicker label="Effect Color" value={numberEffectColor} onChange={setNumberEffectColor}/>}
-
             <Slider label="Number Size" value={numberSize} onChange={setNumberSize} min={36} max={110} unit="pt"/>
           </>}
         </Section>
 
-        {/* TEAM NAME */}
         <Section k="team" title="Team Name (Back Footer)">
           <Toggle value={showTeam} onChange={setShowTeam} label="Show Team Name"/>
           {showTeam && <>
@@ -2766,31 +2671,32 @@ export default function JerseyCustomizer({ product }) {
               <FontGrid selectedId={teamFont} onSelect={setTeamFont}/>
             </div>
             <ColorPicker label="Team Name Color" value={teamColor} onChange={setTeamColor}/>
+            <div>
+              <div style={{ fontSize:10, fontWeight:700, color:'#64748B', marginBottom:7 }}>Team Name Position</div>
+              <Pills items={['Vertical', 'Horizontal']} selected="Vertical" onSelect={() => {}}/>
+            </div>
           </>}
         </Section>
 
         <div style={{ padding:'10px 14px', background:'#F0FDF4', borderRadius:10, border:'1px solid #BBF7D0' }}>
           <div style={{ fontSize:10, color:'#166534' }}>
-            💡 Switch to <b>2D View → Back</b> to preview name, number & team text on jersey.
+            💡 Switch to <b>Back View</b> to preview name, number & team text on jersey.
           </div>
         </div>
       </div>
     );
 
-    /* ── STEP 4: ORDER ────────────────────────────────────────────────── */
     return (
       <div>
         <div style={{ padding:'12px 14px', background:'#F0FDF4', borderRadius:10, border:'1px solid #BBF7D0', marginBottom:14 }}>
           <div style={{ fontSize:11, color:'#166534', fontWeight:600 }}>✅ Design ready! Complete the details below.</div>
         </div>
 
-        {/* Sport */}
         <div style={{ marginBottom:16 }}>
           <div style={{ fontSize:11, fontWeight:700, marginBottom:9, color:'#000000' }}>Sport Type</div>
           <Pills items={SPORT_TYPES} selected={sport} onSelect={setSport}/>
         </div>
 
-        {/* Size */}
         <div style={{ marginBottom:16 }}>
           <div style={{ fontSize:11, fontWeight:700, marginBottom:9, color:'#000000' }}>Select Size</div>
           <div style={{ display:'flex', flexWrap:'wrap', gap:8 }}>
@@ -2808,7 +2714,6 @@ export default function JerseyCustomizer({ product }) {
           </div>
         </div>
 
-        {/* Quantity */}
         <div style={{ marginBottom:16 }}>
           <div style={{ fontSize:11, fontWeight:700, marginBottom:9, color:'#000000' }}>Quantity <span style={{ fontWeight:400, color:'#64748B', fontSize:10 }}>(min 10)</span></div>
           <div style={{ display:'flex', alignItems:'center', gap:14, background:'#F8FAFC', padding:'8px 16px', borderRadius:10, justifyContent:'center' }}>
@@ -2818,29 +2723,33 @@ export default function JerseyCustomizer({ product }) {
           </div>
         </div>
 
-        {/* Summary */}
+        <div style={{ marginBottom:16 }}>
+          <div style={{ fontSize:11, fontWeight:700, marginBottom:9, color:'#000000' }}>Player List</div>
+          <div style={{ background:'#F8FAFC', borderRadius:10, padding:12, border:'1px solid #E2E8F0' }}>
+            <div style={{ fontSize:10, color:'#64748B', marginBottom:10 }}>Download our template, fill in player names, numbers and sizes, and upload your player list below.</div>
+            <button style={{ width:'100%', padding:'10px', borderRadius:8, border:'1px solid #003E9B', background:'#fff', color:'#003E9B', fontSize:11, fontWeight:700, cursor:'pointer', marginBottom:10 }}>
+              📥 DOWNLOAD TEMPLATE
+            </button>
+            <UploadSlot label="Upload Spreadsheet" hint="" state={null} setter={()=>{}} uid="up-spreadsheet"/>
+          </div>
+        </div>
+
         <div style={{ border:'1px solid rgba(0,62,155,0.2)', borderRadius:12, background:'rgba(0,62,155,0.03)', padding:16, marginBottom:14 }}>
           <div style={{ display:'flex', alignItems:'center', gap:8, marginBottom:14 }}>
             <Star size={15} color="#003E9B" fill="#003E9B"/>
             <span style={{ fontSize:13, fontWeight:800, color:'#003E9B' }}>Order Summary</span>
           </div>
           {[
-            ['Sport',         sport.charAt(0).toUpperCase()+sport.slice(1)],
-            ['Fabric',        FABRIC_TYPES.find(f=>f.id===fabric)?.label],
-            ['Fit',           FIT_TYPES.find(f=>f.id===fit)?.label],
-            ['Sleeve',        SLEEVE_LENGTHS.find(f=>f.id===sleeveLength)?.label],
-            ['Collar',        COLLAR_TYPES.find(c=>c.id===collarType)?.label],
-            ['Pattern',       PATTERN_TYPES.find(p=>p.id===pattern)?.label],
-            ['Piping',        PIPING_TYPES.find(p=>p.id===pipingType)?.label],
-            ['Base Color',    JERSEY_COLORS.find(c=>c.code===jerseyColor)?.name],
-            ['Sleeve Color',  JERSEY_COLORS.find(c=>c.code===sleeveColor)?.name||sleeveColor],
-            ['Player Name',   showName?(nameText||'—'):'Hidden'],
-            ['Name Effect',   nameEffect],
-            ['Player Number', showNumber?`#${numberText} (${NUMBER_POSITIONS.find(p=>p.id===numberPosition)?.label})`:'Hidden'],
-            ['Team Name',     showTeam?teamName:'Hidden'],
-            ['Club Badge',    clubLogo?'✅ Uploaded':'—'],
+            ['Sport', sport.charAt(0).toUpperCase()+sport.slice(1)],
+            ['Fabric', FABRIC_TYPES.find(f=>f.id===fabric)?.label],
+            ['Collar', COLLAR_TYPES.find(c=>c.id===collarType)?.label],
+            ['Base Color', JERSEY_COLORS.find(c=>c.code===jerseyColor)?.name],
+            ['Player Name', showName?(nameText||'—'):'Hidden'],
+            ['Player Number', showNumber?`#${numberText}`:'Hidden'],
+            ['Team Name', showTeam?teamName:'Hidden'],
+            ['Club Badge', clubLogo?'✅ Uploaded':'—'],
             ['Sponsor Front', sponsorLogo?'✅ Uploaded':'—'],
-            ['Size',          selectedSize],
+            ['Size', selectedSize],
           ].map(([k,v]) => (
             <div key={k} style={{ display:'flex', justifyContent:'space-between', marginBottom:7 }}>
               <span style={{ fontSize:10, color:'#64748B' }}>{k}</span>
@@ -2866,53 +2775,89 @@ export default function JerseyCustomizer({ product }) {
 
   const panelInner = (
     <>
-      {/* Tab bar */}
-      <div style={{ display:'flex', borderBottom:'1px solid #E8ECF0' }}>
-        {STEPS.map((s,i) => {
-          const active = step===i;
-          const Icon   = s.Icon;
+      <div style={{ display:'flex', borderBottom:'1px solid #E8ECF0', background:'#fff' }}>
+        {MAIN_TABS.map((tab) => {
+          const active = activeTab === tab.id;
+          const Icon = tab.Icon;
           return (
-            <button key={s.id} onClick={() => setStep(i)} style={{
-              flex:1, padding:'11px 4px 9px', border:'none', cursor:'pointer',
-              borderBottom:`2.5px solid ${active?'#003E9B':'transparent'}`,
-              background: active?'rgba(0,62,155,0.05)':'transparent',
-              color: active?'#003E9B':'#94A3B8',
-              display:'flex', flexDirection:'column', alignItems:'center', gap:3,
-            }}>
-              <Icon size={15} strokeWidth={active?2.5:1.8}/>
-              <span style={{ fontSize:8, fontWeight:700 }}>{s.label}</span>
+            <button
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id)}
+              style={{
+                flex: 1,
+                padding: '12px 4px 10px',
+                border: 'none',
+                cursor: 'pointer',
+                borderBottom: `2.5px solid ${active ? '#003E9B' : 'transparent'}`,
+                background: active ? 'rgba(0,62,155,0.05)' : 'transparent',
+                color: active ? '#003E9B' : '#94A3B8',
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                gap: 3,
+              }}
+            >
+              <Icon size={16} strokeWidth={active ? 2.5 : 1.8} />
+              <span style={{ fontSize: 9, fontWeight: 700 }}>{tab.label}</span>
             </button>
           );
         })}
       </div>
 
-      {/* Title */}
-      <div style={{ padding:'12px 16px', borderBottom:'1px solid #E8ECF0' }}>
-        <div style={{ fontSize:17, fontWeight:800, color:'#0F172A' }}>{product?.name||'Kit Designer'}</div>
-        <div style={{ fontSize:9, color:'#94A3B8', marginTop:2 }}>
-          {['Style & Fabric','Colours','Logos & Badges','Text & Numbers','Order'][step]}
+      <div style={{ padding: '12px 16px', borderBottom: '1px solid #E8ECF0' }}>
+        <div style={{ fontSize: 17, fontWeight: 800, color: '#0F172A' }}>
+          {product?.name || 'Kit Designer'}
+        </div>
+        <div style={{ fontSize: 9, color: '#94A3B8', marginTop: 2 }}>
+          {activeTab === 'style' && 'Style & Colors'}
+          {activeTab === 'logos' && 'Logos & Badges'}
+          {activeTab === 'nameNumber' && 'Name & Number'}
+          {activeTab === 'order' && 'Order Details'}
         </div>
       </div>
 
-      {/* Content */}
-      <div style={{ flex:1, overflowY:'auto', padding:'14px', background:'#FAFAFA' }}>
-        {renderContent()}
+      <div style={{ flex: 1, overflowY: 'auto', padding: '14px', background: '#FAFAFA' }}>
+        {renderTabContent()}
       </div>
 
-      {/* Footer */}
-      <div style={{ padding:'12px 14px', borderTop:'1px solid #E8ECF0', background:'#fff' }}>
-        <button onClick={() => step<4?setStep(step+1):null} style={{
-          width:'100%', padding:'14px', borderRadius:12, border:'none', cursor:'pointer',
-          fontSize:13, fontWeight:800, display:'flex', alignItems:'center', justifyContent:'center', gap:8,
-          background:'linear-gradient(135deg,#0EA5E9,#0284C7,#1E3A8A)', color:'#fff',
-        }}>
-          {step<4 ? <>{STEPS[step+1]?.label} <ArrowRight size={16}/></> : <><ShoppingBag size={16}/> Place Order</>}
-        </button>
-        {step>0 && (
-          <button onClick={() => setStep(step-1)} style={{ background:'none', border:'none', cursor:'pointer', fontSize:11, color:'#94A3B8', marginTop:9, width:'100%', fontWeight:600 }}>
-            ← Back to {STEPS[step-1]?.label}
+      <div style={{ padding: '12px 14px', borderTop: '1px solid #E8ECF0', background: '#fff' }}>
+        <div style={{ display: 'flex', gap: 10 }}>
+          <button
+            onClick={reset}
+            style={{
+              flex: 1,
+              padding: '12px',
+              borderRadius: 10,
+              border: '1px solid #E2E8F0',
+              background: '#fff',
+              cursor: 'pointer',
+              fontSize: 12,
+              fontWeight: 700,
+              color: '#64748B',
+            }}
+          >
+            <RotateCcw size={14} style={{ marginRight: 6 }} /> Reset
           </button>
-        )}
+          <button
+            style={{
+              flex: 2,
+              padding: '12px',
+              borderRadius: 10,
+              border: 'none',
+              cursor: 'pointer',
+              fontSize: 13,
+              fontWeight: 800,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: 8,
+              background: 'linear-gradient(135deg,#0EA5E9,#0284C7,#1E3A8A)',
+              color: '#fff',
+            }}
+          >
+            <Save size={16} /> Save Design
+          </button>
+        </div>
       </div>
     </>
   );
@@ -2924,29 +2869,20 @@ export default function JerseyCustomizer({ product }) {
     </div>
   );
 
-  const chip = { background:'rgba(255,255,255,0.95)', backdropFilter:'blur(14px)', border:'1px solid rgba(255,255,255,0.7)', boxShadow:'0 4px 14px rgba(0,0,0,0.10)', borderRadius:10, padding:'8px 12px' };
-
   return (
-    <div style={{ height:'100vh', overflow:'hidden', background:'#fff', display:'flex', flexDirection:'column', fontFamily:"'Poppins','Segoe UI',sans-serif",margin:"10px 0px" }}>
+    <div style={{ height:'100vh', overflow:'hidden', background:'#fff', display:'flex', flexDirection:'column', fontFamily:"'Poppins','Segoe UI',sans-serif", margin:"10px 0px" }}>
 
-      {/* HEADER */}
-      <header style={{ height:54, display:'flex', alignItems:'center', justifyContent:'space-between', padding:'0px 22px',background:'#fff', borderBottom:'1px solid #E8ECF0', flexShrink:0 }}>
+      <header style={{ height:54, display:'flex', alignItems:'center', justifyContent:'space-between', padding:'0px 22px', background:'#fff', borderBottom:'1px solid #E8ECF0', flexShrink:0 }}>
         <div style={{ display:'flex', alignItems:'center', gap:12 }}>
           <div style={{ width:34, height:34, borderRadius:10, background:'linear-gradient(135deg,#0EA5E9,#0284C7,#1E3A8A)', display:'flex', alignItems:'center', justifyContent:'center' }}>
             <Paintbrush size={16} color="#fff"/>
           </div>
           <div>
-            <div  className="text-primary" style={{ fontSize:14, fontWeight:800 }}>{product?.name||'Kit Designer'}</div>
-            <div className="text-primary-blue " style={{ fontSize:9}}>Custom Kit Studio</div>
+            <div style={{ fontSize:14, fontWeight:800 }}>{product?.name||'Kit Designer'}</div>
+            <div style={{ fontSize:9, color:'#64748B' }}>Custom Kit Studio</div>
           </div>
         </div>
         <div style={{ display:'flex', alignItems:'center', gap:10 }}>
-          <button onClick={reset} style={{ display:'flex', alignItems:'center', gap:6, padding:'7px 13px', borderRadius:8, border:'1px solid #E2E8F0', background:'#fff', fontSize:10, fontWeight:700, cursor:'pointer', color:'#64748B' }}>
-            <RotateCcw size={12}/> Reset
-          </button>
-          <button style={{ display:'flex', alignItems:'center', gap:6, padding:'7px 14px', borderRadius:8, border:'none', background:'linear-gradient(135deg,#0EA5E9,#0284C7,#1E3A8A)', color:'#fff', fontSize:10, fontWeight:700, cursor:'pointer' }}>
-            <Save size={12}/> Save
-          </button>
           <button onClick={() => setMobileOpen(!mobileOpen)} className="mob-toggle" style={{ display:'none', padding:'7px 11px', borderRadius:8, background:'rgba(0,62,155,0.1)', color:'#003E9B', border:'none', cursor:'pointer' }}>
             <Menu size={18}/>
           </button>
@@ -2955,28 +2891,45 @@ export default function JerseyCustomizer({ product }) {
 
       <div style={{ display:'flex', flex:1, overflow:'hidden' }}>
 
-        {/* VIEWER */}
         <div style={{ flex:1, position:'relative', background:'linear-gradient(135deg,#EEF2F7,#E2E8F0)', overflow:'hidden' }}>
 
-          {/* View mode toggle */}
           <div style={{ position:'absolute', top:14, left:'50%', transform:'translateX(-50%)', zIndex:20, display:'flex', gap:8 }}>
-            {[['glb','3D 360° View'],['2d','2D View']].map(([m,lbl]) => (
-              <button key={m} onClick={() => setViewMode(m)} style={{
-                padding:'7px 16px', borderRadius:99, fontSize:10, fontWeight:700, cursor:'pointer', border:'none',
-                background: viewMode===m?'linear-gradient(135deg,#0EA5E9,#0284C7,#1E3A8A)':'rgba(255,255,255,0.95)',
-                color: viewMode===m?'#fff':'#003E9B',
-                boxShadow: viewMode===m?'0 2px 10px rgba(0,62,155,0.3)':'0 1px 4px rgba(0,0,0,0.1)',
-              }}>{lbl}</button>
-            ))}
+            <button onClick={() => setViewMode('product')} style={{
+              padding:'7px 16px', borderRadius:99, fontSize:10, fontWeight:700, cursor:'pointer', border:'none',
+              background: viewMode==='product' ? 'linear-gradient(135deg,#0EA5E9,#0284C7,#1E3A8A)' : 'rgba(255,255,255,0.95)',
+              color: viewMode==='product' ? '#fff' : '#003E9B',
+              boxShadow: viewMode==='product' ? '0 2px 10px rgba(0,62,155,0.3)' : '0 1px 4px rgba(0,0,0,0.1)',
+            }}>Product View</button>
+            <button onClick={() => setViewMode('glb')} style={{
+              padding:'7px 16px', borderRadius:99, fontSize:10, fontWeight:700, cursor:'pointer', border:'none',
+              background: viewMode==='glb' ? 'linear-gradient(135deg,#0EA5E9,#0284C7,#1E3A8A)' : 'rgba(255,255,255,0.95)',
+              color: viewMode==='glb' ? '#fff' : '#003E9B',
+              boxShadow: viewMode==='glb' ? '0 2px 10px rgba(0,62,155,0.3)' : '0 1px 4px rgba(0,0,0,0.1)',
+            }}>3D View</button>
           </div>
 
-          {/* Zoom */}
           <button onClick={() => setIsZoomed(!isZoomed)} style={{ position:'absolute', top:14, right:14, zIndex:20, background:'rgba(255,255,255,0.92)', backdropFilter:'blur(8px)', padding:8, borderRadius:40, border:'none', cursor:'pointer', boxShadow:'0 2px 8px rgba(0,0,0,0.12)' }}>
             <Maximize2 size={15}/>
           </button>
 
-          {/* ── 3D GLB ── */}
-          {viewMode==='glb' && (
+          {viewMode === 'product' && (
+            <ProductImageViewer jerseyColor={jerseyColor} view={view} product={product}>
+              <div style={{ position:'absolute', bottom:20, left:'50%', transform:'translateX(-50%)', zIndex:20 }}>
+                <div style={{ ...chip, borderRadius:99, padding:4, display:'inline-flex', gap:4 }}>
+                  {['front','back'].map(v => (
+                    <button key={v} onClick={() => setView(v)} style={{
+                      padding:'8px 26px', borderRadius:99, fontSize:10, fontWeight:700, cursor:'pointer',
+                      background: view===v ? 'linear-gradient(135deg,#0EA5E9,#0284C7,#1E3A8A)' : 'transparent',
+                      border: view===v ? 'none' : '1px solid #003E9B',
+                      color: view===v ? '#fff' : '#003E9B',
+                    }}>{v.toUpperCase()}</button>
+                  ))}
+                </div>
+              </div>
+            </ProductImageViewer>
+          )}
+
+          {viewMode === 'glb' && (
             <div style={{ position:'absolute', inset:0 }}>
               <GLBViewer
                 glbPath="/images/jerseys/jersey.glb"
@@ -2993,103 +2946,67 @@ export default function JerseyCustomizer({ product }) {
                 nameVertical={nameVertical}
                 showText={showName && nameStyleId!=='none'}
                 sleeveColor={sleeveColor}
-                pattern={pattern}
-                patternColor={patternColor}
               />
-            </div>
-          )}
-
-          {/* ── 2D SVG ── */}
-          {viewMode==='2d' && (
-            <>
-              <div style={{ position:'absolute', inset:0, display:'flex', alignItems:'center', justifyContent:'center', padding:isZoomed?20:'62px 10%', transition:'all 0.3s' }}>
-                <div style={{ width:'100%', maxWidth:isZoomed?500:320, transition:'all 0.3s' }}>
-                  <JerseySVG
-                    jerseyColor={jerseyColor} sleeveColor={sleeveColor}
-                    collarType={collarType} pattern={pattern} patternColor={patternColor}
-                    pipingType={pipingType} pipingColor={pipingColor} sleeveLength={sleeveLength}
-                    view={view}
-                    clubLogo={clubLogo} clubLogoPos={clubLogoPos} clubLogoSize={clubLogoSize}
-                    sponsorLogo={sponsorLogo} sponsorLogoSize={sponsorLogoSize}
-                    sponsorBackLogo={sponsorBackLogo}
-                    nameText={nameText} nameStyleId={nameStyleId} nameFont={nameFont}
-                    nameColor={nameColor} nameSize={nameSize} nameVertical={nameVertical}
-                    nameEffect={nameEffect} nameEffectColor={nameEffectColor} nameOutlineWidth={nameOutlineWidth}
-                    numberText={numberText} numberFont={numberFont}
-                    numberColor={numberColor} numberSize={numberSize} numberPosition={numberPosition}
-                    numberEffect={numberEffect} numberEffectColor={numberEffectColor}
-                    showTeam={showTeam} teamName={teamName} teamColor={teamColor} teamFont={teamFont}
-                    showName={showName} showNumber={showNumber}
-                  />
-                </div>
-              </div>
-
-              {/* Front/Back toggle */}
               <div style={{ position:'absolute', bottom:20, left:'50%', transform:'translateX(-50%)', zIndex:20 }}>
                 <div style={{ ...chip, borderRadius:99, padding:4, display:'inline-flex', gap:4 }}>
                   {['front','back'].map(v => (
                     <button key={v} onClick={() => setView(v)} style={{
                       padding:'8px 26px', borderRadius:99, fontSize:10, fontWeight:700, cursor:'pointer',
-                      background: view===v?'linear-gradient(135deg,#0EA5E9,#0284C7,#1E3A8A)':'transparent',
-                      border: view===v?'none':'1px solid #003E9B',
-                      color: view===v?'#fff':'#003E9B',
+                      background: view===v ? 'linear-gradient(135deg,#0EA5E9,#0284C7,#1E3A8A)' : 'transparent',
+                      border: view===v ? 'none' : '1px solid #003E9B',
+                      color: view===v ? '#fff' : '#003E9B',
                     }}>{v.toUpperCase()}</button>
                   ))}
                 </div>
               </div>
-
-              {/* Color chip BL */}
-              <div style={{ position:'absolute', bottom:20, left:16, zIndex:20 }}>
-                <div style={chip}>
-                  <div style={{ display:'flex', alignItems:'center', gap:8 }}>
-                    <div style={{ width:14, height:14, borderRadius:'50%', background:jerseyColor, border:'1px solid rgba(0,0,0,0.1)' }}/>
-                    <div>
-                      <div style={{ fontSize:8, color:'#94A3B8' }}>Base</div>
-                      <div style={{ fontSize:11, fontWeight:700 }}>{JERSEY_COLORS.find(c=>c.code===jerseyColor)?.name||jerseyColor}</div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Size chip BR */}
-              <div style={{ position:'absolute', bottom:20, right:16, zIndex:20 }}>
-                <div style={chip}>
-                  <div style={{ fontSize:8, color:'#94A3B8' }}>Size</div>
-                  <div style={{ fontSize:14, fontWeight:900, color:'#003E9B' }}>{selectedSize}</div>
-                </div>
-              </div>
-            </>
+            </div>
           )}
+
+          <div style={{ position:'absolute', bottom:20, left:16, zIndex:20 }}>
+            <div style={chip}>
+              <div style={{ display:'flex', alignItems:'center', gap:8 }}>
+                <div style={{ width:14, height:14, borderRadius:'50%', background:jerseyColor, border:'1px solid rgba(0,0,0,0.1)' }}/>
+                <div>
+                  <div style={{ fontSize:8, color:'#94A3B8' }}>Base</div>
+                  <div style={{ fontSize:11, fontWeight:700 ,color:"#000000"}}>{JERSEY_COLORS.find(c=>c.code===jerseyColor)?.name||jerseyColor}</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div style={{ position:'absolute', bottom:20, right:16, zIndex:20 }}>
+            <div style={chip}>
+              <div style={{ fontSize:8, color:'#94A3B8' }}>Size</div>
+              <div style={{ fontSize:14, fontWeight:900, color:'#003E9B' }}>{selectedSize}</div>
+            </div>
+          </div>
         </div>
 
-        {/* DESKTOP PANEL */}
         <div className="desktop-cfg" style={{ width:385, background:'#fff', borderLeft:'1px solid #E8ECF0', display:'flex', flexDirection:'column', overflow:'hidden' }}>
           {panelInner}
         </div>
       </div>
 
-      {/* MOBILE BOTTOM NAV */}
       <div className="mob-nav" style={{ display:'none', position:'fixed', bottom:0, left:0, right:0, background:'rgba(255,255,255,0.98)', backdropFilter:'blur(10px)', borderTop:'1px solid #E8ECF0', zIndex:40 }}>
-        {STEPS.map((s,i) => {
-          const Icon   = s.Icon;
-          const active = step===i;
+        {MAIN_TABS.map((tab) => {
+          const Icon = tab.Icon;
+          const active = activeTab === tab.id;
           return (
-            <button key={s.id} onClick={() => { setStep(i); setMobileOpen(true); }} style={{ flex:1, display:'flex', flexDirection:'column', alignItems:'center', gap:2, padding:'10px 0', cursor:'pointer', border:'none', background:'transparent', color:active?'#003E9B':'#94A3B8' }}>
+            <button key={tab.id} onClick={() => { setActiveTab(tab.id); setMobileOpen(true); }} style={{ flex:1, display:'flex', flexDirection:'column', alignItems:'center', gap:2, padding:'10px 0', cursor:'pointer', border:'none', background:'transparent', color:active?'#003E9B':'#94A3B8' }}>
               <Icon size={18} strokeWidth={active?2.5:1.8}/>
-              <span style={{ fontSize:8, fontWeight:700 }}>{s.label}</span>
+              <span style={{ fontSize:8, fontWeight:700 }}>{tab.label}</span>
             </button>
           );
         })}
       </div>
 
-      {/* MOBILE DRAWER */}
       {mobileOpen && (
         <div style={{ position:'fixed', inset:0, zIndex:300 }}>
           <div style={{ position:'absolute', inset:0, background:'rgba(15,23,42,0.5)', backdropFilter:'blur(4px)' }} onClick={() => setMobileOpen(false)}/>
           <div style={{ position:'absolute', bottom:0, left:0, right:0, background:'#fff', borderRadius:'24px 24px 0 0', maxHeight:'82vh', display:'flex', flexDirection:'column' }}>
             <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', padding:'14px 20px', borderBottom:'1px solid #E8ECF0' }}>
-              <span style={{ fontSize:16, fontWeight:800 }}>Customize</span>
-              <button onClick={() => setMobileOpen(false)} style={{ background:'#F1F5F9', border:'none', borderRadius:'50%', width:32, height:32, display:'flex', alignItems:'center', justifyContent:'center', cursor:'pointer' }}>
+              <span style={{ fontSize:16, fontWeight:800,color:"#000000" }}>Customize</span>
+              <button onClick={() => setMobileOpen(false)} style={{ background:'#F1F5F9', border:'none', borderRadius:'50%', width:32, height:32, display:'flex', alignItems:'center', justifyContent:'center', cursor:'pointer', color:"#000000" }}>
                 <X size={14}/>
               </button>
             </div>

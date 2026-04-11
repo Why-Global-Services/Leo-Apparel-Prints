@@ -1,3 +1,5 @@
+
+
 // "use client";
 
 // import { useState, useMemo, useCallback } from "react";
@@ -23,7 +25,6 @@
 //   { id: "accessories", label: "Accessories", icon: <ShoppingBag size={15} />, subs: ["Gym Bags", "Bottles", "Socks"] },
 // ];
 
-// // ✅ Defined OUTSIDE parent — prevents remount on state change (fixes search typing bug)
 // function SidebarContent({
 //   searchTerm,
 //   onSearchChange,
@@ -62,7 +63,6 @@
 //       <nav className="flex flex-col gap-0.5">
 //         {menuStructure.map((cat) => (
 //           <div key={cat.id} className="flex flex-col">
-//             {/* Main category button */}
 //             <button
 //               onClick={() => onMainCatChange(cat.id)}
 //               className={`flex items-center justify-between px-3 py-2 transition-all duration-200 font-primary rounded-lg ${
@@ -113,7 +113,6 @@
 //               )}
 //             </button>
 
-//             {/* Sub-categories */}
 //             {selectedMainCat === cat.id && cat.subs.length > 0 && (
 //               <div className="flex flex-col ml-6 mt-0.5 border-l-2 border-[#003E9B]/20 py-0.5">
 //                 {cat.subs.map((sub) => (
@@ -223,7 +222,7 @@
 //   return (
 //     <div className="bg-white h-full w-full overflow-hidden flex flex-col">
 
-//       {/* ✅ DESKTOP HEADER — hidden on mobile entirely */}
+//       {/* DESKTOP HEADER */}
 //       <div className="hidden sm:block sticky top-0 z-20 bg-white border-b border-gray-100 shadow-sm">
 //         <div className="w-full mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-5">
 //           <div className="flex items-center justify-between gap-4">
@@ -244,29 +243,23 @@
 //         </div>
 //       </div>
 
-//       {/* ✅ MOBILE HEADER — clean, just two buttons spread apart, NO title clutter */}
-//       <div className="sm:hidden sticky top-0 z-20 bg-white border-b border-gray-100 shadow-sm">
+//       {/* ✅ MOBILE HEADER — fully transparent, no bg fill, animated shimmer-border buttons */}
+//       <div className="sm:hidden sticky top-0 z-20">
 //         <div className="px-4 py-3 flex items-center justify-between gap-3">
-//           {/* Upload — gradient from globals.css vars */}
-//           <button
-//             className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest text-white shadow-md transition-all active:scale-95 font-primary"
-//             style={{
-//               background:
-//                 "linear-gradient(135deg, var(--gradient-start), var(--gradient-mid), var(--gradient-end))",
-//             }}
-//           >
+
+//           {/* Upload Design — animated gradient shimmer border, transparent fill */}
+//           <button className="mobile-btn-upload flex-1 flex items-center justify-center gap-2">
 //             <Upload size={14} />
-//             Upload Design
+//             <span>Upload Design</span>
 //           </button>
 
-//           {/* Filter — solid primary-blue from globals.css */}
+//           {/* Filter — animated blue shimmer border, transparent fill */}
 //           <button
 //             onClick={() => setIsFilterOpen(true)}
-//             className="flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest text-white shadow-md transition-all active:scale-95 font-primary"
-//             style={{ background: "var(--primary-blue)" }}
+//             className="mobile-btn-filter flex items-center justify-center gap-2 px-5"
 //           >
 //             <SlidersHorizontal size={14} />
-//             Filter
+//             <span>Filter</span>
 //           </button>
 //         </div>
 //       </div>
@@ -276,9 +269,14 @@
 //         <div className="w-full mx-auto px-4 sm:px-6 lg:px-8 h-full">
 //           <div className="flex flex-col lg:flex-row gap-5 lg:gap-8 h-full py-4 sm:py-6">
 
-//             {/* DESKTOP SIDEBAR */}
-//             <aside className="hidden lg:block w-52 xl:w-60 shrink-0 overflow-y-auto sidebar-scroll pr-2">
-//               <SidebarContent {...sidebarProps} />
+//             {/* ✅ DESKTOP SIDEBAR — fixed height with proper scrollbar */}
+//             <aside
+//               className="hidden lg:flex lg:flex-col w-52 xl:w-60 shrink-0 pr-2"
+//               style={{ maxHeight: "calc(100vh - 90px)", position: "sticky", top: "90px" }}
+//             >
+//               <div className="flex-1 overflow-y-auto sidebar-scroll min-h-0">
+//                 <SidebarContent {...sidebarProps} />
+//               </div>
 //             </aside>
 
 //             {/* PRODUCT GRID */}
@@ -306,7 +304,6 @@
 //                   </button>
 //                 </div>
 //               ) : (
-//                 /* ✅ Mobile: 1 col | sm+: 2 col | xl: 3 col */
 //                 <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3 sm:gap-5 lg:gap-6">
 //                   {filteredProducts.map((product) => (
 //                     <ProductCard key={product.id} product={product} />
@@ -318,26 +315,131 @@
 //         </div>
 //       </div>
 
-//       {/* ✅ SCROLLBAR STYLES — uses CSS vars from globals.css */}
 //       <style jsx global>{`
-//         /* Sidebar — ultra-thin gradient scroll */
+
+//         /* ══════════════════════════════════════════
+//            MOBILE BUTTONS — transparent animated
+//         ══════════════════════════════════════════ */
+
+//         .mobile-btn-upload,
+//         .mobile-btn-filter {
+//           position: relative;
+//           padding: 10px 0;
+//           border-radius: 14px;
+//           font-size: 10px;
+//           font-weight: 900;
+//           letter-spacing: 0.12em;
+//           text-transform: uppercase;
+//           font-family: var(--font-primary, sans-serif);
+//           background: transparent;
+//           border: none;
+//           cursor: pointer;
+//           -webkit-tap-highlight-color: transparent;
+//           transition: transform 0.15s ease;
+//           /* pseudo-border via box-shadow simulation using outline */
+//           z-index: 0;
+//         }
+
+//         /* Animated gradient border via ::before pseudo */
+//         .mobile-btn-upload::before,
+//         .mobile-btn-filter::before {
+//           content: "";
+//           position: absolute;
+//           inset: 0;
+//           border-radius: 14px;
+//           padding: 2px;
+//           background-size: 300% 300%;
+//           -webkit-mask:
+//             linear-gradient(#fff 0 0) content-box,
+//             linear-gradient(#fff 0 0);
+//           -webkit-mask-composite: xor;
+//           mask-composite: exclude;
+//           animation: borderSpin 2.5s linear infinite;
+//           z-index: -1;
+//         }
+
+//         /* Upload: gradient animated border */
+//         .mobile-btn-upload::before {
+//           background-image: linear-gradient(
+//             135deg,
+//             var(--gradient-start),
+//             var(--gradient-mid),
+//             var(--gradient-end),
+//             var(--gradient-mid),
+//             var(--gradient-start)
+//           );
+//         }
+//         .mobile-btn-upload {
+//           color: var(--gradient-start);
+//         }
+
+//         /* Filter: primary blue animated border */
+//         .mobile-btn-filter::before {
+//           background-image: linear-gradient(
+//             135deg,
+//             var(--primary-blue),
+//             #1565c0,
+//             #003080,
+//             #1565c0,
+//             var(--primary-blue)
+//           );
+//         }
+//         .mobile-btn-filter {
+//           color: var(--primary-blue);
+//         }
+
+//         @keyframes borderSpin {
+//           0%   { background-position: 0% 50%; }
+//           50%  { background-position: 100% 50%; }
+//           100% { background-position: 0% 50%; }
+//         }
+
+//         /* Active press */
+//         .mobile-btn-upload:active,
+//         .mobile-btn-filter:active {
+//           transform: scale(0.96);
+//         }
+
+//         /* ══════════════════════════════════════════
+//            SIDEBAR SCROLLBAR — thin gradient
+//         ══════════════════════════════════════════ */
 //         .sidebar-scroll::-webkit-scrollbar { width: 3px; }
 //         .sidebar-scroll::-webkit-scrollbar-track { background: transparent; }
 //         .sidebar-scroll::-webkit-scrollbar-thumb {
-//           background: linear-gradient(180deg, var(--gradient-start), var(--gradient-mid), var(--gradient-end));
+//           background: linear-gradient(
+//             180deg,
+//             var(--gradient-start),
+//             var(--gradient-mid),
+//             var(--gradient-end)
+//           );
 //           border-radius: 99px;
 //         }
-//         .sidebar-scroll { scrollbar-width: thin; scrollbar-color: var(--gradient-mid) transparent; }
+//         .sidebar-scroll {
+//           scrollbar-width: thin;
+//           scrollbar-color: var(--gradient-mid) transparent;
+//         }
 
-//         /* Main content — slightly larger gradient scroll */
+//         /* ══════════════════════════════════════════
+//            MAIN CONTENT SCROLLBAR
+//         ══════════════════════════════════════════ */
 //         .main-scroll::-webkit-scrollbar { width: 5px; }
 //         .main-scroll::-webkit-scrollbar-track { background: #f1f5f9; border-radius: 10px; }
 //         .main-scroll::-webkit-scrollbar-thumb {
-//           background: linear-gradient(180deg, var(--gradient-start), var(--gradient-mid), var(--gradient-end));
+//           background: linear-gradient(
+//             180deg,
+//             var(--gradient-start),
+//             var(--gradient-mid),
+//             var(--gradient-end)
+//           );
 //           border-radius: 10px;
 //         }
 //         .main-scroll::-webkit-scrollbar-thumb:hover {
-//           background: linear-gradient(180deg, var(--gradient-end), var(--gradient-mid), var(--gradient-start));
+//           background: linear-gradient(
+//             180deg,
+//             var(--gradient-end),
+//             var(--gradient-mid),
+//             var(--gradient-start)
+//           );
 //         }
 //         .main-scroll { scrollbar-width: thin; scrollbar-color: var(--gradient-mid) #f1f5f9; }
 
@@ -354,7 +456,6 @@
 //             onClick={() => setIsFilterOpen(false)}
 //           />
 //           <div className="absolute right-0 top-0 bottom-0 w-72 max-w-[82vw] bg-white shadow-2xl flex flex-col">
-//             {/* Drawer header — gradient using global vars */}
 //             <div
 //               className="px-5 py-4 flex justify-between items-center flex-shrink-0"
 //               style={{
@@ -373,12 +474,11 @@
 //               </button>
 //             </div>
 
-//             {/* Drawer sidebar content */}
-//             <div className="flex-1 overflow-y-auto p-4 sidebar-scroll">
+//             {/* ✅ Scrollable drawer content */}
+//             <div className="flex-1 overflow-y-auto p-4 sidebar-scroll min-h-0">
 //               <SidebarContent {...sidebarProps} />
 //             </div>
 
-//             {/* Drawer footer — result count */}
 //             <div className="px-5 py-3 border-t border-gray-100 bg-gray-50 flex-shrink-0">
 //               <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest text-center font-secondary">
 //                 {filteredProducts.length} Premium Results
@@ -393,7 +493,6 @@
 
 
 
-
 "use client";
 
 import { useState, useMemo, useCallback } from "react";
@@ -405,31 +504,29 @@ import {
   X,
   Target,
   Activity,
-  Zap,
-  ShoppingBag,
   ChevronDown,
   Upload,
 } from "lucide-react";
+import Link from "next/link";
 
 const menuStructure = [
   { id: "all", label: "All Gear", icon: <Activity size={15} />, subs: [] },
   { id: "sports", label: "Sports", icon: <Target size={15} />, subs: ["Football", "Cricket", "Tennis", "Basketball"] },
-  { id: "clothes", label: "Clothes", icon: <Activity size={15} />, subs: ["T-Shirts", "Hoodies", "Shorts", "Pants"] },
-  { id: "athleisure", label: "Athleisure", icon: <Zap size={15} />, subs: ["Compression", "Joggers", "Jackets"] },
-  { id: "accessories", label: "Accessories", icon: <ShoppingBag size={15} />, subs: ["Gym Bags", "Bottles", "Socks"] },
+  { id: "clothes", label: "Clothes", icon: <Activity size={15} />, subs: ["Fabric"] },
 ];
 
 function SidebarContent({
   searchTerm,
   onSearchChange,
-  selectedMainCat,
-  onMainCatChange,
-  selectedSubCat,
-  onSubCatChange,
+  selectedCategories,
+  onCategoryChange,
+  selectedSubCategories,
+  onSubCategoryChange,
+  onApplyFilters,
 }) {
   return (
     <div className="flex flex-col gap-4">
-      {/* Search Input */}
+      {/* Search Input - Applied Directly */}
       <div className="relative group">
         <input
           type="text"
@@ -453,76 +550,60 @@ function SidebarContent({
         )}
       </div>
 
-      {/* Navigation */}
-      <nav className="flex flex-col gap-0.5">
+      {/* Navigation with Checkboxes */}
+      <nav className="flex flex-col gap-1">
         {menuStructure.map((cat) => (
           <div key={cat.id} className="flex flex-col">
-            <button
-              onClick={() => onMainCatChange(cat.id)}
-              className={`flex items-center justify-between px-3 py-2 transition-all duration-200 font-primary rounded-lg ${
-                selectedMainCat === cat.id
-                  ? "text-white shadow-md shadow-[#003E9B]/20"
-                  : "text-slate-700 hover:text-[#003E9B]"
-              }`}
-              style={
-                selectedMainCat === cat.id
-                  ? {
-                      background:
-                        "linear-gradient(135deg, var(--gradient-start), var(--gradient-mid), var(--gradient-end))",
-                    }
-                  : { background: "transparent" }
-              }
-              onMouseEnter={(e) => {
-                if (selectedMainCat !== cat.id) {
-                  e.currentTarget.style.background = "rgba(0,62,155,0.06)";
-                }
-              }}
-              onMouseLeave={(e) => {
-                if (selectedMainCat !== cat.id) {
-                  e.currentTarget.style.background = "transparent";
-                }
-              }}
-            >
-              <div className="flex items-center gap-2">
-                <span
-                  className={`transition-colors flex-shrink-0 ${
-                    selectedMainCat === cat.id ? "text-white" : "text-slate-400"
-                  }`}
-                >
+            {/* Main Category Checkbox */}
+            <label className="flex items-center gap-2 px-3 py-2 cursor-pointer hover:bg-[#003E9B]/5 rounded-lg transition-colors">
+              <input
+                type="checkbox"
+                checked={selectedCategories.includes(cat.id)}
+                onChange={(e) => onCategoryChange(cat.id, e.target.checked)}
+                className="w-4 h-4 rounded border-slate-300 text-[#003E9B] focus:ring-[#003E9B]/20 focus:ring-2"
+              />
+              <span className="flex items-center gap-2 flex-1">
+                <span className={`transition-colors flex-shrink-0 ${
+                  selectedCategories.includes(cat.id) ? "text-[#003E9B]" : "text-slate-400"
+                }`}>
                   {cat.icon}
                 </span>
-                <span className="text-[10px] sm:text-[11px] font-black uppercase tracking-widest">
+                <span className={`text-[10px] sm:text-[11px] font-black uppercase tracking-widest ${
+                  selectedCategories.includes(cat.id) ? "text-[#003E9B]" : "text-slate-700"
+                }`}>
                   {cat.label}
                 </span>
-              </div>
+              </span>
               {cat.subs.length > 0 && (
                 <ChevronDown
                   size={11}
                   className={`transition-transform duration-300 flex-shrink-0 ${
-                    selectedMainCat === cat.id
-                      ? "rotate-180 text-white"
-                      : "text-slate-400"
-                  }`}
+                    selectedCategories.includes(cat.id) ? "rotate-180" : ""
+                  } text-slate-400`}
                 />
               )}
-            </button>
+            </label>
 
-            {selectedMainCat === cat.id && cat.subs.length > 0 && (
-              <div className="flex flex-col ml-6 mt-0.5 border-l-2 border-[#003E9B]/20 py-0.5">
+            {/* Subcategories with Checkboxes */}
+            {selectedCategories.includes(cat.id) && cat.subs.length > 0 && (
+              <div className="flex flex-col ml-8 mt-1 border-l-2 border-[#003E9B]/20 pl-3 gap-1">
                 {cat.subs.map((sub) => (
-                  <button
+                  <label
                     key={sub}
-                    onClick={() =>
-                      onSubCatChange(selectedSubCat === sub ? "" : sub)
-                    }
-                    className={`text-left text-[9px] sm:text-[10px] font-black tracking-widest uppercase px-3 py-1.5 transition-all duration-200 font-secondary rounded-md ${
-                      selectedSubCat === sub
-                        ? "bg-[#003E9B]/10 text-[#003E9B] border-l-2 border-[#003E9B] -ml-0.5"
-                        : "text-slate-400 hover:text-[#003E9B] hover:bg-[#003E9B]/5"
-                    }`}
+                    className="flex items-center gap-2 px-2 py-1.5 cursor-pointer hover:bg-[#003E9B]/5 rounded-md transition-colors"
                   >
-                    {sub}
-                  </button>
+                    <input
+                      type="checkbox"
+                      checked={selectedSubCategories.includes(sub)}
+                      onChange={(e) => onSubCategoryChange(sub, e.target.checked)}
+                      className="w-3.5 h-3.5 rounded border-slate-300 text-[#003E9B] focus:ring-[#003E9B]/20 focus:ring-2"
+                    />
+                    <span className={`text-[9px] sm:text-[10px] font-black tracking-widest uppercase ${
+                      selectedSubCategories.includes(sub) ? "text-[#003E9B]" : "text-slate-600"
+                    }`}>
+                      {sub}
+                    </span>
+                  </label>
                 ))}
               </div>
             )}
@@ -530,27 +611,72 @@ function SidebarContent({
         ))}
       </nav>
 
-      {/* Active Filters */}
-      {(selectedMainCat !== "all" || selectedSubCat || searchTerm) && (
+      {/* Search Button - Now applies category filters only */}
+      <button
+        onClick={onApplyFilters}
+        className="btn-gradient mt-2 w-full py-2.5 rounded-lg font-black text-[11px] tracking-widest uppercase flex items-center justify-center gap-2"
+      >
+        <Search size={14} />
+        Apply Category Filters
+      </button>
+
+      {/* Active Filters Display */}
+      {(selectedCategories.length > 0 || selectedSubCategories.length > 0 || searchTerm) && (
         <div className="pt-3 border-t border-gray-100">
           <p className="text-[9px] font-bold text-gray-400 uppercase tracking-wider mb-2 font-secondary">
             Active Filters
           </p>
           <div className="flex flex-wrap gap-1.5">
-            {selectedMainCat !== "all" && (
-              <span className="text-[8px] bg-[#003E9B]/10 text-[#003E9B] px-2.5 py-1 rounded-full font-secondary font-bold">
-                {menuStructure.find((c) => c.id === selectedMainCat)?.label}
+            {selectedCategories.map((cat) => (
+              <span
+                key={cat}
+                className="text-[8px] bg-[#003E9B]/10 text-[#003E9B] px-2.5 py-1 rounded-full font-secondary font-bold flex items-center gap-1"
+              >
+                {menuStructure.find((c) => c.id === cat)?.label}
+                <button
+                  onClick={() => onCategoryChange(cat, false)}
+                  className="hover:text-red-600 ml-1"
+                >
+                  <X size={10} />
+                </button>
               </span>
-            )}
-            {selectedSubCat && (
-              <span className="text-[8px] bg-[#003E9B]/10 text-[#003E9B] px-2.5 py-1 rounded-full font-secondary font-bold">
-                {selectedSubCat}
+            ))}
+            {selectedSubCategories.map((sub) => (
+              <span
+                key={sub}
+                className="text-[8px] bg-[#003E9B]/10 text-[#003E9B] px-2.5 py-1 rounded-full font-secondary font-bold flex items-center gap-1"
+              >
+                {sub}
+                <button
+                  onClick={() => onSubCategoryChange(sub, false)}
+                  className="hover:text-red-600 ml-1"
+                >
+                  <X size={10} />
+                </button>
               </span>
-            )}
+            ))}
             {searchTerm && (
-              <span className="text-[8px] bg-[#003E9B]/10 text-[#003E9B] px-2.5 py-1 rounded-full font-secondary font-bold">
+              <span className="text-[8px] bg-[#003E9B]/10 text-[#003E9B] px-2.5 py-1 rounded-full font-secondary font-bold flex items-center gap-1">
                 "{searchTerm}"
+                <button
+                  onClick={() => onSearchChange("")}
+                  className="hover:text-red-600 ml-1"
+                >
+                  <X size={10} />
+                </button>
               </span>
+            )}
+            {(selectedCategories.length > 0 || selectedSubCategories.length > 0 || searchTerm) && (
+              <button
+                onClick={() => {
+                  onSearchChange("");
+                  selectedCategories.forEach(cat => onCategoryChange(cat, false));
+                  selectedSubCategories.forEach(sub => onSubCategoryChange(sub, false));
+                }}
+                className="text-[8px] bg-red-50 text-red-600 px-2.5 py-1 rounded-full font-secondary font-bold hover:bg-red-100 transition-colors"
+              >
+                Clear all
+              </button>
             )}
           </div>
         </div>
@@ -561,56 +687,85 @@ function SidebarContent({
 
 export default function ProductGrid() {
   const [searchTerm, setSearchTerm] = useState("");
-  const [selectedMainCat, setSelectedMainCat] = useState("all");
-  const [selectedSubCat, setSelectedSubCat] = useState("");
+  const [selectedCategories, setSelectedCategories] = useState([]);
+  const [selectedSubCategories, setSelectedSubCategories] = useState([]);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
+  
+  // State for applied category filters (after clicking Apply button)
+  const [appliedCategories, setAppliedCategories] = useState([]);
+  const [appliedSubCategories, setAppliedSubCategories] = useState([]);
 
-  const handleMainCatChange = useCallback(
-    (id) => {
-      if (selectedMainCat === id) {
-        setSelectedMainCat("all");
-        setSelectedSubCat("");
-      } else {
-        setSelectedMainCat(id);
-        setSelectedSubCat("");
+  const handleCategoryChange = useCallback((categoryId, isChecked) => {
+    if (isChecked) {
+      setSelectedCategories(prev => [...prev, categoryId]);
+    } else {
+      setSelectedCategories(prev => prev.filter(id => id !== categoryId));
+      // Also remove any subcategories under this category
+      const category = menuStructure.find(c => c.id === categoryId);
+      if (category) {
+        setSelectedSubCategories(prev => 
+          prev.filter(sub => !category.subs.includes(sub))
+        );
       }
-    },
-    [selectedMainCat]
-  );
-
-  const handleSubCatChange = useCallback((sub) => {
-    setSelectedSubCat(sub);
+    }
   }, []);
 
+  const handleSubCategoryChange = useCallback((subCategory, isChecked) => {
+    if (isChecked) {
+      setSelectedSubCategories(prev => [...prev, subCategory]);
+      // Auto-select parent category if not already selected
+      const parentCategory = menuStructure.find(cat => cat.subs.includes(subCategory));
+      if (parentCategory && !selectedCategories.includes(parentCategory.id)) {
+        setSelectedCategories(prev => [...prev, parentCategory.id]);
+      }
+    } else {
+      setSelectedSubCategories(prev => prev.filter(sub => sub !== subCategory));
+    }
+  }, [selectedCategories]);
+
+  const handleApplyFilters = useCallback(() => {
+    setAppliedCategories([...selectedCategories]);
+    setAppliedSubCategories([...selectedSubCategories]);
+  }, [selectedCategories, selectedSubCategories]);
+
+  // Search is applied directly - no need for appliedSearchTerm
   const filteredProducts = useMemo(() => {
     let filtered = [...products];
+    
+    // Apply search filter directly
     if (searchTerm.trim()) {
       filtered = filtered.filter((p) =>
         p.name.toLowerCase().includes(searchTerm.toLowerCase().trim())
       );
     }
-    if (selectedMainCat !== "all") {
-      filtered = filtered.filter(
-        (p) => p.category?.toLowerCase() === selectedMainCat
+    
+    // Apply category filters
+    if (appliedCategories.length > 0 && !appliedCategories.includes("all")) {
+      filtered = filtered.filter((p) =>
+        appliedCategories.includes(p.category?.toLowerCase())
       );
     }
-    if (selectedSubCat) {
-      filtered = filtered.filter(
-        (p) =>
-          p.sport?.toLowerCase() === selectedSubCat.toLowerCase() ||
-          p.subCategory?.toLowerCase() === selectedSubCat.toLowerCase()
+    
+    // Apply subcategory filters
+    if (appliedSubCategories.length > 0) {
+      filtered = filtered.filter((p) =>
+        appliedSubCategories.some(sub => 
+          p.subCategory?.toLowerCase() === sub.toLowerCase()
+        )
       );
     }
+    
     return filtered;
-  }, [searchTerm, selectedMainCat, selectedSubCat]);
+  }, [searchTerm, appliedCategories, appliedSubCategories]);
 
   const sidebarProps = {
     searchTerm,
     onSearchChange: setSearchTerm,
-    selectedMainCat,
-    onMainCatChange: handleMainCatChange,
-    selectedSubCat,
-    onSubCatChange: handleSubCatChange,
+    selectedCategories,
+    onCategoryChange: handleCategoryChange,
+    selectedSubCategories,
+    onSubCategoryChange: handleSubCategoryChange,
+    onApplyFilters: handleApplyFilters,
   };
 
   return (
@@ -629,30 +784,34 @@ export default function ProductGrid() {
                 Showing {filteredProducts.length} Premium Results
               </p>
             </div>
-            <button className="btn btn-gradient btn-sm inline-flex whitespace-nowrap">
+            <Link href="/bulk-enquiry">
+            <button className="btn-gradient btn-sm inline-flex whitespace-nowrap rounded-md">
               <Upload size={14} />
               Upload Design
             </button>
+            </Link>
           </div>
         </div>
       </div>
 
-      {/* ✅ MOBILE HEADER — fully transparent, no bg fill, animated shimmer-border buttons */}
-      <div className="sm:hidden sticky top-0 z-20">
-        <div className="px-4 py-3 flex items-center justify-between gap-3">
-
-          {/* Upload Design — animated gradient shimmer border, transparent fill */}
-          <button className="mobile-btn-upload flex-1 flex items-center justify-center gap-2">
-            <Upload size={14} />
+      {/* MOBILE HEADER - Transparent background, only gradient buttons */}
+      <div className="sm:hidden sticky top-0 z-20 bg-transparent">
+        <div className="px-4 pt-5 flex items-center justify-between gap-3">
+          
+          {/* Upload Design Button - Gradient background, no white bg */}
+          <Link href="/bulk-enquiry">
+          <button className="flex-1 flex items-center justify-center gap-2 text-xs font-black uppercase tracking-wider py-3 rounded-xl btn-gradient">
+            <Upload size={16} />
             <span>Upload Design</span>
           </button>
+          </Link>
 
-          {/* Filter — animated blue shimmer border, transparent fill */}
+          {/* Filter Button - Gradient background, no white bg */}
           <button
             onClick={() => setIsFilterOpen(true)}
-            className="mobile-btn-filter flex items-center justify-center gap-2 px-5"
+            className="flex items-center justify-center gap-2 px-6 py-3 rounded-xl text-xs font-black uppercase tracking-wider btn-gradient"
           >
-            <SlidersHorizontal size={14} />
+            <SlidersHorizontal size={16} />
             <span>Filter</span>
           </button>
         </div>
@@ -663,7 +822,7 @@ export default function ProductGrid() {
         <div className="w-full mx-auto px-4 sm:px-6 lg:px-8 h-full">
           <div className="flex flex-col lg:flex-row gap-5 lg:gap-8 h-full py-4 sm:py-6">
 
-            {/* ✅ DESKTOP SIDEBAR — fixed height with proper scrollbar */}
+            {/* DESKTOP SIDEBAR */}
             <aside
               className="hidden lg:flex lg:flex-col w-52 xl:w-60 shrink-0 pr-2"
               style={{ maxHeight: "calc(100vh - 90px)", position: "sticky", top: "90px" }}
@@ -684,13 +843,17 @@ export default function ProductGrid() {
                     No products found
                   </h3>
                   <p className="text-xs sm:text-sm text-gray-500 mb-4 font-secondary max-w-md">
-                    We couldn't find any products matching "{searchTerm}"
+                    {searchTerm && `We couldn't find any products matching "${searchTerm}"`}
+                    {!searchTerm && appliedCategories.length > 0 && `No products found in selected categories`}
+                    {!searchTerm && appliedCategories.length === 0 && appliedSubCategories.length > 0 && `No products found in selected subcategories`}
                   </p>
                   <button
                     onClick={() => {
                       setSearchTerm("");
-                      setSelectedMainCat("all");
-                      setSelectedSubCat("");
+                      setSelectedCategories([]);
+                      setSelectedSubCategories([]);
+                      setAppliedCategories([]);
+                      setAppliedSubCategories([]);
                     }}
                     className="text-[#003E9B] text-xs sm:text-sm font-bold uppercase tracking-wider hover:underline font-secondary"
                   >
@@ -710,93 +873,7 @@ export default function ProductGrid() {
       </div>
 
       <style jsx global>{`
-
-        /* ══════════════════════════════════════════
-           MOBILE BUTTONS — transparent animated
-        ══════════════════════════════════════════ */
-
-        .mobile-btn-upload,
-        .mobile-btn-filter {
-          position: relative;
-          padding: 10px 0;
-          border-radius: 14px;
-          font-size: 10px;
-          font-weight: 900;
-          letter-spacing: 0.12em;
-          text-transform: uppercase;
-          font-family: var(--font-primary, sans-serif);
-          background: transparent;
-          border: none;
-          cursor: pointer;
-          -webkit-tap-highlight-color: transparent;
-          transition: transform 0.15s ease;
-          /* pseudo-border via box-shadow simulation using outline */
-          z-index: 0;
-        }
-
-        /* Animated gradient border via ::before pseudo */
-        .mobile-btn-upload::before,
-        .mobile-btn-filter::before {
-          content: "";
-          position: absolute;
-          inset: 0;
-          border-radius: 14px;
-          padding: 2px;
-          background-size: 300% 300%;
-          -webkit-mask:
-            linear-gradient(#fff 0 0) content-box,
-            linear-gradient(#fff 0 0);
-          -webkit-mask-composite: xor;
-          mask-composite: exclude;
-          animation: borderSpin 2.5s linear infinite;
-          z-index: -1;
-        }
-
-        /* Upload: gradient animated border */
-        .mobile-btn-upload::before {
-          background-image: linear-gradient(
-            135deg,
-            var(--gradient-start),
-            var(--gradient-mid),
-            var(--gradient-end),
-            var(--gradient-mid),
-            var(--gradient-start)
-          );
-        }
-        .mobile-btn-upload {
-          color: var(--gradient-start);
-        }
-
-        /* Filter: primary blue animated border */
-        .mobile-btn-filter::before {
-          background-image: linear-gradient(
-            135deg,
-            var(--primary-blue),
-            #1565c0,
-            #003080,
-            #1565c0,
-            var(--primary-blue)
-          );
-        }
-        .mobile-btn-filter {
-          color: var(--primary-blue);
-        }
-
-        @keyframes borderSpin {
-          0%   { background-position: 0% 50%; }
-          50%  { background-position: 100% 50%; }
-          100% { background-position: 0% 50%; }
-        }
-
-        /* Active press */
-        .mobile-btn-upload:active,
-        .mobile-btn-filter:active {
-          transform: scale(0.96);
-        }
-
-        /* ══════════════════════════════════════════
-           SIDEBAR SCROLLBAR — thin gradient
-        ══════════════════════════════════════════ */
+        /* SCROLLBARS */
         .sidebar-scroll::-webkit-scrollbar { width: 3px; }
         .sidebar-scroll::-webkit-scrollbar-track { background: transparent; }
         .sidebar-scroll::-webkit-scrollbar-thumb {
@@ -813,9 +890,6 @@ export default function ProductGrid() {
           scrollbar-color: var(--gradient-mid) transparent;
         }
 
-        /* ══════════════════════════════════════════
-           MAIN CONTENT SCROLLBAR
-        ══════════════════════════════════════════ */
         .main-scroll::-webkit-scrollbar { width: 5px; }
         .main-scroll::-webkit-scrollbar-track { background: #f1f5f9; border-radius: 10px; }
         .main-scroll::-webkit-scrollbar-thumb {
@@ -840,6 +914,26 @@ export default function ProductGrid() {
         @media (min-width: 640px) {
           .main-scroll::-webkit-scrollbar { width: 6px; }
         }
+
+        /* Gradient Button Styles - Ensure no white background */
+        .btn-gradient {
+          background: linear-gradient(135deg, var(--gradient-start), var(--gradient-mid), var(--gradient-end));
+          color: white;
+          border: none;
+          transition: all 0.3s ease;
+        }
+        .btn-gradient:hover {
+          transform: translateY(-2px);
+          box-shadow: 0 10px 20px rgba(0,62,155,0.3);
+        }
+        .btn-gradient:active {
+          transform: scale(0.98);
+        }
+        
+        /* Override any potential white background */
+        .bg-transparent {
+          background-color: transparent !important;
+        }
       `}</style>
 
       {/* MOBILE FILTER DRAWER */}
@@ -851,11 +945,7 @@ export default function ProductGrid() {
           />
           <div className="absolute right-0 top-0 bottom-0 w-72 max-w-[82vw] bg-white shadow-2xl flex flex-col">
             <div
-              className="px-5 py-4 flex justify-between items-center flex-shrink-0"
-              style={{
-                background:
-                  "linear-gradient(135deg, var(--gradient-start), var(--gradient-mid), var(--gradient-end))",
-              }}
+              className="px-5 py-4 flex justify-between items-center flex-shrink-0 bg-gradient-blue"
             >
               <span className="text-xs font-black tracking-widest uppercase font-primary text-white">
                 Filter Gear
@@ -868,7 +958,6 @@ export default function ProductGrid() {
               </button>
             </div>
 
-            {/* ✅ Scrollable drawer content */}
             <div className="flex-1 overflow-y-auto p-4 sidebar-scroll min-h-0">
               <SidebarContent {...sidebarProps} />
             </div>
