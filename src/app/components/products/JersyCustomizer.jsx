@@ -2872,23 +2872,6 @@ export default function JerseyCustomizer({ product }) {
   return (
     <div style={{ height:'100vh', overflow:'hidden', background:'#fff', display:'flex', flexDirection:'column', fontFamily:"'Poppins','Segoe UI',sans-serif", margin:"10px 0px" }}>
 
-      <header style={{ height:54, display:'flex', alignItems:'center', justifyContent:'space-between', padding:'0px 22px', background:'#fff', borderBottom:'1px solid #E8ECF0', flexShrink:0 }}>
-        <div style={{ display:'flex', alignItems:'center', gap:12 }}>
-          <div style={{ width:34, height:34, borderRadius:10, background:'linear-gradient(135deg,#0EA5E9,#0284C7,#1E3A8A)', display:'flex', alignItems:'center', justifyContent:'center' }}>
-            <Paintbrush size={16} color="#fff"/>
-          </div>
-          <div>
-            <div style={{ fontSize:14, fontWeight:800 }}>{product?.name||'Kit Designer'}</div>
-            <div style={{ fontSize:9, color:'#64748B' }}>Custom Kit Studio</div>
-          </div>
-        </div>
-        <div style={{ display:'flex', alignItems:'center', gap:10 }}>
-          <button onClick={() => setMobileOpen(!mobileOpen)} className="mob-toggle" style={{ display:'none', padding:'7px 11px', borderRadius:8, background:'rgba(0,62,155,0.1)', color:'#003E9B', border:'none', cursor:'pointer' }}>
-            <Menu size={18}/>
-          </button>
-        </div>
-      </header>
-
       <div style={{ display:'flex', flex:1, overflow:'hidden' }}>
 
         <div style={{ flex:1, position:'relative', background:'linear-gradient(135deg,#EEF2F7,#E2E8F0)', overflow:'hidden' }}>
@@ -2932,7 +2915,7 @@ export default function JerseyCustomizer({ product }) {
           {viewMode === 'glb' && (
             <div style={{ position:'absolute', inset:0 }}>
               <GLBViewer
-                glbPath="/images/jerseys/jersey.glb"
+                glbPath="/images/jerseys/3dtest1.glb"
                 autoRotate={true}
                 backgroundColor="#E2E8F0"
                 jerseyColor={jerseyColor}
@@ -2962,7 +2945,7 @@ export default function JerseyCustomizer({ product }) {
             </div>
           )}
 
-          <div style={{ position:'absolute', bottom:20, left:16, zIndex:20 }}>
+          {/* <div style={{ position:'absolute', bottom:20, left:16, zIndex:20 }}>
             <div style={chip}>
               <div style={{ display:'flex', alignItems:'center', gap:8 }}>
                 <div style={{ width:14, height:14, borderRadius:'50%', background:jerseyColor, border:'1px solid rgba(0,0,0,0.1)' }}/>
@@ -2972,7 +2955,7 @@ export default function JerseyCustomizer({ product }) {
                 </div>
               </div>
             </div>
-          </div>
+          </div> */}
 
           <div style={{ position:'absolute', bottom:20, right:16, zIndex:20 }}>
             <div style={chip}>
