@@ -218,7 +218,7 @@ export default function NavbarBottom() {
     { icon: FaCube, text: "Design in 3D", link: null },
     { icon: FaShippingFast, text: "Free Worldwide Shipping", link: null },
     { icon: FaPhoneAlt, text: "+1 847 624 2660", link: "tel:+18476242660" },
-    { icon: FaHeadset, text: "24/7 Support", link: "/contact" },
+    { icon: FaHeadset, text: "24/7 Support", link: "/contact-us" },
     { icon: FaQuestion, text: "FAQ", link: "/faq" },
   ];
 
@@ -298,7 +298,7 @@ export default function NavbarBottom() {
             <div className="h-5 w-px bg-white/20" />
 
             <Link
-              href="/contact"
+              href="/contact-us"
               className="flex items-center gap-2 group transition hover:-translate-y-[2px]"
             >
               <div className="bg-white/10 border border-white/20 p-2 rounded-full backdrop-blur group-hover:bg-primary transition">
