@@ -53,8 +53,9 @@
 
 import { Poppins, Inter } from "next/font/google";
 import "@/app/globals.css";
-
-import LayoutWrapper from "./LayoutWrapper"; // 👈 add this
+import {Providers} from "./providers";
+import LayoutWrapper from "./LayoutWrapper"; 
+import { Toaster } from "react-hot-toast";
 
 const poppins = Poppins({
   variable: "--font-poppins",
@@ -81,7 +82,16 @@ export default function RootLayout({ children }) {
       className={`${poppins.variable} ${inter.variable} h-full antialiased`}
     >
       <body className="min-h-screen bg-background text-foreground font-sans">
-        <LayoutWrapper>{children}</LayoutWrapper>
+        <Providers>
+          <Toaster
+            position="top-right"
+            toastOptions={{
+              className: "toast-gradient", 
+            }}
+          />
+          <LayoutWrapper>{children}</LayoutWrapper>
+        </Providers>
+       
       </body>
     </html>
   );

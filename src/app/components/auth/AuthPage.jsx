@@ -790,6 +790,9 @@
 import { useEffect, useState } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
+import { useDispatch } from "react-redux";
+import { loginUser } from "@/features/auth/authThunks";
+
 
 export default function AuthPage({ defaultMode = "login" }) {
   const [mode, setMode] = useState(defaultMode);
@@ -802,6 +805,26 @@ export default function AuthPage({ defaultMode = "login" }) {
 
   const handle = (e) => setForm({ ...form, [e.target.name]: e.target.value });
   const router = useRouter();
+  const dispatch = useDispatch();
+
+const handleLogin = async () => {
+  console.log("Form Data:", form);
+
+  const res = await dispatch(
+    loginUser({
+      email: form.email,
+      password: form.password,
+    })
+  );
+
+  console.log("Login Response:", res);
+
+  if (res.meta.requestStatus === "fulfilled") {
+    router.push("/");
+  } else {
+    alert("Invalid credentials");
+  }
+};
 
   useEffect(() => {
     setMode(defaultMode);
@@ -1096,7 +1119,7 @@ export default function AuthPage({ defaultMode = "login" }) {
                 <span style={responsiveStyles.forgotLink}>Forgot password?</span>
               </div>
 
-              <SubmitButton label="SIGN IN" responsiveStyles={responsiveStyles} />
+              <SubmitButton label="SIGN IN" responsiveStyles={responsiveStyles} onClick={handleLogin}/>
 
               <div style={styles.switchRow}>
                 <span style={responsiveStyles.switchText}>Don't have an account? </span>
@@ -1317,10 +1340,12 @@ function PasswordField({ icon, name, placeholder, value, onChange, showPassword,
   );
 }
 
-function SubmitButton({ label, responsiveStyles }) {
+function SubmitButton({ label, responsiveStyles,onClick }) {
   return (
     <button
       style={responsiveStyles.submitBtn}
+       onClick={onClick} 
+       type="button"
       onMouseEnter={(e) => { e.target.style.opacity = "0.88"; e.target.style.transform = "translateY(-1px)"; }}
       onMouseLeave={(e) => { e.target.style.opacity = "1"; e.target.style.transform = "translateY(0)"; }}
     >

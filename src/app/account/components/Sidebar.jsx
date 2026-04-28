@@ -4,6 +4,8 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { ShoppingCart, MapPin, User, LogOut, Menu, X } from "lucide-react";
 import { useState, useEffect } from "react";
+import { useDispatch } from "react-redux";
+import { logout } from "@/features/auth/authSlice";
 
 const NAV_ITEMS = [
   { label: "Orders", href: "/account/orders", icon: ShoppingCart },
@@ -16,6 +18,7 @@ export default function Sidebar() {
   const router = useRouter();
   const [isMobileOpen, setIsMobileOpen] = useState(false);
   const [isSticky, setIsSticky] = useState(false);
+  const dispatch = useDispatch();
 
   const isActive = (href) => pathname === href;
 
@@ -91,7 +94,10 @@ export default function Sidebar() {
 
         {/* Logout */}
         <button
-          onClick={() => router.push("/")}
+          onClick={() => {
+            dispatch(logout());   // clear redux + localStorage
+            router.push("/");     // redirect
+          }}
           className="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold mt-2 w-full text-left transition-all duration-200 hover:opacity-80 group"
           style={{
             fontFamily: "var(--font-poppins), Poppins, sans-serif",

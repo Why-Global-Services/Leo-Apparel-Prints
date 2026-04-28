@@ -235,13 +235,13 @@ export default function Footer() {
         {/* ── BRAND COLUMN ── */}
         <div className="space-y-8">
         <div className="flex items-center gap-3 group">
-  <Image
+  {/* <Image
     src="/images/icons/mainlogo.jpeg"
     alt="Leo Cult Logo"
     width={50}
     height={50}
     className="rounded-md"
-  />
+  /> */}
 
   <Link href="/" className="inline-block">
     <h2 className="text-2xl font-[900] text-white italic uppercase tracking-tight leading-none group-hover:text-primary transition-colors font-primary">
