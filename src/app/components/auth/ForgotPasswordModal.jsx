@@ -1,6 +1,9 @@
 "use client";
 import { useState, useEffect, useRef } from "react";
 import Modal from "../common/Modal";
+import { useDispatch } from "react-redux";
+import { forgotPassword, verifyResetOtp, resetPassword } from "@/features/auth/authThunks";
+import toast from "react-hot-toast";
 
 /**
  * ForgotPasswordModal
@@ -26,12 +29,14 @@ export default function ForgotPasswordModal({ isOpen, onClose, onBackToLogin }) 
   const [isLoading, setIsLoading] = useState(false);
   const [resendTimer, setResendTimer] = useState(0);
   const [errors, setErrors] = useState({});
+  const [resetToken, setResetToken] = useState("");
   const [windowWidth, setWindowWidth] = useState(
     typeof window !== "undefined" ? window.innerWidth : 1024
   );
 
   const otpRefs = useRef([]);
   const timerRef = useRef(null);
+  const dispatch = useDispatch();
 
   const isMobile = windowWidth <= 768;
 
@@ -72,10 +77,16 @@ export default function ForgotPasswordModal({ isOpen, onClose, onBackToLogin }) 
     setIsLoading(true);
     setErrors({});
     try {
-      // TODO: dispatch(forgotPassword({ email }))
-      await new Promise((r) => setTimeout(r, 1200)); // simulate API
-      setStep(2);
-      setResendTimer(30);
+
+     const res = await dispatch(forgotPassword({ email }));
+
+      if (res.meta.requestStatus === "fulfilled") {
+        toast.success("OTP sent");
+        setStep(2);
+        setResendTimer(30);
+      } else {
+        setErrors({ email: res.payload?.message || "Failed to send OTP" });
+      }
     } catch {
       setErrors({ email: "Failed to send OTP. Try again." });
     } finally {
@@ -114,8 +125,21 @@ export default function ForgotPasswordModal({ isOpen, onClose, onBackToLogin }) 
     setIsLoading(true);
     setErrors({});
     try {
-      // TODO: dispatch(verifyOtp({ email, otp: code }))
-      await new Promise((r) => setTimeout(r, 1000));
+      const code = otp.join("");
+
+const res = await dispatch(
+  verifyResetOtp({ email, otp: code })
+);
+
+if (res.meta.requestStatus === "fulfilled") {
+  toast.success("OTP verified");
+
+  setResetToken(res.payload.resetToken);
+  setStep(3);
+} else {
+  setErrors({ otp: res.payload?.message || "Invalid OTP" });
+}
+      
       setStep(3);
     } catch {
       setErrors({ otp: "Invalid OTP. Please check and retry." });
@@ -149,9 +173,19 @@ export default function ForgotPasswordModal({ isOpen, onClose, onBackToLogin }) 
     setIsLoading(true);
     setErrors({});
     try {
-      // TODO: dispatch(resetPassword({ email, otp: otp.join(""), newPassword }))
-      await new Promise((r) => setTimeout(r, 1200));
-      setStep(4);
+      const res = await dispatch(
+  resetPassword({
+    token: resetToken,
+    password: newPassword,
+  })
+);
+
+if (res.meta.requestStatus === "fulfilled") {
+  toast.success("Password reset successful");
+  setStep(4);
+} else {
+  setErrors({ newPassword: res.payload?.message || "Reset failed" });
+}
     } catch {
       setErrors({ newPassword: "Failed to reset password. Please try again." });
     } finally {

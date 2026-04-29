@@ -1,60 +1,9 @@
-// import { createSlice } from "@reduxjs/toolkit";
-// import { loginUser } from "./authThunks";
-
-// const initialState = {
-//   user: null,
-//   token: null,
-//   role: null,
-//   loading: false,
-// };
-
-// const authSlice = createSlice({
-//   name: "auth",
-//   initialState,
-//   reducers: {
-//     logout: (state) => {
-//       state.user = null;
-//       state.token = null;
-//       state.role = null;
-//     },
-//     setToken: (state, action) => {
-//       state.token = action.payload;
-//     },
-//   },
-//   extraReducers: (builder) => {
-//     builder
-//       .addCase(loginUser.pending, (state) => {
-//         state.loading = true;
-//       })
-//       .addCase(loginUser.fulfilled, (state, action) => {
-//         state.loading = false;
-//         state.user = action.payload.user;
-//         state.token = action.payload.accessToken;
-//         state.role = action.payload.user.role;
-//       })
-//       .addCase(loginUser.rejected, (state) => {
-//         state.loading = false;
-//       });
-//   },
-// });
-
-// export const { logout, setToken } = authSlice.actions;
-// export default authSlice.reducer;
-
-
-
-
-
-
-
-
-
 "use client";
 
 import { createSlice } from "@reduxjs/toolkit";
-import { loginUser } from "./authThunks";
+import { loginUser, registerUser } from "./authThunks";
 
-// 🔥 Load from localStorage (for persistence)
+// 🔥 Load from localStorage
 const getUserFromStorage = () => {
   if (typeof window !== "undefined") {
     const user = localStorage.getItem("user");
@@ -70,7 +19,6 @@ const getTokenFromStorage = () => {
   return null;
 };
 
-// ✅ Initial State
 const initialState = {
   user: getUserFromStorage(),
   token: getTokenFromStorage(),
@@ -78,13 +26,11 @@ const initialState = {
   error: null,
 };
 
-// ✅ Slice
 const authSlice = createSlice({
   name: "auth",
   initialState,
 
   reducers: {
-    // 🔐 Logout
     logout: (state) => {
       state.user = null;
       state.token = null;
@@ -95,7 +41,6 @@ const authSlice = createSlice({
       }
     },
 
-    // 🔄 Set Token (for interceptor / refresh)
     setToken: (state, action) => {
       state.token = action.payload;
 
@@ -103,37 +48,47 @@ const authSlice = createSlice({
         localStorage.setItem("token", action.payload);
       }
     },
+
+     setUser: (state, action) => {
+    state.user = action.payload;
+    localStorage.setItem("user", JSON.stringify(action.payload));
+  },
+
   },
 
   extraReducers: (builder) => {
     builder
-      // ⏳ Pending
+      // 🔐 LOGIN
       .addCase(loginUser.pending, (state) => {
         state.loading = true;
         state.error = null;
       })
-
-      // ✅ Success
       .addCase(loginUser.fulfilled, (state, action) => {
         state.loading = false;
         state.user = action.payload.user;
         state.token = action.payload.accessToken;
 
-        // 🔥 Save to localStorage
-        if (typeof window !== "undefined") {
-          localStorage.setItem("user", JSON.stringify(action.payload.user));
-          localStorage.setItem("token", action.payload.accessToken);
-        }
+        localStorage.setItem("user", JSON.stringify(action.payload.user));
+        localStorage.setItem("token", action.payload.accessToken);
       })
-
-      // ❌ Failed
       .addCase(loginUser.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload || "Login failed";
+      })
+
+      // 🆕 REGISTER
+      .addCase(registerUser.pending, (state) => {
+        state.loading = true;
+      })
+      .addCase(registerUser.fulfilled, (state) => {
+        state.loading = false;
+      })
+      .addCase(registerUser.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload || "Register failed";
       });
   },
 });
 
-// 🔥 EXPORTS
-export const { logout, setToken } = authSlice.actions;
+export const { logout, setToken,setUser } = authSlice.actions;
 export default authSlice.reducer;

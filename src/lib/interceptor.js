@@ -14,42 +14,61 @@ const processQueue = (error, token = null) => {
 };
 
 export const setupInterceptors = () => {
+  // 🔹 REQUEST
   axiosClient.interceptors.request.use((config) => {
     const token = store.getState().auth.token;
-    if (token) config.headers.Authorization = `Bearer ${token}`;
+
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+
     return config;
   });
 
+  // 🔹 RESPONSE
   axiosClient.interceptors.response.use(
     (res) => res,
     async (error) => {
-      const original = error.config;
+      const originalRequest = error.config;
 
-      if (error.response?.status === 401 && !original._retry) {
+      // 🔥 HANDLE TOKEN EXPIRE
+      if (
+        error.response?.status === 401 &&
+        !originalRequest._retry
+      ) {
         if (isRefreshing) {
           return new Promise((resolve, reject) => {
             queue.push({ resolve, reject });
           }).then((token) => {
-            original.headers.Authorization = `Bearer ${token}`;
-            return axiosClient(original);
+            originalRequest.headers.Authorization = `Bearer ${token}`;
+            return axiosClient(originalRequest);
           });
         }
 
-        original._retry = true;
+        originalRequest._retry = true;
         isRefreshing = true;
 
         try {
-          const res = await axiosClient.post("/auth/refresh");
+          // 🔥 CALL YOUR BACKEND
+          const res = await axiosClient.post(
+            "/api/user/refresh-token"
+          );
+
           const newToken = res.data.accessToken;
 
+          // save in redux + localStorage
           store.dispatch(setToken(newToken));
+
           processQueue(null, newToken);
 
-          original.headers.Authorization = `Bearer ${newToken}`;
-          return axiosClient(original);
+          originalRequest.headers.Authorization = `Bearer ${newToken}`;
+
+          return axiosClient(originalRequest);
         } catch (err) {
           processQueue(err, null);
+
           store.dispatch(logout());
+
           window.location.href = "/auth/login";
         } finally {
           isRefreshing = false;

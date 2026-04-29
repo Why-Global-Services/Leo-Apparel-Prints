@@ -56,6 +56,7 @@ import "@/app/globals.css";
 import {Providers} from "./providers";
 import LayoutWrapper from "./LayoutWrapper"; 
 import { Toaster } from "react-hot-toast";
+import Script from "next/script";
 
 const poppins = Poppins({
   variable: "--font-poppins",
@@ -82,6 +83,10 @@ export default function RootLayout({ children }) {
       className={`${poppins.variable} ${inter.variable} h-full antialiased`}
     >
       <body className="min-h-screen bg-background text-foreground font-sans">
+        <Script
+          src="https://accounts.google.com/gsi/client"
+          strategy="afterInteractive"
+        />
         <Providers>
           <Toaster
             position="top-right"

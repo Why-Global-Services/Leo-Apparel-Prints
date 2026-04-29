@@ -7,51 +7,157 @@ import { loginUser, getGoogleAuthUrl } from "@/features/auth/authThunks";
 import Modal from "../common/Modal";
 import ForgotPasswordModal from "./ForgotPasswordModal";
 import toast from "react-hot-toast";
+import { registerUser } from "@/features/auth/authThunks";
+import axiosClient from "@/lib/axios";
+import { setToken,setUser} from "@/features/auth/authSlice";
+
 
 export default function AuthModal({ isOpen, onClose, defaultMode = "login" }) {
   const [mode, setMode] = useState(defaultMode);
   const [showPassword, setShowPassword] = useState(false);
+  const [showRegisterPassword, setShowRegisterPassword] = useState(false);
   const [agreeTerms, setAgreeTerms] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-
-  // ── NEW: forgot password state ──────────────────────
   const [showForgotModal, setShowForgotModal] = useState(false);
-  // ────────────────────────────────────────────────────
-
   const [windowWidth, setWindowWidth] = useState(
     typeof window !== "undefined" ? window.innerWidth : 1024
   );
-  const [form, setForm] = useState({
-    firstName: "", lastName: "", email: "", phone: "", password: "",
+  
+  // Separate form states for login and register
+  const [loginForm, setLoginForm] = useState({
+    mobile: "",
+    password: ""
   });
 
-  const handle = (e) => setForm({ ...form, [e.target.name]: e.target.value });
+  const [registerForm, setRegisterForm] = useState({
+    firstName: "", 
+    lastName: "", 
+    email: "", 
+    phone: "", 
+    password: ""
+  });
+
+  const handleLoginChange = (e) => setLoginForm({ ...loginForm, [e.target.name]: e.target.value });
+  const handleRegisterChange = (e) => setRegisterForm({ ...registerForm, [e.target.name]: e.target.value });
+  
   const router = useRouter();
   const dispatch = useDispatch();
 
+  // Login handler - uses mobile number
   const handleLogin = async () => {
+    if (!loginForm.mobile.trim()) {
+      toast.error("Please enter mobile number");
+      return;
+    }
+    
+    if (!loginForm.password) {
+      toast.error("Please enter password");
+      return;
+    }
+
     setIsLoading(true);
-    const res = await dispatch(loginUser({ email: form.email, password: form.password }));
-   if (res.meta.requestStatus === "fulfilled") {
-    toast.success("Login successful");
-    onClose();
-    router.push("/");
-  } else {
-    toast.error("Invalid credentials");
-  }
+    const res = await dispatch(loginUser({ 
+      phone: loginForm.mobile, // Send mobile as phone field (backend expects phone field)
+      password: loginForm.password 
+    }));
+    
+    if (res.meta.requestStatus === "fulfilled") {
+      toast.success("Login successful");
+      // Clear login form
+      setLoginForm({ mobile: "", password: "" });
+      onClose();
+      router.push("/");
+    } else {
+      toast.error(res.payload?.message || "Invalid credentials");
+    }
     setIsLoading(false);
   };
 
-  const handleGoogleLogin = async () => {
-    setIsLoading(true);
-    try {
-      const result = await dispatch(getGoogleAuthUrl()).unwrap();
-      window.location.href = result;
-    } catch (e) {
-      console.error(e);
-      toast.error("Failed to initialize Google login.");
-      setIsLoading(false);
+const handleGoogleLogin = () => {
+  if (typeof window === "undefined" || !window.google) {
+    console.log("Google SDK not loaded");
+    toast.error("Google not ready. Refresh page.");
+    return;
+  }
+
+  google.accounts.id.initialize({
+    client_id: process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID,
+    callback: async (response) => {
+      try {
+        const res = await axiosClient.post("/v1/user/google", {
+          token: response.credential,
+        });
+
+        dispatch(setToken(res.data.accessToken || res.data.token));
+        dispatch(setUser(res.data.user));
+
+        dispatch(setToken(res.data.token));
+
+        toast.success("Google login success");
+        onClose();
+        router.push("/");
+      } catch (err) {
+        console.log(err);
+        toast.error("Google login failed");
+      }
+    },
+  });
+
+  google.accounts.id.prompt();
+};
+
+  // Register handler - clears ALL fields after successful registration
+  const handleRegister = async () => {
+    if (!agreeTerms) {
+      toast.error("Please agree to Terms & Privacy Policy");
+      return;
     }
+
+    if (!registerForm.firstName || !registerForm.lastName || !registerForm.email || !registerForm.phone || !registerForm.password) {
+      toast.error("Please fill all fields");
+      return;
+    }
+
+    setIsLoading(true);
+
+    const res = await dispatch(
+      registerUser({
+        name: `${registerForm.firstName} ${registerForm.lastName}`,
+        email: registerForm.email,
+        phone: registerForm.phone,
+        password: registerForm.password,
+      })
+    );
+
+    if (res.meta.requestStatus === "fulfilled") {
+      toast.success("Account created successfully! Please login.");
+
+      // ✅ CLEAR ALL REGISTRATION FORM FIELDS
+      setRegisterForm({
+        firstName: "",
+        lastName: "",
+        email: "",
+        phone: "",
+        password: ""
+      });
+      
+      setAgreeTerms(false);
+      setShowRegisterPassword(false);
+      
+      // ✅ Clear login form as well (no auto-fill)
+      setLoginForm({
+        mobile: "",
+        password: ""
+      });
+      
+      // ✅ Switch to login mode
+      setMode("login");
+      
+    } else {
+      toast.error(res.payload?.message || "Registration failed");
+    }
+
+    setIsLoading(false);
   };
 
   useEffect(() => {
@@ -60,15 +166,30 @@ export default function AuthModal({ isOpen, onClose, defaultMode = "login" }) {
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
-  // Sync defaultMode when prop changes
-  useEffect(() => { setMode(defaultMode); }, [defaultMode]);
+  // Reset all forms when modal opens or closes
+  useEffect(() => { 
+    setMode(defaultMode);
+    if (isOpen) {
+      // Reset all forms when modal opens
+      setLoginForm({ mobile: "", password: "" });
+      setRegisterForm({
+        firstName: "",
+        lastName: "",
+        email: "",
+        phone: "",
+        password: ""
+      });
+      setAgreeTerms(false);
+      setShowPassword(false);
+      setShowRegisterPassword(false);
+    }
+  }, [defaultMode, isOpen]);
 
   const showLeftPanel = windowWidth > 900;
   const isMobile = windowWidth <= 768;
 
-  // ── Forgot password handlers ────────────────────────
   function handleForgotPasswordClick() {
-    setShowForgotModal(true); // open forgot modal on top
+    setShowForgotModal(true);
   }
 
   function handleForgotModalClose() {
@@ -76,17 +197,15 @@ export default function AuthModal({ isOpen, onClose, defaultMode = "login" }) {
   }
 
   function handleBackToLogin() {
-    setShowForgotModal(false); // close forgot modal, AuthModal is still open underneath
+    setShowForgotModal(false);
     setMode("login");
   }
-  // ────────────────────────────────────────────────────
 
   return (
     <>
       <Modal isOpen={isOpen} onClose={onClose}>
         <div className="am-shell">
 
-          {/* ── Close ── */}
           <button className="am-close" onClick={onClose} aria-label="Close">
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
               <line x1="18" y1="6" x2="6" y2="18"/>
@@ -94,7 +213,6 @@ export default function AuthModal({ isOpen, onClose, defaultMode = "login" }) {
             </svg>
           </button>
 
-          {/* ── Left Panel ── */}
           {showLeftPanel && (
             <div className="am-left">
               <div className="am-geo am-geo-1"/><div className="am-geo am-geo-2"/><div className="am-geo am-geo-3"/>
@@ -114,7 +232,6 @@ export default function AuthModal({ isOpen, onClose, defaultMode = "login" }) {
             </div>
           )}
 
-          {/* ── Right Panel ── */}
           <div className="am-right">
             <div className="am-right-blob am-right-blob-1"/>
             <div className="am-right-blob am-right-blob-2"/>
@@ -126,31 +243,46 @@ export default function AuthModal({ isOpen, onClose, defaultMode = "login" }) {
               </div>
             )}
 
-            {/* Tabs */}
             <div className="am-tabs">
               <button className={`am-tab ${mode === "login" ? "am-tab-active" : ""}`} onClick={() => setMode("login")}>Sign In</button>
               <button className={`am-tab ${mode === "register" ? "am-tab-active" : ""}`} onClick={() => setMode("register")}>Register</button>
             </div>
 
-            {/* ── Login ── */}
+            {/* ── LOGIN with Mobile only ── */}
             {mode === "login" && (
               <div className="am-form">
                 <div className="am-form-head">
                   <h2 className="am-title">Welcome Back</h2>
-                  <p className="am-sub">Sign in to manage your jersey orders</p>
+                  <p className="am-sub">Sign in with your mobile number</p>
                 </div>
 
                 <div className="am-input-group">
-                  <FloatField label="Email Address" name="email" type="email" value={form.email} onChange={handle} icon={<EmailIcon/>}/>
-                </div>
-
-                <div className="am-input-group">
-                  <FloatField label="Password" name="password" type={showPassword ? "text" : "password"} value={form.password} onChange={handle} icon={<LockIcon/>}
-                    suffix={<button type="button" className="am-eye" onClick={() => setShowPassword(!showPassword)}>{showPassword ? <EyeOpenIcon/> : <EyeClosedIcon/>}</button>}
+                  <FloatField 
+                    label="Mobile Number" 
+                    name="mobile" 
+                    type="tel" 
+                    value={loginForm.mobile} 
+                    onChange={handleLoginChange} 
+                    icon={<PhoneIcon/>}
                   />
                 </div>
 
-                {/* ── FORGOT PASSWORD LINK (wired) ── */}
+                <div className="am-input-group">
+                  <FloatField 
+                    label="Password" 
+                    name="password" 
+                    type={showPassword ? "text" : "password"} 
+                    value={loginForm.password} 
+                    onChange={handleLoginChange} 
+                    icon={<LockIcon/>}
+                    suffix={
+                      <button type="button" className="am-eye" onClick={() => setShowPassword(!showPassword)}>
+                        {showPassword ? <EyeOpenIcon/> : <EyeClosedIcon/>}
+                      </button>
+                    }
+                  />
+                </div>
+
                 <div className="am-forgot-row">
                   <span
                     className="am-forgot"
@@ -182,7 +314,7 @@ export default function AuthModal({ isOpen, onClose, defaultMode = "login" }) {
               </div>
             )}
 
-            {/* ── Register ── */}
+            {/* ── REGISTER ── */}
             {mode === "register" && (
               <div className="am-form am-form-register">
                 <div className="am-form-head">
@@ -192,24 +324,62 @@ export default function AuthModal({ isOpen, onClose, defaultMode = "login" }) {
 
                 <div className="am-two-col">
                   <div className="am-input-group">
-                    <FloatField label="First Name" name="firstName" type="text" value={form.firstName} onChange={handle} icon={<UserIcon/>}/>
+                    <FloatField 
+                      label="First Name" 
+                      name="firstName" 
+                      type="text" 
+                      value={registerForm.firstName} 
+                      onChange={handleRegisterChange} 
+                      icon={<UserIcon/>}
+                    />
                   </div>
                   <div className="am-input-group">
-                    <FloatField label="Last Name" name="lastName" type="text" value={form.lastName} onChange={handle} icon={<UserIcon/>}/>
+                    <FloatField 
+                      label="Last Name" 
+                      name="lastName" 
+                      type="text" 
+                      value={registerForm.lastName} 
+                      onChange={handleRegisterChange} 
+                      icon={<UserIcon/>}
+                    />
                   </div>
                 </div>
 
                 <div className="am-input-group">
-                  <FloatField label="Email Address" name="email" type="email" value={form.email} onChange={handle} icon={<EmailIcon/>}/>
+                  <FloatField 
+                    label="Email Address" 
+                    name="email" 
+                    type="email" 
+                    value={registerForm.email} 
+                    onChange={handleRegisterChange} 
+                    icon={<EmailIcon/>}
+                  />
                 </div>
 
                 <div className="am-two-col">
                   <div className="am-input-group">
-                    <FloatField label="Phone" name="phone" type="tel" value={form.phone} onChange={handle} icon={<PhoneIcon/>}/>
+                    <FloatField 
+                      label="Mobile Number" 
+                      name="phone" 
+                      type="tel" 
+                      value={registerForm.phone} 
+                      onChange={handleRegisterChange} 
+                      icon={<PhoneIcon/>}
+                    />
                   </div>
                   <div className="am-input-group">
-                    <FloatField label="Password" name="password" type={showPassword ? "text" : "password"} value={form.password} onChange={handle} icon={<LockIcon/>}
-                      suffix={<button type="button" className="am-eye" onClick={() => setShowPassword(!showPassword)}>{showPassword ? <EyeOpenIcon/> : <EyeClosedIcon/>}</button>}
+                    <FloatField 
+                      label="Password" 
+                      name="password" 
+                      type={showRegisterPassword ? "text" : "password"} 
+                      value={registerForm.password} 
+                      onChange={handleRegisterChange} 
+                      icon={<LockIcon/>}
+                      suffix={
+                        <button type="button" className="am-eye" onClick={() => setShowRegisterPassword(!showRegisterPassword)}>
+                          {showRegisterPassword ? <EyeOpenIcon/> : <EyeClosedIcon/>}
+                        </button>
+                      }
                     />
                   </div>
                 </div>
@@ -230,19 +400,19 @@ export default function AuthModal({ isOpen, onClose, defaultMode = "login" }) {
                   </span>
                 </label>
 
-                <button className="am-submit" type="button" disabled={isLoading} onClick={() => {
-                  if (agreeTerms) {
-                    toast.success("Account created successfully");
-                  } else {
-                    toast.error("Please agree to Terms & Privacy Policy");
-                  }
-                }}>
+                <button
+                  className="am-submit"
+                  type="button"
+                  disabled={isLoading}
+                  onClick={handleRegister}
+                >
                   {isLoading ? "Creating…" : "Create Account"} <ArrowIcon/>
                 </button>
 
                 <div className="am-divider">
                   <span className="am-div-line"/><span className="am-div-text">Or sign up with</span><span className="am-div-line"/>
                 </div>
+                
                 <button className="am-google-btn" onClick={handleGoogleLogin} disabled={isLoading}>
                   <GoogleIcon/><span>Continue with Google</span>
                 </button>
@@ -255,7 +425,6 @@ export default function AuthModal({ isOpen, onClose, defaultMode = "login" }) {
           </div>
         </div>
 
-        {/* ── ALL EXISTING STYLES UNCHANGED ── */}
         <style jsx global>{`
           @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;900&family=Inter:wght@300;400;500&display=swap');
           .am-shell { position:relative;display:flex;width:${showLeftPanel?"860px":isMobile?"95vw":"460px"};height:${showLeftPanel?"570px":"auto"};border-radius:22px;overflow:hidden;font-family:'Inter',sans-serif;box-shadow:0 32px 80px rgba(0,0,0,0.7),0 0 0 1px rgba(14,165,233,0.15); }
@@ -337,7 +506,6 @@ export default function AuthModal({ isOpen, onClose, defaultMode = "login" }) {
         `}</style>
       </Modal>
 
-      {/* ── FORGOT PASSWORD MODAL — renders on top of AuthModal ── */}
       <ForgotPasswordModal
         isOpen={showForgotModal}
         onClose={handleForgotModalClose}
@@ -347,7 +515,7 @@ export default function AuthModal({ isOpen, onClose, defaultMode = "login" }) {
   );
 }
 
-/* ══ FloatField (unchanged) ══ */
+/* ══ FloatField Component ══ */
 function FloatField({ label, name, type = "text", value, onChange, icon, suffix }) {
   const [focused, setFocused] = useState(false);
   const isUp = focused || (value && value.length > 0);
@@ -368,7 +536,7 @@ function FloatField({ label, name, type = "text", value, onChange, icon, suffix 
   );
 }
 
-/* ══ Icons (unchanged) ══ */
+/* ══ Icons ══ */
 const ic = "#38bdf8";
 const EmailIcon    = () => <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke={ic} strokeWidth="2"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-10 7L2 7"/></svg>;
 const LockIcon     = () => <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke={ic} strokeWidth="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>;

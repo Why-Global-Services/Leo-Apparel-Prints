@@ -812,7 +812,7 @@ const handleLogin = async () => {
 
   const res = await dispatch(
     loginUser({
-      email: form.email,
+      phone: form.phone,
       password: form.password,
     })
   );
