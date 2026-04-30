@@ -24,7 +24,7 @@ import { getWebSettings } from "../Interceptor/interceptor";
 const Sidebar = ({ isCollapsed }) => {
   const { permissions } = useAuth();
   const [webSettings, setWebSettings] = useState(null);
-
+console.log("permissions",permissions)
   // Fetch web settings on component mount
   useEffect(() => {
     const fetchSettings = async () => {
@@ -42,12 +42,13 @@ const Sidebar = ({ isCollapsed }) => {
     // { icon: FaHome, label: "Dashboard", path: "/dashboard", permission: true },
     { icon: FaCalendar, label: "Products", path: "/products", permission: permissions?.products },
     { icon: FaTasks, label: "Category", path: "/categories", permission: permissions?.category },
-    { icon: FaTasks, label: "Digital Zone", path: "/digitalzone", permission: permissions?.digitalzone },    
+    { icon: FaTasks, label: "Digital Zone", path: "/designzone", permission: permissions?.digitalzone },    
     { icon: FaTasks, label: "Template", path: "/categories", permission: permissions?.templates },
     // { icon: FaTasks, label: "Product", path: "/categories", permission: permissions?.category },
     { icon: FaTasks, label: "Customization viewer", path: "/categories", permission: permissions?.customization },
-    
+    { icon: FaTasks, label: "Digital Zone", path: "/digitalzone", permission: permissions?.digitalzone },
     // { icon: TbCategoryFilled, label: "SubCategories", path: "/subcategories", permission: permissions?.subCategory },
+    
     { icon: FaShoppingCart, label: "Orders", path: "/orders", permission: permissions?.orders },
     { icon: FaUser, label: "Customers", path: "/customers", permission: permissions?.customers },
     { icon: FaShoppingCart, label: "Reviews", path: "/reviews", permission: permissions?.reviews },

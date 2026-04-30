@@ -26,6 +26,7 @@ const Categories = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [rowsPerPage, setRowsPerPage] = useState(10);
+  const [categoryMap, setCategoryMap] = useState({}); // Map for parent names
 
   useEffect(() => {
     fetchCategories();
@@ -42,8 +43,16 @@ const Categories = () => {
           : [];
       const categoriesWithStatus = categoriesData.map((category) => ({
         ...category,
-        status: category.status || "active",
+        status: category.isActive ? "active" : "inactive",
       }));
+      
+      // Create category map for parent names
+      const map = {};
+      categoriesData.forEach(cat => {
+        map[cat._id] = cat.name || cat.categoryTitle;
+      });
+      setCategoryMap(map);
+      
       setCategories(categoriesWithStatus);
       filterCategories("all", categoriesWithStatus);
     } catch (error) {
@@ -59,28 +68,28 @@ const Categories = () => {
       .filter((cat) => cat.status === "active")
       .map((cat, index) => ({
         "S.No": index + 1,
-        "Category Title": cat.categoryTitle,
-        Status: cat.status,
+        "Name": cat.name || cat.categoryTitle,
+        "Parent": cat.parentId ? categoryMap[cat.parentId] || "-" : "-",
+        "Status": cat.status,
         "Created At": new Date(cat.createdAt).toLocaleDateString(),
-        Description: cat.categoryDescription || "No description",
       }));
 
     const inactiveData = categories
       .filter((cat) => cat.status === "inactive")
       .map((cat, index) => ({
         "S.No": index + 1,
-        "Category Title": cat.categoryTitle,
-        Status: cat.status,
+        "Name": cat.name || cat.categoryTitle,
+        "Parent": cat.parentId ? categoryMap[cat.parentId] || "-" : "-",
+        "Status": cat.status,
         "Created At": new Date(cat.createdAt).toLocaleDateString(),
-        Description: cat.categoryDescription || "No description",
       }));
 
     const columnWidths = [
       { wch: 8 },
       { wch: 25 },
+      { wch: 20 },
       { wch: 12 },
       { wch: 15 },
-      { wch: 40 },
     ];
 
     const activeWorksheet = XLSX.utils.json_to_sheet(activeData);
@@ -106,17 +115,16 @@ const Categories = () => {
     }
     setFilteredCategories(filtered);
   };
-
-  useEffect(() => {
-    filterCategories(
-      filterStatus,
-      categories.filter((category) =>
-        category.categoryTitle
-          .toLowerCase()
-          .includes(searchQuery.toLowerCase())
-      )
-    );
-  }, [searchQuery, categories]);
+useEffect(() => {
+  filterCategories(
+    filterStatus,
+    categories.filter((category) =>
+      (category.name || category.categoryTitle || "")
+        .toLowerCase()
+        .includes(searchQuery.toLowerCase())
+    )
+  );
+}, [searchQuery, categories]);
 
   const handleEditClick = async (category) => {
     try {
@@ -151,12 +159,12 @@ const Categories = () => {
   };
 
   const handleToggleChange = async (checked, row) => {
-    const newStatus = checked ? "active" : "inactive";
+    const newIsActive = checked;
     try {
-      await updateCategory(row._id, { status: newStatus });
+      await updateCategory(row._id, { isActive: newIsActive });
       const updatedCategories = categories.map((category) =>
         category._id === row._id
-          ? { ...category, status: newStatus }
+          ? { ...category, status: newIsActive ? "active" : "inactive" }
           : category
       );
       setCategories(updatedCategories);
@@ -248,36 +256,18 @@ const Categories = () => {
       sortable: false,
     },
     {
-      name: "Image",
-      cell: (row) => (
-        <div className="flex items-center justify-center">
-          {row.categoryImage ? (
-            <img
-              src={
-                Array.isArray(row.categoryImage)
-                  ? row.categoryImage[0]
-                  : row.categoryImage
-              }
-              alt={row.categoryTitle || "Category"}
-              className="w-6 h-6 object-cover rounded-md"
-              onError={(e) => {
-                e.target.onerror = null;
-                e.target.src = "https://via.placeholder.com/24";
-              }}
-            />
-          ) : (
-            <div className="w-6 h-6 bg-gray-100 flex items-center justify-center rounded-md">
-              -
-            </div>
-          )}
-        </div>
-      ),
-      width: "15%",
+      name: "Name",
+      selector: (row) => row.name || row.categoryTitle || "-",
+      width: "30%",
     },
     {
-      name: "Category Name",
-      selector: (row) => row.categoryTitle || "-",
-      width: "35%",
+      name: "Parent",
+      cell: (row) => (
+        <div className="flex items-center justify-center">
+          {row.parentId ? categoryMap[row.parentId] || "-" : "-"}
+        </div>
+      ),
+      width: "25%",
     },
     {
       name: "Status",
@@ -288,7 +278,7 @@ const Categories = () => {
             onChange={(checked) => handleToggleChange(checked, row)}
             checkedChildren="Active"
             unCheckedChildren="Inactive"
-            aria-label={`Toggle status for ${row.categoryTitle || "category"}`}
+            aria-label={`Toggle status for ${row.name || row.categoryTitle || "category"}`}
             size="small"
           />
         </div>
@@ -302,27 +292,27 @@ const Categories = () => {
           <button
             onClick={() => toggleModal(row)}
             className="bg-gray-100 text-gray-800 p-1 rounded cursor-pointer hover:bg-gray-200"
-            aria-label={`View details for ${row.categoryTitle || "category"}`}
+            aria-label={`View details for ${row.name || row.categoryTitle || "category"}`}
           >
             <FaEye size={14} />
           </button>
           <button
             onClick={() => handleEditClick(row)}
             className="bg-orange-100 text-orange-600 p-1 rounded hover:bg-orange-200 cursor-pointer"
-            aria-label={`Edit ${row.categoryTitle || "category"}`}
+            aria-label={`Edit ${row.name || row.categoryTitle || "category"}`}
           >
             <FaEdit size={14} />
           </button>
           <button
             onClick={() => handleDeleteClick(row)}
             className="bg-red-100 text-red-600 p-1 rounded hover:bg-red-200 cursor-pointer"
-            aria-label={`Delete ${row.categoryTitle || "category"}`}
+            aria-label={`Delete ${row.name || row.categoryTitle || "category"}`}
           >
             <FaTrashAlt size={14} />
           </button>
         </div>
       ),
-      width: "20%",
+      width: "15%",
     },
   ];
 
@@ -431,27 +421,16 @@ const Categories = () => {
         {categoryToView && (
           <div className="space-y-4">
             <div className="flex flex-col items-center mb-4">
-              {categoryToView.categoryImage && (
-                <img
-                  src={
-                    Array.isArray(categoryToView.categoryImage)
-                      ? categoryToView.categoryImage[0]
-                      : categoryToView.categoryImage
-                  }
-                  alt={categoryToView.categoryTitle}
-                  className="w-52 h-40 object-contain rounded-md border border-gray-200 p-2"
-                  onError={(e) => {
-                    e.target.onerror = null;
-                    e.target.src = "https://via.placeholder.com/208x160";
-                  }}
-                />
-              )}
               <h3 className="text-xl font-semibold mt-3">
-                {categoryToView.categoryTitle}
+                {categoryToView.name || categoryToView.categoryTitle}
               </h3>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <p className="font-medium text-gray-600">Parent Category</p>
+                <p>{categoryToView.parentId ? categoryMap[categoryToView.parentId] || "-" : "-"}</p>
+              </div>
               <div>
                 <p className="font-medium text-gray-600">Status</p>
                 <p className="capitalize">{categoryToView.status}</p>
@@ -460,11 +439,9 @@ const Categories = () => {
                 <p className="font-medium text-gray-600">Created At</p>
                 <p>{new Date(categoryToView.createdAt).toLocaleDateString()}</p>
               </div>
-              <div className="md:col-span-2">
-                <p className="font-medium text-gray-600">Description</p>
-                <p>
-                  {categoryToView.categoryDescription || "No description"}
-                </p>
+              <div>
+                <p className="font-medium text-gray-600">Updated At</p>
+                <p>{categoryToView.updatedAt ? new Date(categoryToView.updatedAt).toLocaleDateString() : "-"}</p>
               </div>
             </div>
           </div>
@@ -491,7 +468,7 @@ const Categories = () => {
           </Button>,
         ]}
       >
-        <p>Are you sure you want to delete the category "{categoryToView?.categoryTitle}"?</p>
+        <p>Are you sure you want to delete the category "{categoryToView?.name || categoryToView?.categoryTitle}"?</p>
       </Modal>
     </div>
   );

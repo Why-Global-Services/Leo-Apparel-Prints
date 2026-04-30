@@ -340,11 +340,10 @@
 
 
 import React, { useState, useEffect } from "react";
-import { FaUpload, FaTimes } from "react-icons/fa";
 import { useNavigate, useParams } from "react-router-dom";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import { createCategory, updateCategory, getCategoryById } from "../../services/Categories";
+import { createCategory, updateCategory, getCategoryById, getCategory } from "../../services/Categories";
 
 const CategoriesForm = () => {
   const { id } = useParams();
@@ -352,42 +351,53 @@ const CategoriesForm = () => {
   const isEditMode = Boolean(id);
 
   const [formData, setFormData] = useState({
-    categoryImage: null, // Stores single file object
-    categoryDescription: "",
-    categoryTitle: "",
+    name: "",
+    parentId: null,
+    isActive: true,
   });
-  const [uploadedImage, setUploadedImage] = useState(null); // Stores preview URL
-  const [existingImage, setExistingImage] = useState(null); // Stores existing image URL from server
+  const [categories, setCategories] = useState([]);
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
+    fetchCategories();
     if (id) {
-      const fetchCategory = async () => {
-        try {
-          setIsLoading(true);
-          const response = await getCategoryById(id);
-          const data = response.data;
-
-          setFormData({
-            categoryTitle: data.categoryTitle,
-            categoryDescription: data.categoryDescription,
-            categoryImage: null,
-          });
-
-          // Set existing image (single image)
-          setExistingImage(data.categoryImage || null);
-        } catch (err) {
-          console.error("Error fetching category:", err);
-          toast.error("Failed to fetch category data");
-        } finally {
-          setIsLoading(false);
-        }
-      };
-
       fetchCategory();
     }
   }, [id]);
+
+  const fetchCategories = async () => {
+    try {
+      const response = await getCategory();
+      const categoriesData = Array.isArray(response.data)
+        ? response.data
+        : Array.isArray(response)
+          ? response
+          : [];
+      setCategories(categoriesData);
+    } catch (error) {
+      console.error("Error fetching categories:", error);
+    }
+  };
+
+  const fetchCategory = async () => {
+    try {
+      setIsLoading(true);
+      const response = await getCategoryById(id);
+      const data = response.data || response;
+
+      setFormData({
+        name: data.name || data.categoryTitle || "",
+        parentId: data.parentId || null,
+        isActive: data.isActive !== undefined ? data.isActive : (data.status === "active"),
+      });
+    } catch (err) {
+      console.error("Error fetching category:", err);
+      toast.error("Failed to fetch category data");
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -397,60 +407,23 @@ const CategoriesForm = () => {
     }));
   };
 
-  const handleFileUpload = (e) => {
-    const file = e.target.files[0]; // Get only the first file
-    
-    if (!file) return;
-
-    // Validate file type and size
-    if (!file.type.startsWith('image/')) {
-      toast.error(`File ${file.name} is not an image`);
-      return;
-    }
-    if (file.size > 5 * 1024 * 1024) { // 5MB limit
-      toast.error(`File ${file.name} is too large (max 5MB)`);
-      return;
-    }
-
-    // Create preview URL
-    const imageUrl = URL.createObjectURL(file);
-
-    // Clear any previous uploads and existing image preview
-    if (uploadedImage) {
-      URL.revokeObjectURL(uploadedImage);
-    }
-    
-    // When uploading a new image in edit mode, remove the existing image
-    if (isEditMode) {
-      setExistingImage(null);
-    }
-
-    setUploadedImage(imageUrl);
-    setFormData((prev) => ({
-      ...prev,
-      categoryImage: file,
+  const handleParentChange = (e) => {
+    const value = e.target.value;
+    setFormData((prevState) => ({
+      ...prevState,
+      parentId: value === "" ? null : value,
     }));
   };
 
-  const removeImage = () => {
-    // Remove uploaded image if it exists
-    if (uploadedImage) {
-      URL.revokeObjectURL(uploadedImage);
-      setUploadedImage(null);
-      setFormData((prev) => ({
-        ...prev,
-        categoryImage: null,
-      }));
-    }
-    // Remove existing image if it exists (edit mode only)
-    else if (existingImage) {
-      setExistingImage(null);
-    }
+  const handleStatusChange = (checked) => {
+    setFormData((prevState) => ({
+      ...prevState,
+      isActive: checked,
+    }));
   };
 
   const validateForm = () => {
-    if (!formData.categoryTitle.trim()) return "Category title is required.";
-    if (!existingImage && !uploadedImage) return "An image is required.";
+    if (!formData.name.trim()) return "Category name is required.";
     return "";
   };
 
@@ -466,19 +439,11 @@ const CategoriesForm = () => {
     setIsLoading(true);
 
     try {
-      const data = new FormData();
-      data.append("categoryTitle", formData.categoryTitle);
-      data.append("categoryDescription", formData.categoryDescription);
-
-      // Append new file if it exists
-      if (formData.categoryImage) {
-        data.append("categoryImage", formData.categoryImage);
-      }
-
-      // Append existing image URL only if no new image was uploaded
-      if (isEditMode && existingImage && !formData.categoryImage) {
-        data.append("existingImage", existingImage);
-      }
+      const data = {
+        name: formData.name,
+        parentId: formData.parentId,
+        isActive: formData.isActive,
+      };
 
       let response;
       if (isEditMode) {
@@ -524,85 +489,80 @@ const CategoriesForm = () => {
 
       <div className="col-span-2 space-y-2 bg-white shadow-lg rounded-lg p-6 w-full">
         <h2 className="text-xl font-semibold mb-6 text-gray-800">
-          {isEditMode ? "Edit Category Image" : "Add Category Image"}
+          Category Information
         </h2>
-        <div className="border-2 border-dashed border-gray-300 rounded-lg p-12 flex flex-col justify-center items-center relative">
-          <FaUpload className="text-orange-500 text-4xl mb-2" />
-          <input
-            type="file"
-            onChange={handleFileUpload}
-            className="absolute opacity-0 cursor-pointer inset-0"
-            accept="image/*"
-          />
-          <p className="text-gray-500">
-            {existingImage || uploadedImage ? "Click to replace image" : "Click to upload image"}
-          </p>
-        </div>
 
         {error && <p className="text-red-500 text-sm mt-2">{error}</p>}
 
-        <div className="mt-4">
-          <h3 className="text-md font-medium mb-2">
-            {isEditMode ? "Current Image" : "Uploaded Image"}
-          </h3>
-          <div className="grid grid-cols-1 gap-2">
-            {(existingImage || uploadedImage) && (
-              <div className="relative">
-                <img
-                  src={uploadedImage || existingImage}
-                  alt={uploadedImage ? "Uploaded" : "Existing"}
-                  className="w-full h-64 object-contain rounded-lg"
-                />
-                <button
-                  onClick={removeImage}
-                  className="absolute top-1 right-1 bg-red-500 text-white rounded-full p-1 hover:bg-red-600"
-                >
-                  <FaTimes size={12} />
-                </button>
-              </div>
-            )}
-          </div>
-        </div>
-
-        <div className="mt-6">
-          <h2 className="text-xl font-title mb-4 text-gray-800">
-            Category Information
-          </h2>
-          <div className="w-full mb-4">
+        <div className="space-y-4">
+          <div className="w-full">
             <label
-              htmlFor="categoryTitle"
+              htmlFor="name"
               className="block text-sm font-medium text-gray-600 mb-2"
             >
-              Category Title <span className="text-red-500">*</span>
+              Category Name <span className="text-red-500">*</span>
             </label>
             <input
-              id="categoryTitle"
+              id="name"
               type="text"
-              name="categoryTitle"
-              placeholder="Category Title"
+              name="name"
+              placeholder="Enter category name"
               className="border rounded p-2 w-full text-gray-800"
               onChange={handleInputChange}
-              value={formData.categoryTitle}
+              value={formData.name}
               required
             />
           </div>
 
           <div className="w-full">
             <label
-              htmlFor="categoryDescription"
+              htmlFor="parentId"
               className="block text-sm font-medium text-gray-600 mb-2"
             >
-              Description
+              Parent Category
             </label>
-            <textarea
-              id="categoryDescription"
-              name="categoryDescription"
-              placeholder="Description"
+            <select
+              id="parentId"
+              name="parentId"
               className="border rounded p-2 w-full text-gray-800"
-              onChange={handleInputChange}
-              value={formData.categoryDescription}
-              rows={4}
-            />
+              onChange={handleParentChange}
+              value={formData.parentId || ""}
+            >
+              <option value="">Select Parent Category (Optional)</option>
+              {categories
+                .filter(cat => cat._id !== id) // Don't allow self as parent
+                .map((category) => (
+                  <option key={category._id} value={category._id}>
+                    {category.name || category.categoryTitle}
+                  </option>
+                ))}
+            </select>
+          </div>
+
+          <div className="w-full">
+            <label className="block text-sm font-medium text-gray-600 mb-2">
+              Status
+            </label>
+            <div className="flex items-center">
+              <label className="inline-flex items-center cursor-pointer">
+                <input
+                  type="checkbox"
+                  className="sr-only"
+                  checked={formData.isActive}
+                  onChange={(e) => handleStatusChange(e.target.checked)}
+                />
+                <div className={`relative inline-block w-10 h-6 transition duration-200 ease-in-out rounded-full ${
+                  formData.isActive ? 'bg-green-500' : 'bg-gray-300'
+                }`}>
+                  <span className={`absolute left-1 top-1 w-4 h-4 bg-white rounded-full transition-transform duration-200 ease-in-out ${
+                    formData.isActive ? 'translate-x-4' : 'translate-x-0'
+                  }`}></span>
+                </div>
+                <span className="ml-3 text-sm font-medium text-gray-700">
+                  {formData.isActive ? 'Active' : 'Inactive'}
+                </span>
+              </label>
+            </div>
           </div>
         </div>
 
@@ -658,3 +618,5 @@ const CategoriesForm = () => {
 };
 
 export default CategoriesForm;
+
+// export default CategoriesForm;

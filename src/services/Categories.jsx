@@ -14,20 +14,12 @@ export const getCategory = async () => {
   };
   
   export const createCategory = async (data) => {
-    const res = await apiInstance.post(`/createCategory`, data, {
-      headers: {
-        "Content-Type": "multipart/form-data",
-      },
-    });
+    const res = await apiInstance.post(`/createCategory`, data);
     return res;
   };
   
   export const updateCategory = async (id, data) => {
-    const res = await apiInstance.put(`/editcategory/${id}`, data, {
-      headers: {
-        "Content-Type": "multipart/form-data",
-      },
-    });
+    const res = await apiInstance.put(`/editcategory/${id}`, data);
     return res;
   };
   

@@ -33,6 +33,8 @@ const ProductMain = lazy(() => import("./pages/Product/ProductMain"));
 const CreateProduct = lazy(() => import("./pages/Product/CreateProduct"));
 const CategoriesMain = lazy(() => import("./pages/Categories/CategoriesMain"));
 const CategoriesForm = lazy(() => import("./pages/Categories/CategoriesFrom"));
+const DesignMain = lazy(() => import("./pages/DesignZone/DesignMain"));
+const DesignForm = lazy(() => import("./pages/DesignZone/DesignForm"));
 const SubCategoriesMain = lazy(() =>
   import("./pages/SubCategories/SubCategoriesMain")
 );
@@ -162,6 +164,9 @@ const App = () => {
           <ErrorBoundary>
             <Suspense fallback={<LoadingSpinner />}>
               <Routes>
+                 <Route path="/designzone" element={<DesignMain />} />
+                  <Route path="/designzone/add" element={<DesignForm />} />
+                  <Route path="/designzone/edit/:id" element={<DesignForm />} />
                 <Route path="/testimonial" element={<TestimonialMain/>} />
                 <Route path="/testimonial/add" element={<TestimonialForm/>} />
                 <Route path="/testimonial/edit/:id" element={<TestimonialForm/>} />
@@ -182,6 +187,7 @@ const App = () => {
                     element={<CategoriesForm />}
                   />
                   <Route path="/categories/add" element={<CategoriesForm />} />
+                 
                   <Route
                     path="/subcategories"
                     element={<SubCategoriesMain />}
