@@ -122,3 +122,18 @@ export const resetPassword = createAsyncThunk(
     }
   }
 );
+
+
+
+export const fetchProfile = createAsyncThunk(
+  "auth/fetchProfile",
+  async (_, { rejectWithValue }) => {
+    try {
+      const res = await axiosClient.get("/v1/user/getProfile");
+      return res.data;
+    } catch (err) {
+      return rejectWithValue(err.response?.data || "Failed to fetch profile");
+    }
+  }
+);
+

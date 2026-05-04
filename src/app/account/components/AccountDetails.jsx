@@ -2,6 +2,8 @@
 "use client";
 import { useState } from "react";
 import { User, Mail, Phone, Lock, Eye, EyeOff, Save, CheckCircle } from "lucide-react";
+import { useSelector } from "react-redux";
+import { useEffect } from "react";
 
 function InputField({ label, name, value, onChange, icon, type = "text", required, hint }) {
   return (
@@ -88,10 +90,12 @@ function PasswordField({ label, name, value, onChange, show, onToggle }) {
 }
 
 export default function AccountDetails() {
+  const user = useSelector((state) => state.auth.user);
+  console.log("user profile",user)
   const [form, setForm] = useState({
-    fullName: "vasanth",
-    email: "vasanth@gmail.com",
-    phone: "9876543210",
+    fullName: "",
+    email: "",
+    phone: "",
     currentPassword: "",
     newPassword: "",
     confirmPassword: "",
@@ -100,6 +104,17 @@ export default function AccountDetails() {
   const [showPwd, setShowPwd] = useState({ current: false, new: false, confirm: false });
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
+
+  useEffect(() => {
+  if (user) {
+    setForm((prev) => ({
+      ...prev,
+      fullName: user.name || "",
+      email: user.email || "",
+      phone: user.phoneNumber || "",
+    }));
+  }
+}, [user]);
 
   const handleChange = (e) => {
     setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }));

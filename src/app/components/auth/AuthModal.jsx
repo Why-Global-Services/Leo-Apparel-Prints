@@ -10,7 +10,7 @@ import toast from "react-hot-toast";
 import { registerUser } from "@/features/auth/authThunks";
 import axiosClient from "@/lib/axios";
 import { setToken,setUser} from "@/features/auth/authSlice";
-
+import {  fetchCart } from "@/features/cart/cartThunks";
 
 export default function AuthModal({ isOpen, onClose, defaultMode = "login" }) {
   const [mode, setMode] = useState(defaultMode);
@@ -44,34 +44,73 @@ export default function AuthModal({ isOpen, onClose, defaultMode = "login" }) {
   const dispatch = useDispatch();
 
   // Login handler - uses mobile number
-  const handleLogin = async () => {
-    if (!loginForm.mobile.trim()) {
-      toast.error("Please enter mobile number");
-      return;
-    }
+  // const handleLogin = async () => {
+  //   if (!loginForm.mobile.trim()) {
+  //     toast.error("Please enter mobile number");
+  //     return;
+  //   }
     
-    if (!loginForm.password) {
-      toast.error("Please enter password");
-      return;
-    }
+  //   if (!loginForm.password) {
+  //     toast.error("Please enter password");
+  //     return;
+  //   }
 
-    setIsLoading(true);
-    const res = await dispatch(loginUser({ 
-      phone: loginForm.mobile, // Send mobile as phone field (backend expects phone field)
-      password: loginForm.password 
-    }));
+  //   setIsLoading(true);
+  //   const res = await dispatch(loginUser({ 
+  //     phone: loginForm.mobile, // Send mobile as phone field (backend expects phone field)
+  //     password: loginForm.password 
+  //   }));
     
-    if (res.meta.requestStatus === "fulfilled") {
-      toast.success("Login successful");
-      // Clear login form
-      setLoginForm({ mobile: "", password: "" });
-      onClose();
-      router.push("/");
+  //   if (res.meta.requestStatus === "fulfilled") {
+  //     toast.success("Login successful");
+  //     // Clear login form
+  //     setLoginForm({ mobile: "", password: "" });
+  //     onClose();
+  //     router.push("/");
+  //   } else {
+  //     toast.error(res.payload?.message || "Invalid credentials");
+  //   }
+  //   setIsLoading(false);
+  // };
+
+
+const handleLogin = async () => {
+  if (!loginForm.mobile.trim()) {
+    toast.error("Please enter mobile number");
+    return;
+  }
+  
+  if (!loginForm.password) {
+    toast.error("Please enter password");
+    return;
+  }
+
+  setIsLoading(true);
+  const res = await dispatch(loginUser({ 
+    phone: loginForm.mobile,
+    password: loginForm.password 
+  }));
+  
+  if (res.meta.requestStatus === "fulfilled") {
+    toast.success("Login successful");
+    
+    // Merge guest cart after login
+    
+    await dispatch(fetchCart());
+    
+    setLoginForm({ mobile: "", password: "" });
+    onClose();
+    
+    if (onSuccess) {
+      onSuccess();
     } else {
-      toast.error(res.payload?.message || "Invalid credentials");
+      router.push("/");
     }
-    setIsLoading(false);
-  };
+  } else {
+    toast.error(res.payload?.message || "Invalid credentials");
+  }
+  setIsLoading(false);
+};
 
 const handleGoogleLogin = () => {
   if (typeof window === "undefined" || !window.google) {

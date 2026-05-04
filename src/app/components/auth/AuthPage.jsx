@@ -1,791 +1,3 @@
-// "use client";
-// import { useState } from "react";
-// import Image from "next/image";
-
-// export default function AuthPage() {
-//   const [mode, setMode] = useState("login"); // "login" | "register"
-//   const [showPassword, setShowPassword] = useState(false);
-//   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-//   const [form, setForm] = useState({
-//     firstName: "", lastName: "", email: "", phone: "", password: "",
-//   });
-
-//   const handle = (e) => setForm({ ...form, [e.target.name]: e.target.value });
-
-//   return (
-//     <div style={styles.root}>
-//       {/* ─────────────── LEFT PANEL ─────────────── */}
-//       <div style={styles.left}>
-//         {/* Animated geo diamonds */}
-//         <div style={{ ...styles.geo, ...styles.geo1 }} />
-//         <div style={{ ...styles.geo, ...styles.geo2 }} />
-//         <div style={{ ...styles.geo, ...styles.geo3 }} />
-//         <div style={{ ...styles.geo, ...styles.geo4 }} />
-
-//         {/* Triangle slabs at bottom like reference */}
-//         <div style={{ ...styles.tri, ...styles.tri1 }} />
-//         <div style={{ ...styles.tri, ...styles.tri2 }} />
-//         <div style={{ ...styles.tri, ...styles.tri3 }} />
-
-//         {/* Brand logo top */}
-//         <div style={styles.leftBrand}>
-//           <span style={styles.brandStar}>✦</span>
-//           <span style={styles.brandText}>JERSEY STUDIO</span>
-//         </div>
-
-//         {/* Big jersey figure — center of left panel */}
-//         <div style={styles.figureWrap}>
-//           {/* 🔥 Glow behind jersey */}
-//           <div
-//             style={{
-//               position: "absolute",
-//               width: 320,
-//               height: 320,
-//               borderRadius: "50%",
-//               background: "radial-gradient(circle, rgba(14,165,233,0.35), transparent)",
-//               filter: "blur(60px)",
-//               zIndex: 0,
-//             }}
-//           />
-
-//           {/* 🧢 Jersey Image */}
-//           <Image
-//             src="/images/icons/login.png"
-//             alt="LEO CULT Jersey"
-//             width={460}
-//             height={640}
-//             style={{
-//               objectFit: "contain",
-//               filter: "drop-shadow(0 20px 60px rgba(14,165,233,0.5))",
-//               animation: "autoRotateSlow 6s ease-in-out infinite",
-//               transformStyle: "preserve-3d",
-//             }}
-//             onMouseEnter={(e) => {
-//               e.currentTarget.style.animationPlayState = "paused";
-//             }}
-//             onMouseLeave={(e) => {
-//               e.currentTarget.style.animationPlayState = "running";
-//               e.currentTarget.style.transform = "rotateY(0deg)";
-//             }}
-//           />
-
-//           {/* 🧠 Background Brand Text */}
-//           <div
-//             style={{
-//               position: "absolute",
-//               fontSize: 80,
-//               fontWeight: 900,
-//               letterSpacing: 12,
-//               color: "rgba(255,255,255,0.04)",
-//               textTransform: "uppercase",
-//               zIndex: 1,
-//             }}
-//           >
-//             LEO CULT
-//           </div>
-//         </div>
-
-//         {/* Bottom tagline */}
-//         <div style={styles.leftFooter}>
-//           <span style={styles.footerDot} />
-//           Custom Jerseys &amp; Uniforms &nbsp;·&nbsp; Bulk Orders &nbsp;·&nbsp; Fast Delivery
-//           <span style={styles.footerDot} />
-//         </div>
-//       </div>
-
-//       {/* ─────────────── RIGHT PANEL ─────────────── */}
-//       <div style={styles.right}>
-//         {/* Subtle radial glow top right */}
-//         <div style={styles.rightGlow} />
-
-//         {/* Mode tabs */}
-//         <div style={styles.tabRow}>
-//           <button
-//             style={{ ...styles.tab, ...(mode === "login" ? styles.tabActive : {}) }}
-//             onClick={() => setMode("login")}
-//           >
-//             LOGIN
-//           </button>
-//           <button
-//             style={{ ...styles.tab, ...(mode === "register" ? styles.tabActive : {}) }}
-//             onClick={() => setMode("register")}
-//           >
-//             REGISTER
-//           </button>
-//         </div>
-
-//         {/* ── LOGIN FORM ── */}
-//         {mode === "login" && (
-//           <div style={styles.formBox}>
-//             <div style={styles.formTitle}>WELCOME BACK</div>
-//             <div style={styles.formSub}>Sign in to manage your jersey orders &amp; designs</div>
-
-//             <FieldLabel label="EMAIL ADDRESS" />
-//             <InputField
-//               icon={<EmailIcon />}
-//               name="email"
-//               type="email"
-//               placeholder="you@example.com"
-//               value={form.email}
-//               onChange={handle}
-//             />
-
-//             <FieldLabel label="PASSWORD" />
-//             <PasswordField
-//               icon={<LockIcon />}
-//               name="password"
-//               placeholder="••••••••"
-//               value={form.password}
-//               onChange={handle}
-//               showPassword={showPassword}
-//               setShowPassword={setShowPassword}
-//             />
-
-//             <div style={styles.forgotRow}>
-//               <span style={styles.forgotLink}>Forgot password?</span>
-//             </div>
-
-//             <SubmitButton label="SIGN IN" />
-
-//             <Divider />
-
-//             <GoogleButton />
-
-//             <div style={styles.switchRow}>
-//               <span style={styles.switchText}>Don't have an account? </span>
-//               <span style={styles.switchLink} onClick={() => setMode("register")}>
-//                 Register here!
-//               </span>
-//             </div>
-
-//             <div style={styles.promoLine}>
-//               Play and win exciting prizes and it's absolutely free!
-//             </div>
-//           </div>
-//         )}
-
-//         {/* ── REGISTER FORM ── */}
-//         {mode === "register" && (
-//           <div style={styles.formBox}>
-//             <div style={styles.formTitle}>CREATE ACCOUNT</div>
-//             <div style={styles.formSub}>Join Jersey Studio for member pricing &amp; exclusive offers</div>
-
-//             <div style={styles.twoCol}>
-//               <div>
-//                 <FieldLabel label="FIRST NAME" />
-//                 <InputField
-//                   icon={<UserIcon />}
-//                   name="firstName"
-//                   type="text"
-//                   placeholder="Rahul"
-//                   value={form.firstName}
-//                   onChange={handle}
-//                 />
-//               </div>
-//               <div>
-//                 <FieldLabel label="LAST NAME" />
-//                 <InputField
-//                   icon={<UserIcon />}
-//                   name="lastName"
-//                   type="text"
-//                   placeholder="Kumar"
-//                   value={form.lastName}
-//                   onChange={handle}
-//                 />
-//               </div>
-//             </div>
-
-//             <FieldLabel label="EMAIL ADDRESS" />
-//             <InputField
-//               icon={<EmailIcon />}
-//               name="email"
-//               type="email"
-//               placeholder="you@example.com"
-//               value={form.email}
-//               onChange={handle}
-//             />
-
-//             <div style={styles.twoCol}>
-//               <div>
-//                 <FieldLabel label="PHONE NUMBER" />
-//                 <InputField
-//                   icon={<PhoneIcon />}
-//                   name="phone"
-//                   type="tel"
-//                   placeholder="+91 98765 43210"
-//                   value={form.phone}
-//                   onChange={handle}
-//                 />
-//               </div>
-//               <div>
-//                 <FieldLabel label="PASSWORD" />
-//                 <PasswordField
-//                   icon={<LockIcon />}
-//                   name="password"
-//                   placeholder="••••••••"
-//                   value={form.password}
-//                   onChange={handle}
-//                   showPassword={showPassword}
-//                   setShowPassword={setShowPassword}
-//                 />
-//               </div>
-//             </div>
-
-//             <div style={styles.checkRow}>
-//               <input type="checkbox" id="terms" style={styles.checkbox} />
-//               <label htmlFor="terms" style={styles.checkLabel}>
-//                 I agree to the{" "}
-//                 <span style={styles.switchLink}>Terms of Service</span> and{" "}
-//                 <span style={styles.switchLink}>Privacy Policy</span>
-//               </label>
-//             </div>
-
-//             <SubmitButton label="CREATE ACCOUNT" />
-
-//             <div style={{ ...styles.switchRow, marginTop: 16 }}>
-//               <span style={styles.switchText}>Already have an account? </span>
-//               <span style={styles.switchLink} onClick={() => setMode("login")}>
-//                 Sign in here!
-//               </span>
-//             </div>
-//           </div>
-//         )}
-//       </div>
-
-//       <style jsx>{`
-//         @keyframes autoRotateSlow {
-//           0%, 100% { transform: rotateY(0deg) translateY(0px); }
-//           50% { transform: rotateY(8deg) translateY(-8px); }
-//         }
-//       `}</style>
-//     </div>
-//   );
-// }
-
-// /* ── Sub-components ── */
-
-// function FieldLabel({ label }) {
-//   return <div style={styles.fieldLabel}>{label}</div>;
-// }
-
-// function InputField({ icon, name, type, placeholder, value, onChange }) {
-//   return (
-//     <div style={styles.inputWrap}>
-//       <span style={styles.inputIcon}>{icon}</span>
-//       <input
-//         style={styles.input}
-//         name={name}
-//         type={type}
-//         placeholder={placeholder}
-//         value={value}
-//         onChange={onChange}
-//         onFocus={(e) => {
-//           e.target.style.borderColor = "#0EA5E9";
-//           e.target.style.background = "rgba(14,165,233,0.07)";
-//         }}
-//         onBlur={(e) => {
-//           e.target.style.borderColor = "rgba(255,255,255,0.09)";
-//           e.target.style.background = "rgba(255,255,255,0.04)";
-//         }}
-//       />
-//     </div>
-//   );
-// }
-
-// function PasswordField({ icon, name, placeholder, value, onChange, showPassword, setShowPassword }) {
-//   return (
-//     <div style={styles.inputWrap}>
-//       <span style={styles.inputIcon}>{icon}</span>
-//       <input
-//         style={styles.input}
-//         name={name}
-//         type={showPassword ? "text" : "password"}
-//         placeholder={placeholder}
-//         value={value}
-//         onChange={onChange}
-//         onFocus={(e) => {
-//           e.target.style.borderColor = "#0EA5E9";
-//           e.target.style.background = "rgba(14,165,233,0.07)";
-//         }}
-//         onBlur={(e) => {
-//           e.target.style.borderColor = "rgba(255,255,255,0.09)";
-//           e.target.style.background = "rgba(255,255,255,0.04)";
-//         }}
-//       />
-//       <button
-//         type="button"
-//         onClick={() => setShowPassword(!showPassword)}
-//         style={styles.eyeButton}
-//       >
-//         {showPassword ? (
-//           <EyeOpenIcon />
-//         ) : (
-//           <EyeClosedIcon />
-//         )}
-//       </button>
-//     </div>
-//   );
-// }
-
-// function SubmitButton({ label }) {
-//   return (
-//     <button
-//       style={styles.submitBtn}
-//       onMouseEnter={(e) => { e.target.style.opacity = "0.88"; e.target.style.transform = "translateY(-2px)"; }}
-//       onMouseLeave={(e) => { e.target.style.opacity = "1"; e.target.style.transform = "translateY(0)"; }}
-//     >
-//       {label}
-//     </button>
-//   );
-// }
-
-// function Divider() {
-//   return (
-//     <div style={styles.divider}>
-//       <div style={styles.divLine} />
-//       <span style={styles.divText}>OR</span>
-//       <div style={styles.divLine} />
-//     </div>
-//   );
-// }
-
-// function GoogleButton() {
-//   return (
-//     <button
-//       style={styles.googleBtn}
-//       onMouseEnter={(e) => { e.currentTarget.style.borderColor = "rgba(255,255,255,0.22)"; e.currentTarget.style.background = "rgba(255,255,255,0.08)"; }}
-//       onMouseLeave={(e) => { e.currentTarget.style.borderColor = "rgba(255,255,255,0.09)"; e.currentTarget.style.background = "rgba(255,255,255,0.04)"; }}
-//     >
-//       <svg width="16" height="16" viewBox="0 0 24 24">
-//         <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
-//         <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
-//         <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" />
-//         <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" />
-//       </svg>
-//       Continue with Google
-//     </button>
-//   );
-// }
-
-// /* ── Eye Icons ── */
-// const EyeOpenIcon = () => (
-//   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#0EA5E9" strokeWidth="2">
-//     <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
-//     <circle cx="12" cy="12" r="3" />
-//   </svg>
-// );
-
-// const EyeClosedIcon = () => (
-//   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#0EA5E9" strokeWidth="2">
-//     <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 0 1-4.24-4.24" />
-//     <line x1="1" y1="1" x2="23" y2="23" />
-//   </svg>
-// );
-
-// /* ── Icons ── */
-// const EmailIcon = () => (
-//   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#0EA5E9" strokeWidth="2">
-//     <rect x="2" y="4" width="20" height="16" rx="2" />
-//     <path d="m22 7-10 7L2 7" />
-//   </svg>
-// );
-
-// const LockIcon = () => (
-//   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#0EA5E9" strokeWidth="2">
-//     <rect x="3" y="11" width="18" height="11" rx="2" />
-//     <path d="M7 11V7a5 5 0 0 1 10 0v4" />
-//   </svg>
-// );
-
-// const UserIcon = () => (
-//   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#0EA5E9" strokeWidth="2">
-//     <circle cx="12" cy="7" r="4" />
-//     <path d="M4 21v-2a8 8 0 0 1 16 0v2" />
-//   </svg>
-// );
-
-// const PhoneIcon = () => (
-//   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#0EA5E9" strokeWidth="2">
-//     <path d="M22 16.92v3a2 2 0 0 1-2.18 2A19.79 19.79 0 0 1 2.08 4.18 2 2 0 0 1 4.09 2h3a2 2 0 0 1 2 1.72c.13.96.36 1.9.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.91.34 1.85.57 2.81.7A2 2 0 0 1 22 16.92z" />
-//   </svg>
-// );
-
-// /* ── Styles ── */
-// const styles = {
-//   root: {
-//     display: "flex",
-//     width: "100vw",
-//     height: "100vh",
-//     minHeight: "100vh",
-//     overflow: "hidden",
-//     background: "#020617",
-//     fontFamily: "'Barlow Condensed', 'Arial Narrow', sans-serif",
-//   },
-
-//   /* LEFT */
-//   left: {
-//     position: "relative",
-//     width: "52%",
-//     flexShrink: 0,
-//     overflow: "hidden",
-//     background: "linear-gradient(145deg, #09185b 0%, #0B3C6D 45%, #1E3A8A 100%)",
-//     display: "flex",
-//     flexDirection: "column",
-//     alignItems: "center",
-//     justifyContent: "center",
-//   },
-
-//   /* Geometric diamond shapes */
-//   geo: {
-//     position: "absolute",
-//     clipPath: "polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%)",
-//   },
-//   geo1: {
-//     width: 380, height: 380,
-//     background: "rgba(245,184,0,0.10)",
-//     top: -130, left: -130,
-//   },
-//   geo2: {
-//     width: 240, height: 240,
-//     background: "rgba(14,165,233,0.14)",
-//     top: "35%", left: -70,
-//   },
-//   geo3: {
-//     width: 160, height: 160,
-//     background: "rgba(245,184,0,0.08)",
-//     bottom: 60, right: -40,
-//   },
-//   geo4: {
-//     width: 100, height: 100,
-//     background: "rgba(14,165,233,0.1)",
-//     top: 80, right: 60,
-//   },
-
-//   /* Triangle slabs */
-//   tri: {
-//     position: "absolute",
-//     width: 0, height: 0,
-//   },
-//   tri1: {
-//     borderLeft: "140px solid transparent",
-//     borderRight: "140px solid transparent",
-//     borderBottom: "240px solid rgba(245,184,0,0.12)",
-//     bottom: 0, left: -30,
-//   },
-//   tri2: {
-//     borderLeft: "100px solid transparent",
-//     borderRight: "100px solid transparent",
-//     borderBottom: "180px solid rgba(14,165,233,0.16)",
-//     bottom: 0, left: 120,
-//   },
-//   tri3: {
-//     borderLeft: "70px solid transparent",
-//     borderRight: "70px solid transparent",
-//     borderBottom: "130px solid rgba(245,184,0,0.08)",
-//     bottom: 0, left: 260,
-//   },
-
-//   /* Brand top */
-//   leftBrand: {
-//     position: "absolute",
-//     top: 24,
-//     right: 28,
-//     display: "flex",
-//     alignItems: "center",
-//     gap: 8,
-//     zIndex: 10,
-//   },
-//   brandStar: {
-//     color: "#F5B800",
-//     fontSize: 16,
-//   },
-//   brandText: {
-//     fontFamily: "'Barlow Condensed', sans-serif",
-//     fontWeight: 900,
-//     fontSize: 18,
-//     letterSpacing: 5,
-//     color: "#ffffff",
-//     textTransform: "uppercase",
-//   },
-
-//   /* Jersey figure */
-//   figureWrap: {
-//     position: "relative",
-//     zIndex: 5,
-//     display: "flex",
-//     flexDirection: "column",
-//     alignItems: "center",
-//     justifyContent: "center",
-//   },
-
-//   leftFooter: {
-//     position: "absolute",
-//     bottom: 20,
-//     left: 0, right: 0,
-//     textAlign: "center",
-//     fontFamily: "'Barlow Condensed', sans-serif",
-//     fontSize: 11,
-//     letterSpacing: 2,
-//     color: "rgba(226,232,240,0.4)",
-//     textTransform: "uppercase",
-//     display: "flex",
-//     alignItems: "center",
-//     justifyContent: "center",
-//     gap: 8,
-//     zIndex: 5,
-//   },
-//   footerDot: {
-//     display: "inline-block",
-//     width: 4, height: 4,
-//     borderRadius: "50%",
-//     background: "#F5B800",
-//     opacity: 0.6,
-//   },
-
-//   /* RIGHT */
-//   right: {
-//     flex: 1,
-//     position: "relative",
-//     background: "#060e1f",
-//     display: "flex",
-//     flexDirection: "column",
-//     justifyContent: "center",
-//     padding: "48px 52px",
-//     overflowY: "auto",
-//   },
-//   rightGlow: {
-//     position: "absolute",
-//     top: -80, right: -80,
-//     width: 320, height: 320,
-//     borderRadius: "50%",
-//     background: "radial-gradient(circle, rgba(14,165,233,0.08) 0%, transparent 70%)",
-//     pointerEvents: "none",
-//   },
-
-//   /* Tabs */
-//   tabRow: {
-//     display: "flex",
-//     gap: 0,
-//     marginBottom: 32,
-//     borderBottom: "2px solid rgba(255,255,255,0.07)",
-//   },
-//   tab: {
-//     flex: 1,
-//     padding: "12px 0",
-//     background: "transparent",
-//     border: "none",
-//     borderBottom: "3px solid transparent",
-//     marginBottom: -2,
-//     color: "rgba(226,232,240,0.35)",
-//     fontFamily: "'Barlow Condensed', sans-serif",
-//     fontWeight: 700,
-//     fontSize: 14,
-//     letterSpacing: 4,
-//     cursor: "pointer",
-//     transition: "all 0.2s",
-//     textTransform: "uppercase",
-//   },
-//   tabActive: {
-//     color: "#F5B800",
-//     borderBottomColor: "#F5B800",
-//   },
-
-//   /* Form */
-//   formBox: {
-//     display: "flex",
-//     flexDirection: "column",
-//   },
-//   formTitle: {
-//     fontFamily: "'Barlow Condensed', 'Arial Black', sans-serif",
-//     fontWeight: 900,
-//     fontSize: 32,
-//     letterSpacing: 5,
-//     color: "#E2E8F0",
-//     lineHeight: 1,
-//     marginBottom: 6,
-//     textTransform: "uppercase",
-//   },
-//   formSub: {
-//     fontSize: 12,
-//     color: "rgba(226,232,240,0.4)",
-//     letterSpacing: 0.3,
-//     marginBottom: 24,
-//     fontFamily: "'Barlow Condensed', sans-serif",
-//   },
-//   fieldLabel: {
-//     fontFamily: "'Barlow Condensed', sans-serif",
-//     fontWeight: 700,
-//     fontSize: 10,
-//     letterSpacing: 3,
-//     color: "rgba(226,232,240,0.45)",
-//     marginBottom: 6,
-//     textTransform: "uppercase",
-//   },
-//   inputWrap: {
-//     position: "relative",
-//     marginBottom: 14,
-//     display: "flex",
-//     alignItems: "center",
-//   },
-//   inputIcon: {
-//     position: "absolute",
-//     left: 12,
-//     display: "flex",
-//     alignItems: "center",
-//     pointerEvents: "none",
-//     zIndex: 1,
-//   },
-//   eyeButton: {
-//     position: "absolute",
-//     right: 12,
-//     background: "transparent",
-//     border: "none",
-//     cursor: "pointer",
-//     display: "flex",
-//     alignItems: "center",
-//     padding: 0,
-//     zIndex: 1,
-//   },
-//   input: {
-//     width: "100%",
-//     background: "rgba(255,255,255,0.04)",
-//     border: "1px solid rgba(255,255,255,0.09)",
-//     borderRadius: 8,
-//     padding: "11px 38px 11px 38px",
-//     color: "#E2E8F0",
-//     fontSize: 13,
-//     fontFamily: "'Barlow Condensed', sans-serif",
-//     letterSpacing: 0.5,
-//     outline: "none",
-//     transition: "border-color 0.2s, background 0.2s",
-//   },
-//   twoCol: {
-//     display: "grid",
-//     gridTemplateColumns: "1fr 1fr",
-//     gap: 14,
-//   },
-//   forgotRow: {
-//     display: "flex",
-//     justifyContent: "flex-end",
-//     marginBottom: 16,
-//     marginTop: -4,
-//   },
-//   forgotLink: {
-//     fontSize: 11,
-//     color: "#0EA5E9",
-//     cursor: "pointer",
-//     fontFamily: "'Barlow Condensed', sans-serif",
-//     letterSpacing: 0.5,
-//   },
-//   submitBtn: {
-//     width: "100%",
-//     padding: "14px",
-//     background: "linear-gradient(135deg, #0EA5E9, #0284C7, #1E3A8A)",
-//     border: "none",
-//     borderRadius: 8,
-//     color: "#fff",
-//     fontFamily: "'Barlow Condensed', sans-serif",
-//     fontWeight: 700,
-//     fontSize: 15,
-//     letterSpacing: 5,
-//     cursor: "pointer",
-//     transition: "opacity 0.2s, transform 0.2s",
-//     boxShadow: "0 6px 28px rgba(14,165,233,0.35)",
-//     textTransform: "uppercase",
-//   },
-//   divider: {
-//     display: "flex",
-//     alignItems: "center",
-//     gap: 12,
-//     margin: "16px 0",
-//   },
-//   divLine: {
-//     flex: 1,
-//     height: 1,
-//     background: "rgba(255,255,255,0.08)",
-//   },
-//   divText: {
-//     fontSize: 10,
-//     letterSpacing: 3,
-//     color: "rgba(226,232,240,0.3)",
-//     fontFamily: "'Barlow Condensed', sans-serif",
-//     textTransform: "uppercase",
-//   },
-//   googleBtn: {
-//     width: "100%",
-//     padding: "11px",
-//     background: "rgba(255,255,255,0.04)",
-//     border: "1px solid rgba(255,255,255,0.09)",
-//     borderRadius: 8,
-//     color: "#E2E8F0",
-//     fontSize: 13,
-//     fontFamily: "'Barlow Condensed', sans-serif",
-//     cursor: "pointer",
-//     display: "flex",
-//     alignItems: "center",
-//     justifyContent: "center",
-//     gap: 10,
-//     transition: "background 0.2s, border-color 0.2s",
-//     letterSpacing: 0.5,
-//   },
-//   switchRow: {
-//     textAlign: "center",
-//     marginTop: 14,
-//   },
-//   switchText: {
-//     fontSize: 12,
-//     color: "rgba(226,232,240,0.45)",
-//     fontFamily: "'Barlow Condensed', sans-serif",
-//   },
-//   switchLink: {
-//     fontSize: 12,
-//     color: "#F5B800",
-//     cursor: "pointer",
-//     fontFamily: "'Barlow Condensed', sans-serif",
-//     fontWeight: 700,
-//     letterSpacing: 0.5,
-//   },
-//   promoLine: {
-//     textAlign: "center",
-//     marginTop: 10,
-//     fontSize: 11,
-//     color: "rgba(226,232,240,0.3)",
-//     fontFamily: "'Barlow Condensed', sans-serif",
-//     letterSpacing: 0.3,
-//   },
-//   checkRow: {
-//     display: "flex",
-//     alignItems: "flex-start",
-//     gap: 8,
-//     margin: "10px 0 14px",
-//   },
-//   checkbox: {
-//     accentColor: "#0EA5E9",
-//     width: 13, height: 13,
-//     marginTop: 2,
-//     flexShrink: 0,
-//   },
-//   checkLabel: {
-//     fontSize: 11,
-//     color: "rgba(226,232,240,0.45)",
-//     fontFamily: "'Barlow Condensed', sans-serif",
-//     lineHeight: 1.5,
-//     cursor: "pointer",
-//   },
-// };
-
-
-
-
-
-
-
-
-
-
-
-
-
 "use client";
 import { useEffect, useState } from "react";
 import Image from "next/image";
@@ -793,12 +5,12 @@ import { useRouter } from "next/navigation";
 import { useDispatch } from "react-redux";
 import { loginUser } from "@/features/auth/authThunks";
 
-
 export default function AuthPage({ defaultMode = "login" }) {
   const [mode, setMode] = useState(defaultMode);
   const [showPassword, setShowPassword] = useState(false);
-  const [windowWidth, setWindowWidth] = useState(typeof window !== 'undefined' ? window.innerWidth : 1024);
-  const [windowHeight, setWindowHeight] = useState(typeof window !== 'undefined' ? window.innerHeight : 800);
+  const [mounted, setMounted] = useState(false);
+  const [windowWidth, setWindowWidth] = useState(1024);
+  const [windowHeight, setWindowHeight] = useState(800);
   const [form, setForm] = useState({
     firstName: "", lastName: "", email: "", phone: "", password: "",
   });
@@ -807,46 +19,48 @@ export default function AuthPage({ defaultMode = "login" }) {
   const router = useRouter();
   const dispatch = useDispatch();
 
-const handleLogin = async () => {
-  console.log("Form Data:", form);
+  const handleLogin = async () => {
+    console.log("Form Data:", form);
+    const res = await dispatch(
+      loginUser({
+        phone: form.phone,
+        password: form.password,
+      })
+    );
+    console.log("Login Response:", res);
+    if (res.meta.requestStatus === "fulfilled") {
+      router.push("/");
+    } else {
+      alert("Invalid credentials");
+    }
+  };
 
-  const res = await dispatch(
-    loginUser({
-      phone: form.phone,
-      password: form.password,
-    })
-  );
-
-  console.log("Login Response:", res);
-
-  if (res.meta.requestStatus === "fulfilled") {
-    router.push("/");
-  } else {
-    alert("Invalid credentials");
-  }
-};
+  useEffect(() => {
+    setMounted(true);
+    setWindowWidth(window.innerWidth);
+    setWindowHeight(window.innerHeight);
+  }, []);
 
   useEffect(() => {
     setMode(defaultMode);
   }, [defaultMode]);
 
   useEffect(() => {
+    if (!mounted) return;
+    
     const handleResize = () => {
       setWindowWidth(window.innerWidth);
       setWindowHeight(window.innerHeight);
     };
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
-  }, []);
+  }, [mounted]);
 
   const isMobile = windowWidth <= 768;
   const isTablet = windowWidth <= 1024 && windowWidth > 768;
   const showLeftPanel = !isMobile && !isTablet;
 
-  // Calculate dynamic font sizes based on viewport
   const getResponsiveStyles = () => {
-    const baseSize = Math.min(windowWidth, windowHeight) / 100;
-    
     return {
       root: {
         display: "flex",
@@ -1015,6 +229,21 @@ const handleLogin = async () => {
 
   const responsiveStyles = getResponsiveStyles();
 
+  if (!mounted) {
+    return (
+      <div style={{ 
+        display: "flex", 
+        justifyContent: "center", 
+        alignItems: "center", 
+        height: "100vh",
+        background: "#060e1f",
+        color: "white"
+      }}>
+        Loading...
+      </div>
+    );
+  }
+
   return (
     <div style={responsiveStyles.root}>
       {/* Left Panel - Desktop only */}
@@ -1041,6 +270,8 @@ const handleLogin = async () => {
               width={380}
               height={530}
               style={styles.jerseyImage}
+              priority
+              loading="eager"
               onMouseEnter={(e) => { e.currentTarget.style.animationPlayState = "paused"; }}
               onMouseLeave={(e) => { e.currentTarget.style.animationPlayState = "running"; }}
             />
@@ -1124,9 +355,9 @@ const handleLogin = async () => {
               <div style={styles.switchRow}>
                 <span style={responsiveStyles.switchText}>Don't have an account? </span>
                 <span style={responsiveStyles.switchLink} onClick={() => {
-                setMode("register");
-                router.push("/auth/register");
-              }}>
+                  setMode("register");
+                  router.push("/auth/register");
+                }}>
                   Register here!
                 </span>
               </div>
@@ -1222,9 +453,9 @@ const handleLogin = async () => {
               <div style={styles.switchRow}>
                 <span style={responsiveStyles.switchText}>Already have an account? </span>
                 <span style={responsiveStyles.switchLink} onClick={() => {
-                setMode("login");
-                router.push("/auth/login");
-              }}>
+                  setMode("login");
+                  router.push("/");
+                }}>
                   Sign in here!
                 </span>
               </div>
@@ -1254,7 +485,6 @@ const handleLogin = async () => {
           height: 100%;
         }
         
-        /* Custom scrollbar styling */
         ::-webkit-scrollbar {
           width: 4px;
         }
@@ -1283,8 +513,7 @@ const handleLogin = async () => {
   );
 }
 
-/* ── Sub-components ── */
-
+// Sub-components
 function InputField({ icon, name, type, placeholder, value, onChange, responsiveStyles }) {
   return (
     <div style={styles.inputWrap}>
@@ -1340,12 +569,12 @@ function PasswordField({ icon, name, placeholder, value, onChange, showPassword,
   );
 }
 
-function SubmitButton({ label, responsiveStyles,onClick }) {
+function SubmitButton({ label, responsiveStyles, onClick }) {
   return (
     <button
       style={responsiveStyles.submitBtn}
-       onClick={onClick} 
-       type="button"
+      onClick={onClick} 
+      type="button"
       onMouseEnter={(e) => { e.target.style.opacity = "0.88"; e.target.style.transform = "translateY(-1px)"; }}
       onMouseLeave={(e) => { e.target.style.opacity = "1"; e.target.style.transform = "translateY(0)"; }}
     >
@@ -1354,7 +583,7 @@ function SubmitButton({ label, responsiveStyles,onClick }) {
   );
 }
 
-/* ── Icons ── */
+// Icons
 const EyeOpenIcon = () => (
   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#0EA5E9" strokeWidth="2">
     <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
@@ -1396,9 +625,8 @@ const PhoneIcon = () => (
   </svg>
 );
 
-/* ── Styles ── */
+// Styles
 const styles = {
-  // Left Panel Styles (Desktop only)
   left: {
     position: "relative",
     width: "50%",
@@ -1410,40 +638,30 @@ const styles = {
     alignItems: "center",
     justifyContent: "center",
   },
-
   geo: { position: "absolute", clipPath: "polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%)" },
   geo1: { width: 380, height: 380, background: "rgba(245,184,0,0.10)", top: -130, left: -130 },
   geo2: { width: 240, height: 240, background: "rgba(14,165,233,0.14)", top: "35%", left: -70 },
   geo3: { width: 160, height: 160, background: "rgba(245,184,0,0.08)", bottom: 60, right: -40 },
   geo4: { width: 100, height: 100, background: "rgba(14,165,233,0.1)", top: 80, right: 60 },
-
   tri: { position: "absolute", width: 0, height: 0 },
   tri1: { borderLeft: "140px solid transparent", borderRight: "140px solid transparent", borderBottom: "240px solid rgba(245,184,0,0.12)", bottom: 0, left: -30 },
   tri2: { borderLeft: "100px solid transparent", borderRight: "100px solid transparent", borderBottom: "180px solid rgba(14,165,233,0.16)", bottom: 0, left: 120 },
   tri3: { borderLeft: "70px solid transparent", borderRight: "70px solid transparent", borderBottom: "130px solid rgba(245,184,0,0.08)", bottom: 0, left: 260 },
-
   leftBrand: { position: "absolute", top: 24, right: 28, display: "flex", alignItems: "center", gap: 8, zIndex: 10 },
   brandStar: { color: "#F5B800", fontSize: 16 },
   brandText: { fontFamily: "'Barlow Condensed', sans-serif", fontWeight: 900, fontSize: 18, letterSpacing: 5, color: "#ffffff", textTransform: "uppercase" },
-
   figureWrap: { position: "relative", zIndex: 5, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" },
   glowEffect: { position: "absolute", width: 320, height: 320, borderRadius: "50%", background: "radial-gradient(circle, rgba(14,165,233,0.35), transparent)", filter: "blur(60px)", zIndex: 0 },
   jerseyImage: { objectFit: "contain", filter: "drop-shadow(0 20px 60px rgba(14,165,233,0.5))", animation: "autoRotateSlow 6s ease-in-out infinite", transformStyle: "preserve-3d", width: 380, height: 530 },
   backgroundText: { position: "absolute", fontSize: 70, fontWeight: 900, letterSpacing: 12, color: "rgba(255,255,255,0.04)", textTransform: "uppercase", zIndex: 1, whiteSpace: "nowrap" },
-
   leftFooter: { position: "absolute", bottom: 20, left: 0, right: 0, textAlign: "center", fontFamily: "'Barlow Condensed', sans-serif", fontSize: 10, letterSpacing: 2, color: "rgba(226,232,240,0.4)", textTransform: "uppercase", display: "flex", alignItems: "center", justifyContent: "center", gap: 8, zIndex: 5 },
   footerDot: { display: "inline-block", width: 4, height: 4, borderRadius: "50%", background: "#F5B800", opacity: 0.6 },
-
-  // Form Styles
   tabActive: { color: "#F5B800", borderBottomColor: "#F5B800" },
-  
   inputWrap: { position: "relative", marginBottom: 16, display: "flex", alignItems: "center", width: "100%" },
   inputIcon: { position: "absolute", left: 14, display: "flex", alignItems: "center", pointerEvents: "none", zIndex: 1 },
   eyeButton: { position: "absolute", right: 14, background: "transparent", border: "none", cursor: "pointer", display: "flex", alignItems: "center", padding: 0, zIndex: 1 },
-  
   forgotRow: { display: "flex", justifyContent: "flex-end", marginBottom: 20, marginTop: 4 },
   switchRow: { textAlign: "center", marginTop: 20 },
-  
   checkRow: { display: "flex", alignItems: "flex-start", gap: 10, margin: "16px 0 20px" },
   checkbox: { accentColor: "#0EA5E9", width: 14, height: 14, marginTop: 2, flexShrink: 0 },
 };

@@ -57,6 +57,8 @@ import {Providers} from "./providers";
 import LayoutWrapper from "./LayoutWrapper"; 
 import { Toaster } from "react-hot-toast";
 import Script from "next/script";
+import InitGuest from "./InitGuest";
+import InitInterceptors from "./InitInterceptors";
 
 const poppins = Poppins({
   variable: "--font-poppins",
@@ -82,12 +84,14 @@ export default function RootLayout({ children }) {
       lang="en"
       className={`${poppins.variable} ${inter.variable} h-full antialiased`}
     >
-      <body className="min-h-screen bg-background text-foreground font-sans">
+      <body className="min-h-screen flex flex-col bg-background text-foreground font-sans">
         <Script
           src="https://accounts.google.com/gsi/client"
           strategy="afterInteractive"
         />
         <Providers>
+          <InitInterceptors />
+           <InitGuest /> 
           <Toaster
             position="top-right"
             toastOptions={{

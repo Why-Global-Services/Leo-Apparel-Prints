@@ -1,65 +1,77 @@
-// import { notFound } from "next/navigation";
-// import { products } from "@/data/products";
-// import ProductDetailClient from "./ProductDetailClient";
+// import JerseyCustomizer from "@/app/components/products/JersyCustomizer";
 
 // export async function generateMetadata({ params }) {
-//   const product = products.find((p) => p.id === params.id);
-//   if (!product) return {};
+//   const { id } = await params;
+  
 //   return {
-//     title: `${product.name} — LEO CULT`,
-//     description: product.description,
+//     title: `Customize Product — LEO CULT`,
+//     description: "Customize your sports wear with Leo Apparel",
 //   };
 // }
 
-// export default function ProductDetailPage({ params }) {
-//   const product = products.find((p) => p.id === params.id);
-//   if (!product) notFound();
-//   return <ProductDetailClient product={product} />;
+// export default async function ProductDetailPage({ params }) {
+//   const { id } = await params;
+//   console.log("id",id)
+//   // Pass only the ID to the client component
+//   return <JerseyCustomizer productId={id} />;
 // }
 
 
 
-import { notFound } from "next/navigation";
-import { products } from "@/data/products";
-import JerseyCustomizer from "@/app/components/products/JersyCustomizer";
+'use client';
 
+import JerseyCustomizer from '@/app/components/products/JersyCustomizer';
+import { useParams } from 'next/navigation';
+import { useEffect, useState } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import { fetchProductById } from '@/features/products/productThunks';
 
-export async function generateStaticParams() {
-  return products.map((product) => ({
-    id: product.id,
-  }));
-}
-
-
-export async function generateMetadata({ params }) {
-  // For Next.js 15+
-  const { id } = await params;
-  const product = products.find((p) => p.id === id);
+export default function ProductPage() {
+  const params = useParams();
+  const dispatch = useDispatch();
+  const { selectedProduct: product, selectedProductLoading, selectedProductError } = useSelector((state) => state.products);
+  const [isLoading, setIsLoading] = useState(true);
   
-  if (!product) return { title: "Product Not Found" };
+  useEffect(() => {
+    if (params?.id) {
+      console.log("Fetching product with ID:", params.id);
+      dispatch(fetchProductById(params.id))
+        .unwrap()
+        .then((result) => {
+          console.log("Product fetched:", result);
+          setIsLoading(false);
+        })
+        .catch((error) => {
+          console.error("Failed to fetch product:", error);
+          setIsLoading(false);
+        });
+    }
+  }, [dispatch, params?.id]);
   
-  return {
-    title: `${product.name} — LEO CULT`,
-    description: product.description,
-  };
-}
-
-export default async function ProductDetailPage({ params }) {
-  // For Next.js 15+ - await params
-  const { id } = await params;
-  
-  console.log("Looking for product with ID:", id); // Debug line
-  
-  const product = products.find((p) => p.id === id);
-
-  console.log("product found", product); // Debug line
-  
-  
-  if (!product) {
-    console.log(`Product with ID "${id}" not found. Available IDs:`, 
-                products.map(p => p.id));
-    notFound();
+  if (isLoading || selectedProductLoading) {
+    return (
+      <div style={{ height: '100dvh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <div style={{ width: 40, height: 40, border: '3px solid #003E9B', borderTopColor: 'transparent', borderRadius: '50%', animation: 'spin 1s linear infinite' }} />
+        <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
+      </div>
+    );
   }
   
+  if (selectedProductError || !product) {
+    return (
+      <div style={{ height: '100dvh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 16 }}>
+        <h2>Product not found</h2>
+        <p>{selectedProductError || "Unable to load product"}</p>
+        <button 
+          onClick={() => window.location.href = '/products'} 
+          style={{ padding: '10px 20px', background: '#003E9B', color: '#fff', border: 'none', borderRadius: 8, cursor: 'pointer' }}
+        >
+          Back to Products
+        </button>
+      </div>
+    );
+  }
+  
+  // Pass the entire product object, not just the ID
   return <JerseyCustomizer product={product} />;
 }

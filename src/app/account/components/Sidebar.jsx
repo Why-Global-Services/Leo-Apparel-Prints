@@ -4,7 +4,7 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { ShoppingCart, MapPin, User, LogOut, Menu, X } from "lucide-react";
 import { useState, useEffect } from "react";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { logout } from "@/features/auth/authSlice";
 
 const NAV_ITEMS = [
@@ -19,6 +19,11 @@ export default function Sidebar() {
   const [isMobileOpen, setIsMobileOpen] = useState(false);
   const [isSticky, setIsSticky] = useState(false);
   const dispatch = useDispatch();
+  const user= useSelector((state) => state.auth?.user || []);
+
+
+console.log("user data in sidebar",user)
+
 
   const isActive = (href) => pathname === href;
 
@@ -60,7 +65,7 @@ export default function Sidebar() {
               fontFamily: "var(--font-poppins), Poppins, sans-serif",
             }}
           >
-           Vasanth
+           {user.name}
           </p>
         </div>
       </div>
