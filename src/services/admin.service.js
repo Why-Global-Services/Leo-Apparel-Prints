@@ -42,7 +42,7 @@ const { moduleManager } = require("../models/moduleManager.model");
 const DesignZone = require("../models/designZone.model");
 const Template = require("../models/template.model");
 const Product = require("../models/Product.model");
-const calculateFinalPrice = require("../utils/calculateFinalPrice.JS");
+const calculateFinalPrice = require("../utils/calculateFinalPrice.js");
 
 const createBanner = async (req, res) => {
   const { title, subtitle, offer } = req.body;
