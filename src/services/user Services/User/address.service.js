@@ -144,82 +144,68 @@ const getAddress = async (req, res) => {
 };
 
 
-const updateAddress = async (req, res) => {
+const updateAddress = async (req) => {
   const userId = req.user._id;
-  const {
-    _id,
-    fullName,
-    addressLine1,
-    city,
-    state,
-    zipCode,
-    country,
-    phone,
-    addressType,
-    checkoutAddress,
-  } = req.body;
+  const { addressId } = req.params;
+  const updatedData = req.body;
 
-  if (!userId) {
-    throw new ApiError(httpStatus.BAD_REQUEST, "No userId provided");
+  console.log("Update Address - Received ID:", addressId); // Debug log
+  console.log("Update Address - User ID:", userId);
+
+  const user = await User.findById(userId);
+  if (!user) throw new ApiError(404, "User not found");
+
+  // Log all address IDs for debugging
+  console.log("Available address IDs:", user.address.map(addr => addr._id || addr.id));
+
+  // For UUID stored as string - direct comparison (no toString needed)
+  const addressIndex = user.address.findIndex(
+    (addr) => (addr._id || addr.id) === addressId
+  );
+
+  console.log("Found address at index:", addressIndex);
+
+  if (addressIndex === -1) {
+    throw new ApiError(404, "Address not found");
   }
 
-  if (!_id) {
-    throw new ApiError(httpStatus.BAD_REQUEST, "No address ID provided");
-  }
+  // Extract data from formattedData
+  const addressData = updatedData.formattedData || updatedData;
 
-  let userDetails = await User.findById(userId);
+  // Update the address
+  user.address[addressIndex] = {
+    ...user.address[addressIndex].toObject(),
+    ...addressData,
+  };
 
-  userDetails.address = userDetails.address.map((item) => {
-    if (item._id.toString() == _id.toString()) {
-      item = {
-        fullName,
-        addressLine1,
-        city,
-        state,
-        zipCode,
-        country,
-        phone,
-        addressType,
-        checkoutAddress,
-      };
-      return item;
-    }
+  await user.save();
 
-    return item;
-  });
-
-  userDetails.save();
   return {
     success: true,
-    message: "Address updated Successfully",
-    data: userDetails,
+    address: user.address,
   };
 };
 
-const deleteAddress = async (req, res) => {
+const deleteAddress = async (req) => {
   const userId = req.user._id;
-  const { id } = req.body;
+  const { addressId } = req.params;
 
-  if (!userId) {
-    throw new ApiError(httpStatus.BAD_REQUEST, "No userId provided");
-  }
+  console.log("Delete Address - Received ID:", addressId);
 
-  if (!id) {
-    throw new ApiError(httpStatus.BAD_REQUEST, "No address ID provided");
-  }
+  const user = await User.findById(userId);
+  if (!user) throw new ApiError(404, "User not found");
 
-  let updatedAddress = await User.findById(userId);
-
-  const data = updatedAddress.address.filter(
-    (item) => item._id.toString() !== id.toString()
+  // For UUID stored as string - direct comparison
+  user.address = user.address.filter(
+    (addr) => (addr._id || addr.id) !== addressId
   );
-  console.log(data, "thsi is filter data");
 
-  updatedAddress.address = data;
+  await user.save();
 
-  await updatedAddress.save();
-
-  return { success: true, message: "The address deleted", updatedAddress };
+  return {
+    success: true,
+    address: user.address,
+  };
 };
 
 

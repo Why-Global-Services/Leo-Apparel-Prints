@@ -93,8 +93,12 @@ if (!product) {
   throw new ApiError(404, "Product not found");
 }
 
+const userId = req.user?._id || null;
+const guestId = req.headers["guestid"] || null;
+
 const data = await Customization.create({
-  userId: req.user?._id || "guest",
+  userId,
+  guestId,
   productId,
 
   productSnapshot: {

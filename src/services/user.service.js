@@ -443,12 +443,44 @@ const getAddress = async (req, res) => {
   };
 };
 
-const updateAddress = async (req, res) => {
+const updateAddress = async (req) => {
   const userId = req.user._id;
+  const { addressId } = req.params;
+  const { formattedData } = req.body;
+
+  console.log("Update Address - Address ID:", addressId);
+  console.log("Update Address - User ID:", userId);
+  console.log("Update Address - Data:", formattedData);
+
+  if (!addressId) {
+    throw new ApiError(httpStatus.BAD_REQUEST, "Address ID is required");
+  }
+
+  const user = await User.findById(userId);
+  if (!user) {
+    throw new ApiError(httpStatus.NOT_FOUND, "User not found");
+  }
+
+  // Find the address index - handles both _id and id fields
+  const addressIndex = user.address.findIndex(
+    (addr) => String(addr._id || addr.id) === String(addressId)
+  );
+
+  console.log("Address found at index:", addressIndex);
+  console.log("Available address IDs:", user.address.map(addr => String(addr._id || addr.id)));
+
+  if (addressIndex === -1) {
+    throw new ApiError(httpStatus.NOT_FOUND, "Address not found");
+  }
+
+  // Get the existing address
+  const existingAddress = user.address[addressIndex];
+
+  // Extract data from formattedData
   const {
-    _id,
     fullName,
     addressLine1,
+    landMark,
     city,
     state,
     zipCode,
@@ -456,42 +488,33 @@ const updateAddress = async (req, res) => {
     phone,
     addressType,
     checkoutAddress,
-  } = req.body;
+  } = formattedData || {};
 
-  if (!userId) {
-    throw new ApiError(httpStatus.BAD_REQUEST, "No userId provided");
-  }
+  // Update only the fields that are provided
+  const updatedAddress = {
+    ...existingAddress.toObject(),
+    ...(fullName && { fullName }),
+    ...(addressLine1 && { addressLine1 }),
+    ...(landMark !== undefined && { landMark }),
+    ...(city && { city }),
+    ...(state && { state }),
+    ...(zipCode && { zipCode }),
+    ...(country && { country }),
+    ...(phone && { phone }),
+    ...(addressType && { addressType }),
+    ...(checkoutAddress && { checkoutAddress }),
+  };
 
-  if (!_id) {
-    throw new ApiError(httpStatus.BAD_REQUEST, "No address ID provided");
-  }
+  // Update the address
+  user.address[addressIndex] = updatedAddress;
+  await user.save();
 
-  let userDetails = await User.findById(userId);
+  console.log("Address updated successfully");
 
-  userDetails.address = userDetails.address.map((item) => {
-    if (item._id.toString() == _id.toString()) {
-      item = {
-        fullName,
-        addressLine1,
-        city,
-        state,
-        zipCode,
-        country,
-        phone,
-        addressType,
-        checkoutAddress,
-      };
-      return item;
-    }
-
-    return item;
-  });
-
-  userDetails.save();
   return {
     success: true,
-    message: "Address updated Successfully",
-    data: userDetails,
+    message: "Address updated successfully",
+    data: user.address,
   };
 };
 

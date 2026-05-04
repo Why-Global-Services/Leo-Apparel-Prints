@@ -211,22 +211,38 @@ const getCheckout = catchAsync(async (req, res) => {
 
 const addAddressData = catchAsync(async (req, res) => {
   const data = await addAddress(req);
-  res.status(200).send(data);
+  // res.status(200).send(data);
+  res.status(200).json({
+    success: true,
+    data: data.address,
+  });
 });
 
 const getAddressData = catchAsync(async (req, res) => {
   const data = await getAddress(req);
-  res.status(200).send(data);
+  // res.status(200).send(data);
+  res.status(200).json({
+  success: true,
+  data: data.address, 
+});
 });
 
 const updateAddressData = catchAsync(async (req, res) => {
   const data = await updateAddress(req);
-  res.status(200).send(data);
+  // res.status(200).send(data);
+  res.status(200).json({
+    success: true,
+    data: data.address,
+  })
 });
 
 const deleteAddressData = catchAsync(async (req, res) => {
   const data = await deleteAddress(req);
-  res.status(200).send(data);
+  // res.status(200).send(data);
+  res.status(200).json({
+    success: true,
+    data: data.address,
+  })
 });
 
 const placePayment = catchAsync(async (req, res) => {

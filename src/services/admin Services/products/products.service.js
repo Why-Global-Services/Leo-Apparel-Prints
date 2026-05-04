@@ -27,7 +27,7 @@ const bulkUpdateStock = async (req, res) => {
           update: {
             $set: { 'variant.sizeColorVariants.$.stockCount': update.stockCount },
           },
-        },
+        },  
       };
     } else {
       return {

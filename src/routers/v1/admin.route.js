@@ -103,7 +103,11 @@ AdminRouter.route("/createtemplate").post(adminController.createTemplate);
 AdminRouter.route("/gettemplate").get(adminController.getTemplate);
 
 AdminRouter.route("/createproducts").post(
-  uploads.single("glbFile"),
+  uploads.fields([
+  { name: "glbFile", maxCount: 1 },
+  { name: "frontImage", maxCount: 1 },
+  { name: "backImage", maxCount: 1 }
+]),
   adminController.createProducts
 );
 
@@ -114,7 +118,11 @@ AdminRouter.route("/getsingleproducts/:_id").get(
 );
 
 AdminRouter.route("/editproducts/:_id").put(
-  uploads.single("glbFile"),
+  uploads.fields([
+  { name: "glbFile", maxCount: 1 },
+  { name: "frontImage", maxCount: 1 },
+  { name: "backImage", maxCount: 1 }
+]),
   adminController.editProducts
 );
 

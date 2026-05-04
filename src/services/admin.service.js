@@ -42,6 +42,7 @@ const { moduleManager } = require("../models/moduleManager.model");
 const DesignZone = require("../models/designZone.model");
 const Template = require("../models/template.model");
 const Product = require("../models/Product.model");
+const calculateFinalPrice = require("../utils/calculateFinalPrice.JS");
 
 const createBanner = async (req, res) => {
   const { title, subtitle, offer } = req.body;
@@ -660,41 +661,190 @@ const createProducts = async (req, res) => {
 
   let glbUrl = null;
 
-  if (req.file) {
-    glbUrl = await uploadToCloud(req.file, "products");
+  // 🔥 GLB upload
+  if (req.files?.glbFile?.[0]) {
+    glbUrl = await uploadToCloud(
+      req.files.glbFile[0],
+      "products/glb"
+    );
   }
 
-  let templates = [];
+  // 🔥 FRONT / BACK IMAGE UPLOAD
+  let frontImage = null;
+  let backImage = null;
 
+  if (req.files?.frontImage?.[0]) {
+    frontImage = await uploadToCloud(
+      req.files.frontImage[0],
+      "products/images"
+    );
+  }
+
+  if (req.files?.backImage?.[0]) {
+    backImage = await uploadToCloud(
+      req.files.backImage[0],
+      "products/images"
+    );
+  }
+
+  // 🔥 VALIDATION
+  if (!frontImage) {
+    throw new ApiError(400, "Front image is required");
+  }
+
+  // fallback
+  if (!backImage) {
+    backImage = frontImage;
+  }
+
+  // 🔥 Templates
+  let templates = [];
   if (data.templates) {
     templates = Array.isArray(data.templates)
       ? data.templates
       : [data.templates];
   }
 
+  // 🔥 DISCOUNT
+  const basePrice = Number(data.basePrice) || 0;
+  const discountType = data.discountType || "percentage";
+  const discountValue = Number(data.discountValue) || 0;
+
+  const finalPrice = calculateFinalPrice(
+    basePrice,
+    discountType,
+    discountValue
+  );
+
   const createdProduct = await Product.create({
     ...data,
-    templates, 
-    glbUrl
+    templates,
+    glbUrl,
+
+    // 🔥 gallery (optional)
+    images: [frontImage, backImage],
+
+    // 🔥 main usage
+    viewImages: {
+      front: frontImage,
+      back: backImage
+    },
+
+    basePrice,
+    discountType,
+    discountValue,
+    finalPrice
   });
 
   return {
     success: true,
-    message: "New Product Created",
+    message: "Product created successfully",
     data: createdProduct
   };
 };
 
+const getAllProducts = async () => {
+  try {
+    console.log("🔥 Aggregation started...");
 
-const getAllProducts = async (req, res) => {
-    const products = await Product.find();
+    const products = await Product.aggregate([
+      // 1️⃣ Join category
+      {
+        $lookup: {
+          from: "categories",
+          localField: "categoryId",
+          foreignField: "_id",
+          as: "category"
+        }
+      },
 
-    return {
-      success: true,
-      message: "Products fetched successfully",
-      data: products
-    };
+      // 2️⃣ Convert category array → object
+      {
+        $unwind: {
+          path: "$category",
+          preserveNullAndEmptyArrays: true
+        }
+      },
+
+      // 3️⃣ Join parent category (for subcategory case)
+      {
+        $lookup: {
+          from: "categories",
+          localField: "category.parentId",
+          foreignField: "_id",
+          as: "parentCategory"
+        }
+      },
+
+      {
+        $unwind: {
+          path: "$parentCategory",
+          preserveNullAndEmptyArrays: true
+        }
+      },
+
+    {
+  $addFields: {
+    categoryName: {
+      $ifNull: [
+        {
+          $cond: [
+            { $eq: ["$category.parentId", null] },
+            "$category.name",
+            "$parentCategory.name"
+          ]
+        },
+        null
+      ]
+    },
+    subCategoryName: {
+      $ifNull: [
+        {
+          $cond: [
+            { $eq: ["$category.parentId", null] },
+            null,
+            "$category.name"
+          ]
+        },
+        null
+      ]
+    }
+  }
+},
+
+
+    {
+  $project: {
+    _id: 1,
+    name: 1,
+    categoryId: 1,
+    categoryName: 1,
+    subCategoryName: 1,
+    glbUrl: 1,
+    templates: 1,
+    images: 1,
+    viewImages:1,
+    basePrice: 1,
+    discountType: 1,
+    discountValue: 1,
+    finalPrice: 1,
+    isActive: 1,
+    createdAt: 1,
+    updatedAt: 1
+  }
 }
+    ]);
+
+    return products;
+
+  } catch (error) {
+    console.error("❌ Aggregation Error:", error);
+    throw error;
+  }
+};
+
+
+
 
 
 const getOneProducts = async (req, res) => {
@@ -744,27 +894,96 @@ const deleteProducts = async (req, res) => {
 
 
 const editProducts = async (req, res) => {
-    const { _id } = req.params;
-    const data = req.body;
-    const product = await Product.findById(_id);
-    if (!product) {
-      throw new ApiError(404, "Product not found");
-    }
-    let glbUrl = product.glbUrl;
-    if (req.file) {
-      glbUrl = await uploadToCloud(req.file, "products/glb");
-    }
-    const updatedProduct = await Product.findByIdAndUpdate(
-      _id,
-      { ...data, glbUrl },
-      { new: true }
+  const { _id } = req.params;
+  const data = req.body;
+
+  const product = await Product.findById(_id);
+  if (!product) {
+    throw new ApiError(404, "Product not found");
+  }
+
+  let glbUrl = product.glbUrl;
+
+  // 🔥 GLB UPDATE
+  if (req.files?.glbFile?.[0]) {
+    glbUrl = await uploadToCloud(
+      req.files.glbFile[0],
+      "products/glb"
     );
-    return {
-      success: true,
-      message: "Product updated successfully",
-      data: updatedProduct
-    };
-}
+  }
+
+  // 🔥 EXISTING IMAGES
+  let frontImage = product.viewImages?.front;
+  let backImage = product.viewImages?.back;
+
+  // 🔥 UPDATE FRONT
+  if (req.files?.frontImage?.[0]) {
+    frontImage = await uploadToCloud(
+      req.files.frontImage[0],
+      "products/images"
+    );
+  }
+
+  // 🔥 UPDATE BACK
+  if (req.files?.backImage?.[0]) {
+    backImage = await uploadToCloud(
+      req.files.backImage[0],
+      "products/images"
+    );
+  }
+
+  // fallback
+  if (frontImage && !backImage) {
+    backImage = frontImage;
+  }
+
+  // 🔥 Templates
+  let templates = [];
+  if (data.templates) {
+    templates = Array.isArray(data.templates)
+      ? data.templates
+      : [data.templates];
+  }
+
+  // 🔥 DISCOUNT
+  const basePrice = Number(data.basePrice) || 0;
+  const discountType = data.discountType || "percentage";
+  const discountValue = Number(data.discountValue) || 0;
+
+  const finalPrice = calculateFinalPrice(
+    basePrice,
+    discountType,
+    discountValue
+  );
+
+  const updatedProduct = await Product.findByIdAndUpdate(
+    _id,
+    {
+      ...data,
+      templates,
+      glbUrl,
+
+      images: [frontImage, backImage],
+
+      viewImages: {
+        front: frontImage,
+        back: backImage
+      },
+
+      basePrice,
+      discountType,
+      discountValue,
+      finalPrice
+    },
+    { new: true }
+  );
+
+  return {
+    success: true,
+    message: "Product updated successfully",
+    data: updatedProduct
+  };
+};
 
 const createSubCategory = async (req, res) => {
   const { subCategoryTitle, category } = req.body;

@@ -116,6 +116,7 @@ return {
     id: user._id,
     name: user.name,
     phoneNumber: user.phoneNumber,
+    email:user.email
   },
 };
 };

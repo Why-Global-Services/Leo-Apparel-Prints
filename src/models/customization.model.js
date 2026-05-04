@@ -4,8 +4,11 @@ const { v4: uuidv4 } = require("uuid");
 const customizationSchema = new mongoose.Schema({
   _id: { type: String, default: uuidv4 },
 
-  userId: String,
-  productId: String,
+  userId: { type: String, default: null },
+  guestId: { type: String, default: null }, 
+  productId:{
+    type:String
+  },
 
   customization: [
     {

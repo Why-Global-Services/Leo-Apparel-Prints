@@ -108,11 +108,20 @@ router.route("/moveToCart").put(verifyToken, userController.moveToCartData);
 
 router.route("/getCheckout").get(verifyToken, userController.getCheckout);
 
+router.route("/address").post(verifyToken, userController.newAddress);
+router.route("/getaddress").get(verifyToken, userController.getNewAddress);
+router
+  .route("/editaddress/:addressId")
+  .put(verifyToken, userController.editNewAddress);
+router
+  .route("/deleteaddress/:addressId")
+  .delete(verifyToken, userController.deleteNewAddress);
+
 // Address
 router.route("/addAddress").post(verifyToken, userController.addAddressData);
 router.route("/getAddress").get(verifyToken, userController.getAddressData);
 router
-  .route("/updateAddress")
+  .route("/updateAddress/:addressId")
   .put(verifyToken, userController.updateAddressData);
 router
   .route("/deleteAddress")
@@ -175,14 +184,7 @@ router
 
 // Account
 router.route("/dashboard").get(verifyToken, userController.dashboardData);
-router.route("/address").post(verifyToken, userController.newAddress);
-router.route("/getaddress").get(verifyToken, userController.getNewAddress);
-router
-  .route("/editaddress/:addressId")
-  .put(verifyToken, userController.editNewAddress);
-router
-  .route("/deleteaddress/:addressId")
-  .delete(verifyToken, userController.deleteNewAddress);
+
 
 router.route("/getOrders").get(verifyToken, userController.fetchOrder);
 router
