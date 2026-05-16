@@ -305,26 +305,69 @@ function AnimatedLogo() {
 }
 
 // Tooltip Component
-function Tooltip({ text, position = "bottom" }) {
+function Tooltip({
+  text,
+  position = "bottom",
+}) {
+
+  const [mounted, setMounted] =
+    useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
   const positionClasses = {
-    bottom: "top-full mt-2 left-1/2 -translate-x-1/2",
-    top: "bottom-full mb-2 left-1/2 -translate-x-1/2",
+    bottom:
+      "top-full mt-2 left-1/2 -translate-x-1/2",
+
+    top:
+      "bottom-full mb-2 left-1/2 -translate-x-1/2",
   };
 
   return (
     <div
-      className={`absolute ${positionClasses[position]} 
-      opacity-0 group-hover:opacity-100 translate-y-1 group-hover:translate-y-0
-      transition-all duration-300 pointer-events-none z-20 hidden md:block`}
+      className={`
+        absolute
+        ${positionClasses[position]}
+        transition-all duration-300
+        pointer-events-none
+        z-20 hidden md:block
+      `}
     >
-      <div className="relative px-3 py-1.5 text-xs font-medium text-white rounded-lg
-        bg-gradient-to-r from-blue-600 to-blue-800
-        shadow-xl backdrop-blur-md whitespace-nowrap">
-        {text}
-        <div className={`absolute left-1/2 -translate-x-1/2 w-2 h-2 rotate-45 bg-blue-700 
-          ${position === "bottom" ? "-top-1" : "-bottom-1"}`}
-        />
-      </div>
+      {mounted && (
+        <div
+          className="
+            relative px-3 py-1.5
+            text-xs font-medium
+            text-white rounded-lg
+            bg-gradient-to-r
+            from-blue-600 to-blue-800
+            shadow-xl backdrop-blur-md
+            whitespace-nowrap
+            opacity-0 group-hover:opacity-100
+            translate-y-1
+            group-hover:translate-y-0
+            transition-all duration-300
+          "
+        >
+          {text}
+
+          <div
+            className={`
+              absolute left-1/2
+              -translate-x-1/2
+              w-2 h-2 rotate-45
+              bg-blue-700
+              ${
+                position === "bottom"
+                  ? "-top-1"
+                  : "-bottom-1"
+              }
+            `}
+          />
+        </div>
+      )}
     </div>
   );
 }
@@ -343,7 +386,23 @@ export default function Navbar() {
   const { user } = useSelector((state) => state.auth);
   const cartItems = useSelector((state) => state.cart?.items || []);
 
-  const cartItemCount = cartItems.reduce((total, item) => total + (item.quantity || 0), 0);
+ const [mounted, setMounted] =
+  useState(false);
+
+useEffect(() => {
+  setMounted(true);
+}, []);
+
+const cartItemCount = cartItems.reduce(
+  (total, item) =>
+    total +
+    (item.sizes || []).reduce(
+      (sum, size) =>
+        sum + size.quantity,
+      0
+    ),
+  0
+);
 
   const openAuthModal = (mode = "login") => {
     setAuthModalMode(mode);
@@ -483,7 +542,7 @@ export default function Navbar() {
                   className="p-2.5 text-gray-600 hover:text-primary rounded-full transition-all duration-300 relative"
                 >
                   <ShoppingCart size={26} strokeWidth={1.7} />
-                  {cartItemCount > 0 && (
+                  {mounted && cartItemCount > 0 && (
                     <span className="absolute -top-1 -right-1 bg-primary text-white text-xs font-bold w-5 h-5 flex items-center justify-center rounded-full">
                       {cartItemCount > 9 ? '9+' : cartItemCount}
                     </span>

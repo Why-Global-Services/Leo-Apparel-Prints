@@ -17,8 +17,20 @@ const initialState = {
 };
 
 const calculateTotals = (items) => {
-  const totalQuantity = items.reduce((sum, item) => sum + (item.quantity || 1), 0);
-  const totalPrice = items.reduce((sum, item) => sum + ((item.basePrice || item.price || 0) * (item.quantity || 1)), 0);
+ const totalQuantity = items.reduce(
+  (sum, item) =>
+    sum +
+    (item.sizes || []).reduce(
+      (s, size) => s + size.quantity,
+      0
+    ),
+  0
+);
+  const totalPrice = items.reduce((sum, item) => sum + ((item.basePrice || item.price || 0) *
+(item.sizes || []).reduce(
+  (s, size) => s + size.quantity,
+  0
+)), 0);
   return { totalQuantity, totalPrice };
 };
 
@@ -102,7 +114,7 @@ const cartSlice = createSlice({
       if (item.customizationId === action.meta.arg.customizationId) {
         return {
           ...item,
-          quantity: action.meta.arg.quantity,
+          sizes:action.meta.arg.sizes,
         };
       }
       return item;

@@ -1745,6 +1745,9 @@ import { useDispatch, useSelector } from 'react-redux';
 import { addToCart } from '@/features/cart/cartThunks';
 import { useRouter } from 'next/navigation';
 import toast from 'react-hot-toast';
+import { useSearchParams } from "next/navigation";
+import axiosClient from "@/lib/axios";
+import { saveCustomizationAPI } from "@/services/customizationService";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // STATIC DATA
@@ -1962,8 +1965,16 @@ export default function JerseyCustomizer({ product }) {
   const [viewMode,     setViewMode]     = useState('product');
   const [mobileOpen,   setMobileOpen]   = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
-  const [selectedSize, setSelectedSize] = useState('L');
-  const [quantity,     setQuantity]     = useState(1);
+const [sizeQuantities, setSizeQuantities] = useState({
+  XS: 0,
+  S: 0,
+  M: 0,
+  L: 0,
+  XL: 0,
+  XXL: 0,
+  "3XL": 0,
+  "4XL": 0,
+});
   const [isMobile,     setIsMobile]     = useState(false);
   const [isTablet,     setIsTablet]     = useState(false);
 
@@ -2001,6 +2012,114 @@ export default function JerseyCustomizer({ product }) {
 
   const viewerContainerRef = useRef(null);
 
+  const searchParams = useSearchParams();
+
+const customizationId =
+  searchParams.get("customizationId");
+
+
+
+  useEffect(() => {
+  if (!customizationId) return;
+
+  const fetchCustomization = async () => {
+    try {
+      const res = await axiosClient.get(
+        `/v1/user/customization/${customizationId}`
+      );
+
+      const data = res.data?.data;
+
+      if (!data) return;
+
+      // ✅ Sizes
+      const sizeObj = {
+        XS: 0,
+        S: 0,
+        M: 0,
+        L: 0,
+        XL: 0,
+        XXL: 0,
+        "3XL": 0,
+        "4XL": 0,
+      };
+
+      (data.sizes || []).forEach((s) => {
+        sizeObj[s.size] = s.quantity;
+      });
+
+      setSizeQuantities(sizeObj);
+
+      // ✅ Customization fields
+      const getField = (name) =>
+        data.customization.find(
+          (c) => c.fieldName === name
+        )?.value;
+
+        setClubLogo(
+  getField("logo") || null
+);
+
+setSponsorLogo(
+  getField("sponsor") || null
+);
+
+      setJerseyColor(
+        getField("jerseyColor") || "#1E40AF"
+      );
+
+      setSleeveColor(
+        getField("sleeveColor") || "#111111"
+      );
+
+      setCollarColor(
+        getField("collarColor") || "#DC2626"
+      );
+
+      setPlayerName(
+        getField("playerName") || "PLAYER"
+      );
+
+      setPlayerNumber(
+        getField("playerNumber") || "10"
+      );
+
+      setFabric(
+        getField("fabric") || "climatech"
+      );
+
+      setNameFont(
+        getField("nameFont") || "collegiate"
+      );
+
+      setNameColor(
+        getField("nameColor") || "#FFFFFF"
+      );
+
+      setNumberFont(
+        getField("numberFont") || "block"
+      );
+
+      setNumberColor(
+        getField("numberColor") || "#F59E0B"
+      );
+
+      setNameStyle(
+        getField("nameStyle") || "straight"
+      );
+
+      setTextEffect(
+        getField("textEffect") || "none"
+      );
+
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  fetchCustomization();
+}, [customizationId]);
+
   useEffect(() => {
     const checkSize = () => { setIsMobile(window.innerWidth < 768); setIsTablet(window.innerWidth >= 768 && window.innerWidth < 1024); };
     checkSize();
@@ -2016,15 +2135,23 @@ export default function JerseyCustomizer({ product }) {
     return () => document.removeEventListener('fullscreenchange', fn);
   }, []);
 
-  const handleUpload = useCallback((setter) => (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
-    if (!file.type.startsWith('image/')) { toast.error('Please upload an image'); return; }
-    if (file.size > 8 * 1024 * 1024)    { toast.error('Max file size 8 MB');      return; }
-    const reader = new FileReader();
-    reader.onloadend = () => setter(reader.result);
-    reader.readAsDataURL(file);
-  }, []);
+const handleUpload = useCallback((setter) => (e) => {
+  const file = e.target.files[0];
+
+  if (!file) return;
+
+  if (!file.type.startsWith('image/')) {
+    toast.error('Please upload an image');
+    return;
+  }
+
+  if (file.size > 8 * 1024 * 1024) {
+    toast.error('Max file size 8 MB');
+    return;
+  }
+
+  setter(file);
+}, []);
 
   // const handleSaveDesign = () => {
   //   if (!product) { toast.error('Product not loaded'); return; }
@@ -2037,56 +2164,153 @@ export default function JerseyCustomizer({ product }) {
   // };
 
 
-const handleSaveDesign = () => {
+const handleSaveDesign = async () => {
+
   if (!product) {
-    toast.error('Product not loaded');
+    toast.error("Product not loaded");
     return;
   }
-  
-  const cartItem = {
-    productId: product?._id || product?.id,
-    name: product?.name,
-    basePrice: product?.basePrice || product?.price || 899,
-    size: selectedSize,
-    quantity: quantity,
-    image:
-    view === "front"
-      ? product?.viewImages?.front || product?.images?.[0]
-      : product?.viewImages?.back ||
-        product?.images?.[1] ||
-        product?.viewImages?.front ||
-        product?.images?.[0],
-    customization: {
-      jerseyColor: String(jerseyColor),
-      sleeveColor: String(sleeveColor),
-      collarColor: String(collarColor),
-      playerName: showName ? String(playerName) : '',
-      playerNumber: showNumber ? String(playerNumber) : '',
-      fabric: String(fabric),
-      size: String(selectedSize),
-      nameFont: String(nameFont),
-      nameColor: String(nameColor),
-      numberFont: String(numberFont),
-      numberColor: String(numberColor),
-      nameStyle: String(nameStyle),
-      textEffect: String(textEffect),
-    },
-  };
-  
-  console.log("Adding to cart:", JSON.stringify(cartItem, null, 2));
-  
-  dispatch(addToCart(cartItem))
-    .unwrap()
-    .then((result) => {
-      console.log("Add to cart success:", result);
-      toast.success(`${product?.name} added to cart!`);
-    })
-    .catch((error) => {
-      console.error("Add to cart failed:", error);
-      toast.error(error || 'Failed to add to cart');
-    });
-};
 
+  // ✅ Convert sizes
+  const sizes = Object.entries(sizeQuantities)
+    .filter(([_, qty]) => qty > 0)
+    .map(([size, qty]) => ({
+      size,
+      quantity: qty,
+    }));
+
+  // ✅ Validation
+  if (sizes.length === 0) {
+    toast.error(
+      "Please select at least one size"
+    );
+    return;
+  }
+
+  try {
+
+    // =========================
+    // ✅ SAVE / UPDATE CUSTOMIZATION
+    // =========================
+    const customizationRes =
+      await saveCustomizationAPI({
+
+        productId:
+          product?._id || product?.id,
+
+        // 🔥 IMPORTANT
+        customizationId,
+
+        customization: [
+          {
+            zoneKey: "jersey",
+            fieldName: "jerseyColor",
+            value: String(jerseyColor),
+          },
+          {
+            zoneKey: "jersey",
+            fieldName: "sleeveColor",
+            value: String(sleeveColor),
+          },
+          {
+            zoneKey: "jersey",
+            fieldName: "collarColor",
+            value: String(collarColor),
+          },
+          {
+            zoneKey: "jersey",
+            fieldName: "playerName",
+            value: showName
+              ? String(playerName)
+              : "",
+          },
+          {
+            zoneKey: "jersey",
+            fieldName: "playerNumber",
+            value: showNumber
+              ? String(playerNumber)
+              : "",
+          },
+          {
+            zoneKey: "jersey",
+            fieldName: "fabric",
+            value: String(fabric),
+          },
+          {
+            zoneKey: "jersey",
+            fieldName: "nameFont",
+            value: String(nameFont),
+          },
+          {
+            zoneKey: "jersey",
+            fieldName: "nameColor",
+            value: String(nameColor),
+          },
+          {
+            zoneKey: "jersey",
+            fieldName: "numberFont",
+            value: String(numberFont),
+          },
+          {
+            zoneKey: "jersey",
+            fieldName: "numberColor",
+            value: String(numberColor),
+          },
+          {
+            zoneKey: "jersey",
+            fieldName: "nameStyle",
+            value: String(nameStyle),
+          },
+          {
+            zoneKey: "jersey",
+            fieldName: "textEffect",
+            value: String(textEffect),
+          },
+        ],
+
+        // ✅ LOGOS
+        clubLogo,
+        sponsorLogo,
+      });
+
+    // =========================
+    // ✅ FINAL CUSTOMIZATION ID
+    // =========================
+    const finalCustomizationId =
+      customizationRes?.data?._id;
+
+    // =========================
+    // ✅ ADD TO CART
+    // =========================
+    const result = await dispatch(
+      addToCart({
+        customizationId:
+          finalCustomizationId,
+        sizes,
+      })
+    ).unwrap();
+
+    console.log(
+      "✅ Add to cart success:",
+      result
+    );
+
+    toast.success(
+      `${product?.name} added to cart!`
+    );
+
+  } catch (error) {
+
+    console.error(
+      "❌ Add to cart failed:",
+      error
+    );
+
+    toast.error(
+      error || "Failed to add to cart"
+    );
+  }
+};
 
   const reset = () => {
     setJerseyColor('#1E40AF'); setSleeveColor('#111111'); setCollarColor('#DC2626');
@@ -2095,7 +2319,17 @@ const handleSaveDesign = () => {
     setNameStyle('straight'); setNameFont('collegiate'); setNameColor('#FFFFFF');
     setNumberFont('block'); setNumberColor('#F59E0B');
     setShowName(true); setShowNumber(true); setTextEffect('none');
-    setSelectedSize('L'); setQuantity(1);
+    // setSelectedSize('L'); setQuantity(1);
+    setSizeQuantities({
+  XS: 0,
+  S: 0,
+  M: 0,
+  L: 0,
+  XL: 0,
+  XXL: 0,
+  "3XL": 0,
+  "4XL": 0,
+});
     toast.success('Reset complete');
   };
 
@@ -2174,7 +2408,19 @@ const handleSaveDesign = () => {
       <div style={{ fontSize: 10, fontWeight: 700, color: '#64748B', marginBottom: 6 }}>{label}</div>
       {state ? (
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 12px', background: '#F8FAFC', borderRadius: 10, border: '1px solid #E2E8F0' }}>
-          <img src={state} alt={label} style={{ maxHeight: 56, maxWidth: 110, objectFit: 'contain' }} />
+          <img
+  src={
+    typeof state === "string"
+      ? state
+      : URL.createObjectURL(state)
+  }
+  alt={label}
+  style={{
+    maxHeight: 56,
+    maxWidth: 110,
+    objectFit: "contain",
+  }}
+/>
           <button onClick={() => setter(null)} style={{ background: '#FEF2F2', border: '1px solid #FECACA', color: '#EF4444', borderRadius: 7, padding: '5px 10px', cursor: 'pointer', fontSize: 10, fontWeight: 700, display: 'flex', alignItems: 'center', gap: 4 }}>
             <Trash2 size={12} /> Remove
           </button>
@@ -2364,19 +2610,115 @@ const handleSaveDesign = () => {
       <>
         <div style={{ padding: '10px 12px', background: '#F0FDF4', borderRadius: 10, marginBottom: 12, fontSize: 11, color: '#166534', fontWeight: 600 }}>Design ready! Complete the details below.</div>
         <div style={{ marginBottom: 16 }}>
-          <div style={{ fontSize: 11, fontWeight: 700, marginBottom: 9, color: '#000' }}>Select Size</div>
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
-            {SIZES.map(s => <button key={s} onClick={() => setSelectedSize(s)} style={{ width: 48, height: 48, borderRadius: 9, fontSize: 11, fontWeight: 700, cursor: 'pointer', border: `2px solid ${selectedSize === s ? '#003E9B' : '#E2E8F0'}`, background: selectedSize === s ? 'rgba(0,62,155,0.10)' : '#F8FAFC', color: selectedSize === s ? '#003E9B' : '#000' }}>{s}</button>)}
-          </div>
-        </div>
         <div style={{ marginBottom: 16 }}>
+  <div
+    style={{
+      fontSize: 11,
+      fontWeight: 700,
+      marginBottom: 12,
+      color: "#000",
+    }}
+  >
+    Select Sizes & Quantities
+  </div>
+
+  <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+    {SIZES.map((size) => (
+      <div
+        key={size}
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          padding: "10px 14px",
+          border: "1px solid #E2E8F0",
+          borderRadius: "10px",
+          background: "#fff",
+        }}
+      >
+        <span
+          style={{
+            fontWeight: 700,
+            fontSize: 12,
+            color: "#003E9B",
+          }}
+        >
+          {size}
+        </span>
+
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: 12,
+          }}
+        >
+          <button
+            onClick={() =>
+              setSizeQuantities((prev) => ({
+                ...prev,
+                [size]: Math.max(0, prev[size] - 1),
+              }))
+            }
+            style={{
+              width: 32,
+              height: 32,
+              borderRadius: 8,
+              border: "1px solid #003E9B",
+              background: "#fff",
+              cursor: "pointer",
+              fontSize: 18,
+              color: "#003E9B",
+            }}
+          >
+            −
+          </button>
+
+          <span
+            style={{
+              minWidth: 20,
+              textAlign: "center",
+              fontWeight: 700,
+              color: "#003E9B",
+            }}
+          >
+            {sizeQuantities[size]}
+          </span>
+
+          <button
+            onClick={() =>
+              setSizeQuantities((prev) => ({
+                ...prev,
+                [size]: prev[size] + 1,
+              }))
+            }
+            style={{
+              width: 32,
+              height: 32,
+              borderRadius: 8,
+              border: "1px solid #003E9B",
+              background: "#fff",
+              cursor: "pointer",
+              fontSize: 18,
+              color: "#003E9B",
+            }}
+          >
+            +
+          </button>
+        </div>
+      </div>
+    ))}
+  </div>
+</div>
+        </div>
+        {/* <div style={{ marginBottom: 16 }}>
           <div style={{ fontSize: 11, fontWeight: 700, marginBottom: 9, color: '#000' }}>Quantity</div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 14, background: '#F8FAFC', padding: '8px 16px', borderRadius: 10, justifyContent: 'center' }}>
             <button onClick={() => setQuantity(Math.max(1, quantity - 1))} style={{ width: 38, height: 38, borderRadius: 8, background: '#fff', border: '1px solid #E2E8F0', cursor: 'pointer', fontSize: 20, color: '#003E9B' }}>−</button>
             <span style={{ fontSize: 22, fontWeight: 900, minWidth: 64, textAlign: 'center', color: '#003E9B' }}>{quantity}</span>
             <button onClick={() => setQuantity(quantity + 1)} style={{ width: 38, height: 38, borderRadius: 8, background: '#fff', border: '1px solid #E2E8F0', cursor: 'pointer', fontSize: 20, color: '#003E9B' }}>+</button>
           </div>
-        </div>
+        </div> */}
         <div style={{ border: '1px solid rgba(0,62,155,0.2)', borderRadius: 12, background: 'rgba(0,62,155,0.03)', padding: 16, marginBottom: 14 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 14 }}>
             <Star size={15} color="#003E9B" fill="#003E9B" />
@@ -2388,7 +2730,13 @@ const handleSaveDesign = () => {
             ['Collar Color',  JERSEY_COLORS.find(c => c.code === collarColor)?.name || collarColor],
             ['Player Name',   showName   ? (playerName   || '—') : 'Hidden'],
             ['Player Number', showNumber ? `#${playerNumber}`    : 'Hidden'],
-            ['Size',          selectedSize],
+           [
+  'Sizes',
+  Object.entries(sizeQuantities)
+    .filter(([_, qty]) => qty > 0)
+    .map(([size, qty]) => `${size} × ${qty}`)
+    .join(', ') || '—'
+],
           ].map(([k, v]) => (
             <div key={k} style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 7 }}>
               <span style={{ fontSize: 10, color: '#64748B' }}>{k}</span>
@@ -2396,8 +2744,18 @@ const handleSaveDesign = () => {
             </div>
           ))}
           <div style={{ borderTop: '1px solid rgba(0,62,155,0.12)', marginTop: 10, paddingTop: 10, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <span style={{ fontSize: 12, fontWeight: 700 }}>Total ({quantity} unit{quantity > 1 ? 's' : ''})</span>
-            <span style={{ fontSize: 22, fontWeight: 900, color: '#003E9B' }}>₹{((product?.basePrice || 899) * quantity).toLocaleString()}</span>
+          <span style={{ fontSize: 12, fontWeight: 700 }}>
+  Total (
+  {
+    Object.values(sizeQuantities)
+      .reduce((a, b) => a + b, 0)
+  }
+  {' '}units)
+</span>
+            <span style={{ fontSize: 22, fontWeight: 900, color: '#003E9B' }}>₹{(
+  (product?.basePrice || 899) *
+  Object.values(sizeQuantities).reduce((a, b) => a + b, 0)
+).toLocaleString()}</span>
           </div>
         </div>
       </>

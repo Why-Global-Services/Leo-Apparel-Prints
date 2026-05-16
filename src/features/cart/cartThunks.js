@@ -351,44 +351,58 @@ const convertToArrayFormat = (customizationObj) => {
 // ✅ ADD TO CART
 // =========================
 //
-export const addToCart = createAsyncThunk(
-  "cart/addToCart",
-  async (cartData, { rejectWithValue, getState }) => {
-    try {
-      const { auth } = getState();
-      const isAuthenticated = !!auth?.user;
+export const addToCart =
+  createAsyncThunk(
+    "cart/addToCart",
 
-      console.log("🔥 ADD TO CART API");
+    async (
+      cartData,
+      { rejectWithValue, getState }
+    ) => {
 
-      // 1️⃣ Create customization
-      const customizationResponse = await saveCustomizationAPI({
-        productId: cartData.productId,
-        customization: convertToArrayFormat(cartData.customization),
-      });
+      try {
 
-      const customizationId =
-        customizationResponse.data?._id || customizationResponse._id;
+        const { auth } = getState();
 
-      if (!customizationId) {
-        throw new Error("Customization failed");
+        const isAuthenticated =
+          !!auth?.user;
+
+        console.log(
+          "🔥 ADD TO CART API"
+        );
+
+        // ✅ USE EXISTING CUSTOMIZATION
+        const customizationId =
+          cartData.customizationId;
+
+        // ✅ ADD TO CART
+        const response =
+          await addToCartAPI({
+            customizationId,
+            sizes:
+              cartData.sizes || [],
+          });
+
+        return {
+          data: response,
+          isAuthenticated,
+        };
+
+      } catch (err) {
+
+        console.error(
+          "addToCart error:",
+          err
+        );
+
+        return rejectWithValue(
+          err.response?.data?.message ||
+          err.message
+        );
+
       }
-
-      // 2️⃣ Add to cart (guest + user both)
-      const response = await addToCartAPI({
-        customizationId,
-        quantity: cartData.quantity,
-      });
-
-      return { data: response, isAuthenticated };
-    } catch (err) {
-      console.error("addToCart error:", err);
-      return rejectWithValue(
-        err.response?.data?.message || err.message
-      );
     }
-  }
-);
-
+  );
 //
 // =========================
 // ✅ FETCH CART
@@ -420,16 +434,16 @@ export const fetchCart = createAsyncThunk(
 //
 export const editCartItem = createAsyncThunk(
   "cart/editCartItem",
-  async ({ customizationId, quantity }, { rejectWithValue, getState }) => {
+  async ({ customizationId, sizes }, { rejectWithValue, getState }) => {
     try {
       const { auth } = getState();
       const isAuthenticated = !!auth?.user;
 
-      console.log("🔥 EDIT CART:", customizationId, quantity);
+      console.log("🔥 EDIT CART:", customizationId, sizes);
 
       const response = await editCartAPI({
         customizationId,
-        quantity,
+        sizes,
       });
 
       return { data: response, isAuthenticated };
