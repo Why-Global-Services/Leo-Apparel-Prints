@@ -4,7 +4,7 @@ import { Plus, Pencil, Trash2, Home, Building, MapPin } from "lucide-react";
 import { useDispatch, useSelector } from "react-redux";
 import { useEffect } from "react";
 import { fetchAddresses, addAddress, deleteAddress, updateAddress } from "@/features/user/userThunks";
-import AddAddressModal from "./AddAddressModal";
+import AddAddressModal from "../../app/account/components/AddAddressModal";
 
 console.log("address",fetchAddresses)
 const TYPE_ICONS = { HOME: Home, OFFICE: Building };
