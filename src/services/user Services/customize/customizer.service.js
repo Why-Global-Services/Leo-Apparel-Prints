@@ -4,6 +4,8 @@ const DesignZone = require("../../../models/designZone.model");
 const Customization = require("../../../models/customization.model");
 const ApiError = require("../../../utils/apiError");
 const { uploadToCloud } = require("../../../utils/uploadFileToS3");
+const Cart = require("../../../models/cart.model");
+
 
 const getCustomizer = async (req) => {
   const { productId } = req.params;
@@ -55,7 +57,9 @@ const getCustomizer = async (req) => {
 
 
 const saveCustomization = async (req) => {
-  const { productId } = req.body;
+  const { productId, customizationId } = req.body;
+
+  console.log("req body",req.body)
 
   if (!productId) {
     throw new ApiError(400, "productId is required");
@@ -96,20 +100,47 @@ if (!product) {
 const userId = req.user?._id || null;
 const guestId = req.headers["guestid"] || null;
 
-const data = await Customization.create({
-  userId,
-  guestId,
-  productId,
+let data;
 
-  productSnapshot: {
-    name: product.name,
-    glbUrl: product.glbUrl,
-    basePrice: product.basePrice,
-    totalPrice: product.basePrice
-  },
+if (customizationId) {
 
-  customization
-});
+  // ✅ UPDATE EXISTING
+  data = await Customization.findByIdAndUpdate(
+    customizationId,
+    {
+      customization,
+
+      productSnapshot: {
+        name: product.name,
+        glbUrl: product.glbUrl,
+        basePrice: product.basePrice,
+        totalPrice: product.basePrice,
+      },
+    },
+    {
+      new: true,
+    }
+  );
+
+} else {
+
+  // ✅ CREATE NEW
+  data = await Customization.create({
+    userId,
+    guestId,
+    productId,
+
+    productSnapshot: {
+      name: product.name,
+      glbUrl: product.glbUrl,
+      basePrice: product.basePrice,
+      totalPrice: product.basePrice,
+    },
+
+    customization,
+  });
+
+}
 
 
 
@@ -119,8 +150,53 @@ const data = await Customization.create({
     data
   };
 };
+
+
+
+const getCustomizationById = async (req) => {
+  const { customizationId } = req.params;
+
+  // customization
+  const customization =
+    await Customization.findById(customizationId).lean();
+
+  if (!customization) {
+    throw new ApiError(
+      404,
+      "Customization not found"
+    );
+  }
+
+  // 🔥 FIND CART
+  const cart = await Cart.findOne({
+    "items.customizationId": customizationId,
+  }).lean();
+
+  // 🔥 FIND ITEM
+  const cartItem = cart?.items?.find(
+    (item) =>
+      String(item.customizationId) ===
+      String(customizationId)
+  );
+
+  console.log(
+    "cartItem",
+    cartItem
+  );
+
+  return {
+    success: true,
+    data: {
+      ...customization,
+
+      // ✅ SIZES
+      sizes: cartItem?.sizes || [],
+    },
+  };
+};
   
 module.exports = {
   getCustomizer,
-  saveCustomization
+  saveCustomization,
+  getCustomizationById
 };

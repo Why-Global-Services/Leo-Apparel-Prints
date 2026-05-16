@@ -65,6 +65,8 @@ router.get("/customizer/:productId", userController.getCustomizer);
 
 router.post("/customization", uploads.any(),userController.saveCustomization);
 
+router.get("/customization/:customizationId",optionalVerifyToken,userController.getCustomizationByIdHandler);
+
 router.route("/getProfile").get( userController.fetchAdminProfile);
 
 router.route("/wishlist").post(optionalVerifyToken, userController.addHeart);

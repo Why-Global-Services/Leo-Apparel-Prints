@@ -482,20 +482,24 @@ const cleanCustomization = (customizationArray) => {
 // ✅ ADD TO CART (FINAL)
 // =========================
 const addToCart = async (req) => {
-  const { customizationId, quantity = 1 } = req.body;
+  const { customizationId, sizes = [] } = req.body;
 
-  if (quantity < 1) {
-    throw new ApiError(400, "Quantity must be at least 1");
+  // ✅ Validation
+  if (!sizes.length) {
+    throw new ApiError(400, "At least one size required");
   }
 
   const userId = req.user?._id || null;
+
   const guestId = req.headers["guestid"] || req.headers["guest-id"] || null;
 
   if (!userId && !guestId) {
     throw new ApiError(400, "User ID or Guest ID required");
   }
 
-  // 🔥 AUTO MERGE guest → user
+  // =========================
+  // ✅ AUTO MERGE GUEST → USER
+  // =========================
   if (userId && guestId) {
     const guestCart = await Cart.findOne({ guestId });
 
@@ -503,119 +507,157 @@ const addToCart = async (req) => {
       let userCart = await Cart.findOne({ userId });
 
       if (!userCart) {
-        userCart = await Cart.create({ userId, items: [] });
+        userCart = await Cart.create({
+          userId,
+          items: [],
+        });
       }
 
       for (const guestItem of guestCart.items) {
-        const guestCustomization = await Customization.findById(
-          guestItem.customizationId,
+        const existingIndex = userCart.items.findIndex(
+          (item) =>
+            String(item.customizationId) === String(guestItem.customizationId),
         );
 
-        let match = null;
+        if (existingIndex !== -1) {
+          // ✅ MERGE SIZES
+          guestItem.sizes.forEach((newSize) => {
+            const existing = userCart.items[existingIndex].sizes.find(
+              (s) => s.size === newSize.size,
+            );
 
-        for (const item of userCart.items) {
-          const existingCustomization = await Customization.findById(
-            item.customizationId,
-          );
-
-          const isSame =
-            String(existingCustomization.productId) ===
-              String(guestCustomization.productId) &&
-            JSON.stringify(
-              cleanCustomization(existingCustomization.customization),
-            ) ===
-              JSON.stringify(
-                cleanCustomization(guestCustomization.customization),
-              );
-
-          if (isSame) {
-            match = item;
-            break;
-          }
-        }
-
-        if (match) {
-          match.quantity += guestItem.quantity;
+            if (existing) {
+              existing.quantity += newSize.quantity;
+            } else {
+              userCart.items[existingIndex].sizes.push(newSize);
+            }
+          });
         } else {
+          // ✅ PUSH NEW ITEM
           userCart.items.push(guestItem);
         }
       }
 
       await userCart.save();
 
+      // ✅ MOVE CUSTOMIZATIONS
       await Customization.updateMany(
-        { guestId: guestId },
+        { guestId },
         {
-          $set: { userId: userId, guestId: null },
+          $set: {
+            userId,
+            guestId: null,
+          },
         },
       );
 
-      // 🔥 delete guest cart
-      await Cart.deleteOne({ guestId });
+      // ✅ DELETE GUEST CART
+      await Cart.deleteOne({
+        guestId,
+      });
 
       console.log("✅ Guest cart merged");
     }
   }
 
-  // 🔥 Get customization
+  // =========================
+  // ✅ GET CUSTOMIZATION
+  // =========================
   const customization = await Customization.findById(customizationId);
-  if (!customization) throw new ApiError(404, "Customization not found");
 
+  if (!customization) {
+    throw new ApiError(404, "Customization not found");
+  }
+
+  // =========================
+  // ✅ GET PRODUCT
+  // =========================
   const product = await Product.findById(customization.productId);
-  if (!product) throw new ApiError(404, "Product not found");
 
-  // 🔥 Always use correct cart
+  if (!product) {
+    throw new ApiError(404, "Product not found");
+  }
+
+  // =========================
+  // ✅ CART QUERY
+  // =========================
   let cartQuery = userId ? { userId } : { guestId };
 
   if (userId) {
-    cartQuery = { userId }; // 🔥 force after login
+    cartQuery = { userId };
   }
 
+  // =========================
+  // ✅ FIND CART
+  // =========================
   let userCart = await Cart.findOne(cartQuery);
 
+  // =========================
+  // ✅ CREATE CART
+  // =========================
   if (!userCart) {
     userCart = await Cart.create({
       ...cartQuery,
-      items: [{ customizationId, productId: product._id, quantity }],
+
+      items: [
+        {
+          customizationId,
+          productId: product._id,
+          sizes,
+           image: product?.viewImages?.front || product?.images?.[0] || "",
+        },
+      ],
     });
 
-    return { success: true, message: "Added to cart", data: userCart };
+    return {
+      success: true,
+      message: "Added to cart",
+      data: userCart,
+    };
   }
 
-  // 🔥 Check duplicate customization
-  const existingItem = await Promise.all(
-    userCart.items.map(async (item) => {
-      const existingCustomization = await Customization.findById(
-        item.customizationId,
-      );
-
-      return {
-        item,
-        isSame:
-          String(existingCustomization.productId) ===
-            String(customization.productId) &&
-          JSON.stringify(
-            cleanCustomization(existingCustomization.customization),
-          ) === JSON.stringify(cleanCustomization(customization.customization)),
-      };
-    }),
+  // =========================
+  // ✅ CHECK EXISTING ITEM
+  // =========================
+  const existingIndex = userCart.items.findIndex(
+    (item) => String(item.customizationId) === String(customizationId),
   );
 
-  const match = existingItem.find((i) => i.isSame);
+  // =========================
+  // ✅ UPDATE EXISTING ITEM
+  // =========================
+  if (existingIndex !== -1) {
+    userCart.items[existingIndex] = {
+      ...userCart.items[existingIndex]._doc,
 
-  if (match) {
-    match.item.quantity += quantity;
+      customizationId,
+      productId: product._id,
+      sizes,
+       image: product?.viewImages?.front || product?.images?.[0] || "",
+    };
   } else {
+    // =========================
+    // ✅ NEW ITEM
+    // =========================
     userCart.items.push({
       customizationId,
       productId: product._id,
-      quantity,
+      sizes,
+       image: product?.viewImages?.front || product?.images?.[0] || "",
+
     });
   }
 
+  // =========================
+  // ✅ SAVE
+  // =========================
   await userCart.save();
 
-  return { success: true, message: "Cart updated", data: userCart };
+  return {
+    success: true,
+    message: "Cart updated",
+    data: userCart,
+  };
 };
 
 // =========================
@@ -667,7 +709,15 @@ const getCart = async (req) => {
         }
 
         if (match) {
-          match.quantity += guestItem.quantity;
+          guestItem.sizes.forEach((newSize) => {
+            const existing = match.sizes.find((s) => s.size === newSize.size);
+
+            if (existing) {
+              existing.quantity += newSize.quantity;
+            } else {
+              match.sizes.push(newSize);
+            }
+          });
         } else {
           userCart.items.push(guestItem);
         }
@@ -715,14 +765,18 @@ const getCart = async (req) => {
 
       const price = product.basePrice || 0;
 
+      const totalQty = item.sizes.reduce((sum, s) => sum + s.quantity, 0);
+
       return {
         customizationId: item.customizationId,
         productId: product._id,
         productName: product.name,
         basePrice: price,
-        quantity: item.quantity,
-        total: price * item.quantity,
+        total: price * totalQty,
+        totalQuantity: totalQty,
         customization: customization.customization,
+        sizes: item.sizes,
+        image: product?.viewImages?.front || product?.images?.[0] || "",
       };
     }),
   );
@@ -744,7 +798,7 @@ const getCart = async (req) => {
 // ✅ EDIT CART
 // =========================
 const editCart = async (req) => {
-  const { customizationId, quantity } = req.body;
+  const { customizationId, sizes } = req.body;
 
   const userId = req.user?._id || null;
   const guestId = req.headers["guestid"] || req.headers["guest-id"] || null;
@@ -753,8 +807,8 @@ const editCart = async (req) => {
     throw new ApiError(400, "User ID or Guest ID required");
   }
 
-  if (quantity < 1) {
-    throw new ApiError(400, "Quantity must be at least 1");
+  if (!sizes || sizes.length === 0) {
+    throw new ApiError(400, "At least one size required");
   }
 
   const cartQuery = userId ? { userId } : { guestId };
@@ -768,7 +822,7 @@ const editCart = async (req) => {
 
   if (!item) throw new ApiError(404, "Item not found");
 
-  item.quantity = quantity;
+  item.sizes = sizes;
   await userCart.save();
 
   return { success: true, message: "Cart updated", data: userCart };
@@ -794,12 +848,12 @@ const deleteCart = async (req) => {
 
   // 🔥 find removed item
   const removedItem = userCart.items.find(
-    (item) => String(item.customizationId) === String(customizationId)
+    (item) => String(item.customizationId) === String(customizationId),
   );
 
   // 🔥 remove from cart
   userCart.items = userCart.items.filter(
-    (item) => String(item.customizationId) !== String(customizationId)
+    (item) => String(item.customizationId) !== String(customizationId),
   );
 
   await userCart.save();

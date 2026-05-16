@@ -10,44 +10,56 @@ const CartSchema = new mongoose.Schema(
 
     userId: {
       type: String,
-      default: null
+      default: null,
     },
 
     guestId: {
       type: String,
-      default: null
+      default: null,
     },
 
     items: [
       {
         productId: {
           type: String,
-          required: true
+          required: true,
         },
 
         customizationId: {
-          type: String,   // 🔥 NEW (IMPORTANT)
-          required: true
+          type: String, // 🔥 NEW (IMPORTANT)
+          required: true,
         },
 
-        quantity: {
-          type: Number,
-          default: 1,
-          min: 1
-        },
+        sizes: [
+          {
+            _id: {
+              type: String,
+              default: v4,
+            },
+            size: {
+              type: String,
+              required: true,
+            },
+
+            quantity: {
+              type: Number,
+              required: true,
+              min: 1,
+            },
+          },
+        ],
 
         _id: {
           type: String,
-          default: v4
-        }
-      }
+          default: v4,
+        },
+      },
     ],
 
     deliveryAddressId: String,
-    billingAddressId: String
-
+    billingAddressId: String,
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
 const Cart = mongoose.model("Cart", CartSchema);

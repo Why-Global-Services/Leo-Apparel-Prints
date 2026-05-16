@@ -134,6 +134,14 @@ const saveCustomization = catchAsync(async (req, res) => {
   res.status(200).send(data);
 });
 
+const getCustomizationByIdHandler =
+  catchAsync(async (req, res) => {
+
+    const data =
+      await customizerService.getCustomizationById(req);
+
+    res.status(200).json(data);
+  });
 const addHeart = catchAsync(async (req, res) => {
   const data = await addWishlist(req);
   res.status(201).send(data);
@@ -615,5 +623,6 @@ module.exports = {
   logout,
   refreshToken,
   getCustomizer,
-  saveCustomization
+  saveCustomization,
+  getCustomizationByIdHandler
 };
