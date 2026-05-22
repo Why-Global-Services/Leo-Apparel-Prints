@@ -33,6 +33,7 @@ async function optionalVerifyToken(req, res, next) {
     // Check if token is expired
     if (decoded.exp * 1000 < Date.now()) {
       req.tokenError = "expired";
+      req.isAuthenticated = false;
       return next();
     }
 
@@ -54,20 +55,25 @@ async function optionalVerifyToken(req, res, next) {
     req[role] = user;
     req.isAuthenticated = true; // Only set to true if everything is valid
   } catch (error) {
-    console.log("Optional JWT verification failed:", error.message);
+    if (error.name !== "TokenExpiredError") {
+      console.log("Optional JWT verification failed:", error.message);
+    }
     req.tokenError = error.name === "TokenExpiredError" ? "expired" : "invalid";
   }
   next();
 }
 
-
 router.get("/customizer/:productId", userController.getCustomizer);
 
-router.post("/customization", uploads.any(),userController.saveCustomization);
+router.post("/customization", uploads.any(), userController.saveCustomization);
 
-router.get("/customization/:customizationId",optionalVerifyToken,userController.getCustomizationByIdHandler);
+router.get(
+  "/customization/:customizationId",
+  optionalVerifyToken,
+  userController.getCustomizationByIdHandler,
+);
 
-router.route("/getProfile").get( userController.fetchAdminProfile);
+router.route("/getProfile").get(userController.fetchAdminProfile);
 
 router.route("/wishlist").post(optionalVerifyToken, userController.addHeart);
 router.route("/refresh-token").post(userController.refreshToken);
@@ -90,13 +96,17 @@ router
 router
   .route("/deleteWishlist")
   .delete(verifyToken, userController.deleteWishlist);
-router.route("/mergeWish").post(optionalVerifyToken, userController.wishMerge)
+router.route("/mergeWish").post(optionalVerifyToken, userController.wishMerge);
 
 router.route("/cart").post(optionalVerifyToken, userController.cart);
 router.route("/getCart").get(optionalVerifyToken, userController.fetchCart);
-router.route("/editCartData").put(optionalVerifyToken, userController.editCartData);
-router.route("/removeCart").delete(optionalVerifyToken, userController.removeCart);
-router.route("/mergeCart").post(optionalVerifyToken, userController.cartMerge)
+router
+  .route("/editCartData")
+  .put(optionalVerifyToken, userController.editCartData);
+router
+  .route("/removeCart")
+  .delete(optionalVerifyToken, userController.removeCart);
+router.route("/mergeCart").post(optionalVerifyToken, userController.cartMerge);
 
 router.route("/savelater").post(verifyToken, userController.AfterUse);
 router
@@ -146,7 +156,7 @@ router
   .post(
     verifyToken,
     uploads.array("reviewImages", 10),
-    userController.addReviewRating
+    userController.addReviewRating,
   );
 router
   .route("/getUserReviewRating")
@@ -187,7 +197,6 @@ router
 // Account
 router.route("/dashboard").get(verifyToken, userController.dashboardData);
 
-
 router.route("/getOrders").get(verifyToken, userController.fetchOrder);
 router
   .route("/getOneOrders/:_id")
@@ -199,12 +208,12 @@ router
 router.route("/getDetails").get(verifyToken, userController.fetchDetails);
 router.route("/editDetails").put(verifyToken, userController.changeDetails);
 
-router.route("/getNavbar").get(optionalVerifyToken, userController.getNavbarData);
+router
+  .route("/getNavbar")
+  .get(optionalVerifyToken, userController.getNavbarData);
 router.route("/coupon").post(verifyToken, userController.VerifyCoupon);
 
-router
-  .route("/getUserBasedCoupon")
-  .get( userController.fetchCoupon);
+router.route("/getUserBasedCoupon").get(userController.fetchCoupon);
 router.route("/getCategoryBasedProduct/:_id").get(userController.Product);
 router
   .route("/getSubCategoryBasedProduct/:_id")
@@ -245,15 +254,14 @@ router
   .route("/getSubCategoryBasedProducts")
   .get(userController.getSubCategoryBasedProductsData);
 
-router.route("/createTest").post( uploads.single("imageURL") ,userController.CreateTestimonial)
-router.route("/getTest").get(userController.getTestimonials)
+router
+  .route("/createTest")
+  .post(uploads.single("imageURL"), userController.CreateTestimonial);
+router.route("/getTest").get(userController.getTestimonials);
 
-router.route("/getActiveTopbar")
-  .get(userController.getActiveTopbarsController);
+router.route("/getActiveTopbar").get(userController.getActiveTopbarsController);
 
-
-  //Idgenarate
-router.get("/idGenerator",userController.IDGenerator);
-
+//Idgenarate
+router.get("/idGenerator", userController.IDGenerator);
 
 module.exports = router;

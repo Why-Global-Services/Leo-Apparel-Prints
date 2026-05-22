@@ -34,7 +34,7 @@ const categorySchema = new mongoose.Schema({
 
 /**
  * Auto-generate unique slug
- */
+ */ 
 categorySchema.pre("save", async function (next) {
   if (this.name) {
     let baseSlug = slugify(this.name, { lower: true, strict: true });

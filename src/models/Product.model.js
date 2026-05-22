@@ -15,6 +15,7 @@ const productSchema = new mongoose.Schema(
 
     categoryId: {
       type: String,
+      ref: "Category",
       required: true,
     },
 
@@ -40,6 +41,16 @@ const productSchema = new mongoose.Schema(
       },
     ],
 
+    allowedPatterns: [
+  {
+    type: String,
+    ref: "PatternDesign",
+  },
+],
+
+   customFields: { type: mongoose.Schema.Types.Mixed, default: [] },
+    printZones:   { type: mongoose.Schema.Types.Mixed, default: {} },
+    
     basePrice: {
       type: Number,
       default: 0,

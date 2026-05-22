@@ -6,9 +6,14 @@ const customizationSchema = new mongoose.Schema({
 
   userId: { type: String, default: null },
   guestId: { type: String, default: null }, 
-  productId:{
-    type:String
-  },
+  productId: { type: String, ref: "Product", default: null },
+  // productId:{
+  //   type:String
+  // },
+  patternId: {
+  type: String,
+  ref: "PatternDesign",
+},
 
   customization: [
     {

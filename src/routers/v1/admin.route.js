@@ -9,54 +9,53 @@ const { admin } = require("../../models/AdminUser.model");
 // Banner
 AdminRouter.route("/createUpdateBanner").post(
   uploads.single("bgImage"),
-  adminController.createBanner
+  adminController.createBanner,
 );
 AdminRouter.route("/updateBanner").put(
   uploads.single("bgImage"),
-  adminController.updateBanner
+  adminController.updateBanner,
 );
 AdminRouter.route("/getBanner").get(adminController.getBanner);
 AdminRouter.route("/editBanner").put(
   uploads.single("bgImage"),
-  adminController.editBanner
+  adminController.editBanner,
 );
 AdminRouter.route("/deleteBanner").delete(adminController.deleteBanner);
 
 //Coupone
 AdminRouter.route("/createCoupon").post(
   uploads.single("couponImage"),
-  adminController.createCoupone
+  adminController.createCoupone,
 );
 AdminRouter.route("/getCoupon").get(adminController.getCoupon);
 AdminRouter.route("/getOneCoupon/:_id").get(adminController.getOneCoupon);
 AdminRouter.route("/editCoupon/:_id").put(
   uploads.single("couponImage"),
-  adminController.editCoupon
+  adminController.editCoupon,
 );
 AdminRouter.route("/updateCouponStatus/:_id").put(
-  adminController.updateCouponStatus
+  adminController.updateCouponStatus,
 );
 AdminRouter.route("/deleteCoupon/:_id").delete(adminController.deleteCoupon);
-
 
 //Sub Category
 AdminRouter.route("/createSubCategory").post(
   uploads.single("subCategoryImage"),
-  adminController.createSubCategory
+  adminController.createSubCategory,
 );
 AdminRouter.route("/getSubCategory").get(adminController.getSubCategory);
 AdminRouter.route("/getSubCategoryBasedOnCategory/:categoryId").get(
-  adminController.getSubCategoryBasedOnCategory
+  adminController.getSubCategoryBasedOnCategory,
 );
 AdminRouter.route("/getOneSubCategory/:_id").get(
-  adminController.getOneSubCategory
+  adminController.getOneSubCategory,
 );
 AdminRouter.route("/updateSubCategory/:_id").put(
   uploads.single("subCategoryImage"),
-  adminController.updateSubCategory
+  adminController.updateSubCategory,
 );
 AdminRouter.route("/deleteSubCategory/:_id").delete(
-  adminController.deleteSubCategory
+  adminController.deleteSubCategory,
 );
 //Category
 
@@ -65,36 +64,29 @@ AdminRouter.route("/deleteSubCategory/:_id").delete(
 //   adminController.createCategory
 // );
 
-AdminRouter.route("/createCategory").post(
-  adminController.createCategory
-);
+AdminRouter.route("/createCategory").post(adminController.createCategory);
 
 AdminRouter.route("/getAllCategory").get(adminController.fetchCategory);
 AdminRouter.route("/getOneCategory/:_id").get(
-  adminController.fetchSingleCategory
+  adminController.fetchSingleCategory,
 );
 
-AdminRouter.route("/getActiveCategories").get(
-  userController.getCategories
-);
+AdminRouter.route("/getActiveCategories").get(userController.getCategories);
 
 AdminRouter.route("/getActiveSubcategories").get(
-  userController.getSubCategoryData
+  userController.getSubCategoryData,
 );
 
 AdminRouter.route("/editcategory/:_id").put(
   uploads.single("categoryImage"),
-  adminController.changeCategory
+  adminController.changeCategory,
 );
 
 AdminRouter.route("/deleteCategory/:_id").delete(
-  adminController.removeCategory
+  adminController.removeCategory,
 );
 
-
-AdminRouter.route("/createDigitalZone").post(
-  adminController.createDigitalZone
-);
+AdminRouter.route("/createDigitalZone").post(adminController.createDigitalZone);
 
 AdminRouter.route("/getDigitalZone").get(adminController.getDigitalZone);
 
@@ -104,34 +96,63 @@ AdminRouter.route("/gettemplate").get(adminController.getTemplate);
 
 AdminRouter.route("/createproducts").post(
   uploads.fields([
-  { name: "glbFile", maxCount: 1 },
-  { name: "frontImage", maxCount: 1 },
-  { name: "backImage", maxCount: 1 }
-]),
-  adminController.createProducts
+    { name: "glbFile", maxCount: 1 },
+    { name: "frontImage", maxCount: 1 },
+    { name: "backImage", maxCount: 1 },
+  ]),
+  adminController.createProducts,
 );
 
 AdminRouter.route("/getproducts").get(adminController.getAllProducts);
 
 AdminRouter.route("/getsingleproducts/:_id").get(
-  adminController.getOneProducts
+  adminController.getOneProducts,
 );
 
 AdminRouter.route("/editproducts/:_id").put(
   uploads.fields([
-  { name: "glbFile", maxCount: 1 },
-  { name: "frontImage", maxCount: 1 },
-  { name: "backImage", maxCount: 1 }
-]),
-  adminController.editProducts
+    { name: "glbFile", maxCount: 1 },
+    { name: "frontImage", maxCount: 1 },
+    { name: "backImage", maxCount: 1 },
+  ]),
+  adminController.editProducts,
 );
 
 AdminRouter.route("/updateproductstatus/:_id").patch(
-  adminController.toggleProductStatus 
+  adminController.toggleProductStatus,
 );
 
-AdminRouter.route("/deleteproducts/:_id").delete(adminController.deleteProducts);
+AdminRouter.route("/deleteproducts/:_id").delete(
+  adminController.deleteProducts,
+);
 
+AdminRouter.post(
+  "/createpattern",
+  uploads.fields([
+    {
+      name: "frontPattern",
+      maxCount: 1,
+    },
+    {
+      name: "backPattern",
+      maxCount: 1,
+    },
+    {
+      name: "thumbnail",
+      maxCount: 1,
+    },
+  ]),
+  adminController.createPattern,
+);
+
+AdminRouter.get("/allpattern", adminController.getPatterns);
+
+AdminRouter.delete("/patterns/:id", adminController.deletePattern);
+
+AdminRouter.post(
+  "/patterns/by-ids",
+  adminController.getPatternsByIds
+);
 
 AdminRouter.route("/customer").get(adminController.getCustomer);
 AdminRouter.route("/editcustomer/:_id").put(adminController.changeCustomer);
@@ -139,7 +160,7 @@ AdminRouter.route("/onecustomer/:_id").get(adminController.singleCustomer);
 
 AdminRouter.route("/createBrand").post(
   uploads.single("brandImage"),
-  adminController.createBrand
+  adminController.createBrand,
 );
 
 AdminRouter.route("/getBrand").get(adminController.getAllBrand);
@@ -147,7 +168,7 @@ AdminRouter.route("/getOneBrand/:_id").get(adminController.getSingleBrand);
 
 AdminRouter.route("/editBrand/:_id").put(
   uploads.single("brandImage"),
-  adminController.changeBrand
+  adminController.changeBrand,
 );
 
 AdminRouter.route("/deleteBrand/:_id").delete(adminController.removeBrand);
@@ -155,36 +176,33 @@ AdminRouter.route("/deleteBrand/:_id").delete(adminController.removeBrand);
 // Offers
 AdminRouter.route("/createOffers").post(
   uploads.single("offerImage"),
-  adminController.createOffer
+  adminController.createOffer,
 );
 AdminRouter.route("/getOffers").get(adminController.getOffers);
 AdminRouter.route("/getOneOffers/:_id").get(adminController.getOneOffer);
 AdminRouter.route("/updateOffers/:offerId").put(
   uploads.single("offerImage"),
-  adminController.updateOffers
+  adminController.updateOffers,
 );
 AdminRouter.route("/updateOfferStatus/:_id").put(
-  adminController.updateOfferStatus
+  adminController.updateOfferStatus,
 );
 AdminRouter.route("/deleteOffer/:offerId").delete(adminController.deleteOffers);
 
 // Report
 AdminRouter.route("/getReport").get(adminController.getReport);
 AdminRouter.route("/getInventoryReport").get(
-  adminController.getInventoryReport
+  adminController.getInventoryReport,
 );
 
-
-AdminRouter.route("/getSingleProduct/:_id").get(
-  adminController.getOneProducts
-);
+AdminRouter.route("/getSingleProduct/:_id").get(adminController.getOneProducts);
 
 AdminRouter.route("/editProduct/:_id").put(
   uploads.any(),
-  adminController.editProducts
+  adminController.editProducts,
 );
 AdminRouter.route("/editProductStatus/:_id").put(
-  adminController.toggleProductStatus
+  adminController.toggleProductStatus,
 );
 AdminRouter.route("/deleteProduct/:_id").delete(adminController.deleteProducts);
 
@@ -196,25 +214,33 @@ AdminRouter.route("/returnreject").put(adminController.approveRejectReturns);
 AdminRouter.route("/systemUser").post(adminController.createSystemUser);
 AdminRouter.route("/adminLogin").post(adminController.userLogin);
 AdminRouter.route("/allAdmin").get(verifyToken, adminController.allAdmin);
-AdminRouter.route("/forgotPassword").post(adminController.forgotPasswordController);
+AdminRouter.route("/forgotPassword").post(
+  adminController.forgotPasswordController,
+);
 AdminRouter.route("/resendOtp").post(adminController.resendOtpController);
-AdminRouter.route("/verifyResetOtp").post(adminController.verifyResetOtpController);
-AdminRouter.route("/resetPassword").post(adminController.resetPasswordController);
+AdminRouter.route("/verifyResetOtp").post(
+  adminController.verifyResetOtpController,
+);
+AdminRouter.route("/resetPassword").post(
+  adminController.resetPasswordController,
+);
 AdminRouter.route("/editAdmin/:_id").put(
   verifyToken,
-  adminController.editAdmin
+  adminController.editAdmin,
 );
 AdminRouter.route("/deleteAdmin/:_id").delete(
   verifyToken,
-  adminController.deleteAdmin
+  adminController.deleteAdmin,
 );
 AdminRouter.route("/getAdminById/:id").get(adminController.fetchSingleAdmin);
 // Review Ratings
 AdminRouter.route("/getReviewsRatings").get(adminController.getReviewRatings);
-AdminRouter.route("/deleteReviewsRatings/:_id").delete(adminController.deleteReviewsRatings);
+AdminRouter.route("/deleteReviewsRatings/:_id").delete(
+  adminController.deleteReviewsRatings,
+);
 AdminRouter.route("/notification").post(
   uploads.single("Image"),
-  adminController.addNotification
+  adminController.addNotification,
 );
 
 AdminRouter.route("/getNotification").get(adminController.fetchNotification);
@@ -222,48 +248,48 @@ AdminRouter.route("/getNotification").get(adminController.fetchNotification);
 // Offer Products
 AdminRouter.route("/addOfferProducts").post(adminController.addOfferProducts);
 AdminRouter.route("/getOfferProducts/:_id").get(
-  adminController.getOfferProducts
+  adminController.getOfferProducts,
 );
 AdminRouter.route("/updateOfferProducts/:_id").put(
-  adminController.updateOfferProducts
+  adminController.updateOfferProducts,
 );
 AdminRouter.route("/getOfferAndNotAppliedProducts/:_id").get(
-  adminController.getOfferAndNotAppliedProducts
+  adminController.getOfferAndNotAppliedProducts,
 );
 
 // Feature Section
 AdminRouter.route("/createFeaturedSection").post(
-  adminController.createFeaturedSection
+  adminController.createFeaturedSection,
 );
 AdminRouter.route("/getFeaturedSection").get(
-  adminController.getFeaturedSection
+  adminController.getFeaturedSection,
 );
 AdminRouter.route("/updateFeaturedSection/:_id").put(
-  adminController.updateFeaturedSection
+  adminController.updateFeaturedSection,
 );
 AdminRouter.route("/updateStatusFeatureSection/:_id").put(
-  adminController.updateStatusFeatureSection
+  adminController.updateStatusFeatureSection,
 );
 AdminRouter.route("/deleteFeaturedSection/:_id").delete(
-  adminController.deleteFeaturedSection
+  adminController.deleteFeaturedSection,
 );
 
 // Featurd prodcuts
 AdminRouter.route("/addFeaturedProducts").post(
-  adminController.addFeaturedProducts
+  adminController.addFeaturedProducts,
 );
 AdminRouter.route("/getFeaturedProducts/:_id").get(
-  adminController.getFeaturedProducts
+  adminController.getFeaturedProducts,
 );
 AdminRouter.route("/getFeaturedAndNotAppliedProducts/:_id").get(
-  adminController.getFeaturedAndNotAppliedProducts
+  adminController.getFeaturedAndNotAppliedProducts,
 );
 AdminRouter.route("/updateFeaturedProducts/:_id").put(
-  adminController.updateFeaturedProducts
+  adminController.updateFeaturedProducts,
 );
 
 AdminRouter.route("/filterNotification").get(
-  adminController.getfilterNotification
+  adminController.getfilterNotification,
 );
 
 // Settings
@@ -272,17 +298,17 @@ AdminRouter.route("/storeSettingsData").post(
     { name: "logo", maxCount: 1 },
     { name: "favicon", maxCount: 1 },
   ]),
-  adminController.storeSettingsData
+  adminController.storeSettingsData,
 );
 AdminRouter.route("/getStoreSettingData").get(
-  adminController.getStoreSettingData
+  adminController.getStoreSettingData,
 );
 AdminRouter.route("/editStoreSettingsData").put(
   uploads.fields([
     { name: "logo", maxCount: 1 },
     { name: "favicon", maxCount: 1 },
   ]),
-  adminController.editStoreSettingsData
+  adminController.editStoreSettingsData,
 );
 AdminRouter.route("/getPaymentMethod").get(adminController.getPaymentMethod);
 AdminRouter.route("/paymentMethods").post(adminController.paymentMethods);
@@ -292,77 +318,77 @@ AdminRouter.route("/createshipping").post(adminController.CreateShippingMethod);
 AdminRouter.route("/getshipping").get(adminController.GetShippingMethod);
 AdminRouter.route("/createaboutus").post(
   uploads.any(),
-  adminController.Createaboutus
+  adminController.Createaboutus,
 );
 AdminRouter.route("/getaboutus").get(adminController.Getaboutus);
 AdminRouter.route("/createcontactus").post(
   uploads.single("contactusBgImage"),
-  adminController.Createcontactus
+  adminController.Createcontactus,
 );
 AdminRouter.route("/getcontactus").get(adminController.Getcontactus);
 AdminRouter.route("/createprivacypolicy").post(
-  adminController.CreatePrivacyPolicy
+  adminController.CreatePrivacyPolicy,
 );
 AdminRouter.route("/getprivacypolicy").get(adminController.GetPrivacyPolicy);
 AdminRouter.route("/createtermsandcondition").post(
-  adminController.CreateTermsAndCondition
+  adminController.CreateTermsAndCondition,
 );
 AdminRouter.route("/gettermsandcondition").get(
-  adminController.GetTermsAndCondition
+  adminController.GetTermsAndCondition,
 );
 AdminRouter.route("/createreturnpolicy").post(
-  adminController.CreateReturnPolicy
+  adminController.CreateReturnPolicy,
 );
 AdminRouter.route("/getreturnpolicy").get(adminController.GetReturnPolicy);
 AdminRouter.route("/createshippingpolicy").post(
-  adminController.CreateShippingPolicy
+  adminController.CreateShippingPolicy,
 );
 AdminRouter.route("/getshippingpolicy").get(adminController.GetShippingPolicy);
 AdminRouter.route("/createadminpolicy").post(adminController.CreateAdminPolicy);
 AdminRouter.route("/getadminpolicy").get(adminController.GetAdminPolicy);
 AdminRouter.route("/createdeliverypolicy").post(
-  adminController.CreateDeliveryPolicy
+  adminController.CreateDeliveryPolicy,
 );
 AdminRouter.route("/getdeliverypolicy").get(adminController.GetDeliveryPolicy);
 AdminRouter.route("/shippingTimeSlots").post(adminController.shippingTimeSlots);
 AdminRouter.route("/getShippingTimeSlots").get(
-  adminController.getShippingTimeSlots
+  adminController.getShippingTimeSlots,
 );
 AdminRouter.route("/dashboard").get(adminController.dashBoardData);
 
 // Date Slots
 AdminRouter.route("/createHolidayDateSlot").post(
   verifyToken,
-  adminController.createHolidayDateSlot
+  adminController.createHolidayDateSlot,
 );
 AdminRouter.route("/getHolidayTimeSlot").get(
   verifyToken,
-  adminController.getHolidayTimeSlot
+  adminController.getHolidayTimeSlot,
 );
 AdminRouter.route("/hoildayTimeSlotStatus").get(
   verifyToken,
-  adminController.hoildayTimeSlotStatus
+  adminController.hoildayTimeSlotStatus,
 );
 AdminRouter.route("/editHolidayTimeSlot").put(
   verifyToken,
-  adminController.editHolidayTimeSlot
+  adminController.editHolidayTimeSlot,
 );
 AdminRouter.route("/deleteHolidayTimeSlot").delete(
   verifyToken,
-  adminController.deleteHolidayTimeSlot
+  adminController.deleteHolidayTimeSlot,
 );
 
 AdminRouter.route("/getProfile").get(verifyToken, adminController.fetchProfile);
 AdminRouter.route("/editProfile").put(
   verifyToken,
-  adminController.updateProfile
+  adminController.updateProfile,
 );
 
 AdminRouter.route("/editPurchaseCode").post(adminController.changePurchaseCode);
 AdminRouter.route("/getPurchaseCode").get(adminController.fetchPurchaseCode);
 
 AdminRouter.route("/editModuleManager").post(
-  adminController.changeModuleManger
+  adminController.changeModuleManger,
 );
 AdminRouter.route("/getModuleManager").get(adminController.fetchmoduleManager);
 AdminRouter.route("/getOneAdmin").get(verifyToken, adminController.getoneUser);
@@ -372,12 +398,14 @@ AdminRouter.route("/getUserQueries").get(adminController.GetAllUserQueries);
 AdminRouter.route("/webSettings").post(
   verifyToken,
   uploads.single("Logo"),
-  adminController.addWebUi
+  adminController.addWebUi,
 );
 
 AdminRouter.route("/getwebSettings").get(adminController.getWebUi);
 
-AdminRouter.route("/getActiveProducts").get(adminController.fetchActiveProducts);
+AdminRouter.route("/getActiveProducts").get(
+  adminController.fetchActiveProducts,
+);
 
 AdminRouter.route("/createFAQ").post(adminController.createFaq);
 
@@ -385,29 +413,33 @@ AdminRouter.route("/getFAQ").get(adminController.FetchedFAQ);
 
 AdminRouter.route("/deleteFAQ").put(adminController.removeFAQ);
 
-
-AdminRouter.route("/createTest").post( uploads.single("imageURL") ,adminController.CreateTestimonial)
-AdminRouter.route("/getTest").get(adminController.getTestimonials)
-AdminRouter.route("/updateTest/:id").put( uploads.single("imageURL"),adminController.updateTestimonials)
-AdminRouter.route("/deleteTest/:id").delete(adminController.deleteTestimonials)
+AdminRouter.route("/createTest").post(
+  uploads.single("imageURL"),
+  adminController.CreateTestimonial,
+);
+AdminRouter.route("/getTest").get(adminController.getTestimonials);
+AdminRouter.route("/updateTest/:id").put(
+  uploads.single("imageURL"),
+  adminController.updateTestimonials,
+);
+AdminRouter.route("/deleteTest/:id").delete(adminController.deleteTestimonials);
 
 // Topbar CRUD Routes
 
-AdminRouter.route("/createTopbar")
-  .post(adminController.createTopbarController);
+AdminRouter.route("/createTopbar").post(adminController.createTopbarController);
 
-AdminRouter.route("/getTopbar")
-  .get(adminController.getTopbarsController);
+AdminRouter.route("/getTopbar").get(adminController.getTopbarsController);
 
+AdminRouter.route("/updateTopbar/:id").put(
+  adminController.updateTopbarController,
+);
 
+AdminRouter.route("/toggleTopbar/:id").patch(
+  adminController.toggleTopbarController,
+);
 
-AdminRouter.route("/updateTopbar/:id")
-  .put(adminController.updateTopbarController);
-
-AdminRouter.route("/toggleTopbar/:id")
-  .patch(adminController.toggleTopbarController);
-
-AdminRouter.route("/deleteTopbar/:id")
-  .delete(adminController.deleteTopbarController);
+AdminRouter.route("/deleteTopbar/:id").delete(
+  adminController.deleteTopbarController,
+);
 
 module.exports = AdminRouter;

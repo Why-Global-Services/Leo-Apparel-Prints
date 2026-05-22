@@ -563,7 +563,7 @@ const addToCart = async (req) => {
   // =========================
   // ✅ GET CUSTOMIZATION
   // =========================
-  const customization = await Customization.findById(customizationId);
+  const customization = await Customization.findOne({ _id: customizationId });
 
   if (!customization) {
     throw new ApiError(404, "Customization not found");
@@ -572,7 +572,7 @@ const addToCart = async (req) => {
   // =========================
   // ✅ GET PRODUCT
   // =========================
-  const product = await Product.findById(customization.productId);
+  const product = await Product.findOne({ _id: customization.productId });
 
   if (!product) {
     throw new ApiError(404, "Product not found");
@@ -604,7 +604,7 @@ const addToCart = async (req) => {
           customizationId,
           productId: product._id,
           sizes,
-           image: product?.viewImages?.front || product?.images?.[0] || "",
+          image: product?.viewImages?.front || product?.images?.[0] || "",
         },
       ],
     });
@@ -633,7 +633,7 @@ const addToCart = async (req) => {
       customizationId,
       productId: product._id,
       sizes,
-       image: product?.viewImages?.front || product?.images?.[0] || "",
+      image: product?.viewImages?.front || product?.images?.[0] || "",
     };
   } else {
     // =========================
@@ -643,8 +643,7 @@ const addToCart = async (req) => {
       customizationId,
       productId: product._id,
       sizes,
-       image: product?.viewImages?.front || product?.images?.[0] || "",
-
+      image: product?.viewImages?.front || product?.images?.[0] || "",
     });
   }
 
@@ -667,6 +666,10 @@ const getCart = async (req) => {
   const userId = req.user?._id || null;
   const guestId = req.headers["guestid"] || req.headers["guest-id"] || null;
 
+  console.log("REQ USER:", req.user);
+  console.log("USER ID:", userId);
+  console.log("GUEST ID:", guestId);
+
   // =========================
   // 🔥 AUTO MERGE (IMPORTANT)
   // =========================
@@ -681,9 +684,16 @@ const getCart = async (req) => {
       }
 
       for (const guestItem of guestCart.items) {
+        // ✅ Get guest customization
         const guestCustomization = await Customization.findById(
           guestItem.customizationId,
         );
+if (!guestCustomization) {
+
+  console.log("❌ Guest customization missing");
+
+  continue;
+}
 
         let match = null;
 
@@ -691,6 +701,20 @@ const getCart = async (req) => {
           const existingCustomization = await Customization.findById(
             item.customizationId,
           );
+
+     if (!existingCustomization) {
+
+  console.log("❌ Existing customization missing");
+
+  // 🔥 REMOVE INVALID ITEM
+  userCart.items = userCart.items.filter(
+    (cartItem) =>
+      String(cartItem.customizationId) !==
+      String(item.customizationId)
+  );
+
+  continue;
+}
 
           const isSame =
             String(existingCustomization.productId) ===
@@ -708,6 +732,7 @@ const getCart = async (req) => {
           }
         }
 
+        // ✅ Merge sizes
         if (match) {
           guestItem.sizes.forEach((newSize) => {
             const existing = match.sizes.find((s) => s.size === newSize.size);
@@ -719,6 +744,7 @@ const getCart = async (req) => {
             }
           });
         } else {
+          // ✅ Add new item
           userCart.items.push(guestItem);
         }
       }
@@ -732,8 +758,9 @@ const getCart = async (req) => {
         },
       );
 
-      // 🔥 Remove guest cart after merge
-      await Cart.deleteOne({ guestId });
+      if (guestCart._id) {
+        await Cart.deleteOne({ _id: guestCart._id });
+      }
 
       console.log("✅ Guest cart merged during getCart");
     }
@@ -756,9 +783,14 @@ const getCart = async (req) => {
 
   const itemsData = await Promise.all(
     cart.items.map(async (item) => {
+      // const [product, customization] = await Promise.all([
+      //   Product.findById(item.productId).lean(),
+      //   Customization.findById(item.customizationId).lean(),
+      // ]);
+
       const [product, customization] = await Promise.all([
-        Product.findById(item.productId).lean(),
-        Customization.findById(item.customizationId).lean(),
+        Product.findOne({ _id: item.productId }).lean(),
+        Customization.findOne({ _id: item.customizationId }).lean(),
       ]);
 
       if (!product || !customization) return null;

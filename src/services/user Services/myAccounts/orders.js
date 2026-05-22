@@ -21,7 +21,7 @@ const getOrder = async (req, res) => {
     },
     {
       $lookup: {
-        from: "product",
+        from: "products",
         localField: "orderDetails.products.productId",
         foreignField: "_id",
         as: "productInfo",
@@ -88,7 +88,7 @@ const getSingleOrders = async (req) => {
     },
     {
       $lookup: {
-        from: "product",
+        from: "products",
         localField: "orderDetails.products.productId",
         foreignField: "_id",
         as: "productInfo",

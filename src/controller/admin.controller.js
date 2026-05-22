@@ -6,13 +6,33 @@ const {
   getAllUserQueries,
 } = require("../services/admin Services/userQueries/userQueries.JS");
 const adminService = require("../services/admin.service");
-const productSerives = require("../services/admin Services/products/products.service")
+const productSerives = require("../services/admin Services/products/products.service");
 const catchAsync = require("../utils/catchAsync");
 const web = require("../services/admin Services/webSettings.service");
-const { getActiveProducts } = require("../services/admin Services/products/products.service");
-const { faqData, getFAQ, deleteFAQ } = require("../services/admin Services/faq/faq.service");
-const { deleteTestimonial, updateTestimonial, getTestimonial, createTestimonial } = require("../services/admin Services/testimonial");
-const { createTopbarMessage, getAllTopbarMessages, getActiveTopbarMessages, updateTopbarMessage, toggleTopbarMessage, deleteTopbarMessage } = require("../services/admin Services/topbarMessage/topbarMessage.service");
+const {
+  getActiveProducts,
+} = require("../services/admin Services/products/products.service");
+const {
+  faqData,
+  getFAQ,
+  deleteFAQ,
+} = require("../services/admin Services/faq/faq.service");
+const {
+  deleteTestimonial,
+  updateTestimonial,
+  getTestimonial,
+  createTestimonial,
+} = require("../services/admin Services/testimonial");
+const {
+  createTopbarMessage,
+  getAllTopbarMessages,
+  getActiveTopbarMessages,
+  updateTopbarMessage,
+  toggleTopbarMessage,
+  deleteTopbarMessage,
+} = require("../services/admin Services/topbarMessage/topbarMessage.service");
+
+const patternService = require("../services/admin Services/pattern.service")
 
 const createBanner = catchAsync(async (req, res) => {
   const data = await adminService.createBanner(req);
@@ -69,7 +89,6 @@ const deleteCoupon = catchAsync(async (req, res) => {
   res.status(200).send(data);
 });
 
-
 const createCategory = catchAsync(async (req, res) => {
   const data = await adminService.AddCategory(req);
   res.status(200).send(data);
@@ -83,7 +102,6 @@ const fetchSingleCategory = catchAsync(async (req, res) => {
   const data = await adminService.getOneCategory(req);
   res.status(200).send(data);
 });
-
 
 const fetchSingleAdmin = catchAsync(async (req, res) => {
   const data = await adminService.getAdminById(req); // req.params.id must exist
@@ -100,7 +118,6 @@ const removeCategory = catchAsync(async (req, res) => {
   res.status(200).send(data);
 });
 
-
 const createDigitalZone = catchAsync(async (req, res) => {
   const data = await adminService.createDigitalZone(req);
   res.status(201).send(data);
@@ -110,7 +127,6 @@ const getDigitalZone = catchAsync(async (req, res) => {
   const data = await adminService.getDigitalZone(req);
   res.status(200).send(data);
 });
-
 
 const createTemplate = catchAsync(async (req, res) => {
   const data = await adminService.createTemplate(req);
@@ -122,14 +138,12 @@ const getTemplate = catchAsync(async (req, res) => {
   res.status(200).send(data);
 });
 
-
 const createProducts = catchAsync(async (req, res) => {
   const data = await adminService.createProducts(req);
   res.status(200).send(data);
 });
 
-
-const getAllProducts = catchAsync(async (req, res) => {  
+const getAllProducts = catchAsync(async (req, res) => {
   const data = await adminService.getAllProducts(req);
   res.status(200).send(data);
 });
@@ -138,7 +152,6 @@ const getOneProducts = catchAsync(async (req, res) => {
   const data = await adminService.getOneProducts(req);
   res.status(200).send(data);
 });
-
 
 const editProducts = catchAsync(async (req, res) => {
   const data = await adminService.editProducts(req);
@@ -153,6 +166,31 @@ const toggleProductStatus = catchAsync(async (req, res) => {
 const deleteProducts = catchAsync(async (req, res) => {
   const data = await adminService.deleteProducts(req);
   res.status(200).send(data);
+});
+
+const createPattern = catchAsync(async (req, res) => {
+  const result = await patternService.createPattern(req);
+
+  res.status(201).json(result);
+});
+
+const getPatterns = catchAsync(async (req, res) => {
+  const result = await patternService.getPatterns();
+
+  res.status(200).json(result);
+});
+
+const deletePattern = catchAsync(async (req, res) => {
+  const result = await patternService.deletePattern(req);
+
+  res.status(200).json(result);
+});
+
+
+const getPatternsByIds = catchAsync(async (req, res) => {
+  const result = await patternService.getPatternsByIds(req);
+
+  res.status(200).json(result);
 });
 
 const createSubCategory = catchAsync(async (req, res) => {
@@ -250,7 +288,6 @@ const deleteOffers = catchAsync(async (req, res) => {
   res.status(200).send(data);
 });
 
-
 const getReport = catchAsync(async (req, res) => {
   const data = await adminService.getReport(req);
 
@@ -259,7 +296,7 @@ const getReport = catchAsync(async (req, res) => {
     res.setHeader("Content-Type", "application/pdf");
     res.setHeader(
       "Content-Disposition",
-      'attachment; filename="Order_Report.pdf"'
+      'attachment; filename="Order_Report.pdf"',
     );
 
     // Send the PDF buffer as the response
@@ -338,12 +375,10 @@ const deleteReviewsRatings = catchAsync(async (req, res) => {
   res.status(200).send(data);
 });
 
-
 const fetchActiveProducts = catchAsync(async (req, res) => {
   const data = await getActiveProducts(req);
   res.status(200).send(data);
 });
-
 
 const addNotification = catchAsync(async (req, res) => {
   const data = await adminService.notification(req);
@@ -656,26 +691,25 @@ const removeFAQ = catchAsync(async (req, res) => {
   res.status(200).send(data);
 });
 
-const CreateTestimonial =catchAsync(async (req,res)=>{
-  const data = await createTestimonial(req)
-  res.status(200).send(data)
-})
+const CreateTestimonial = catchAsync(async (req, res) => {
+  const data = await createTestimonial(req);
+  res.status(200).send(data);
+});
 
-const getTestimonials = catchAsync(async(req,res)=>{
+const getTestimonials = catchAsync(async (req, res) => {
   const data = await getTestimonial(req);
-  res.status(200).send(data)
-}) 
+  res.status(200).send(data);
+});
 
-const updateTestimonials = catchAsync(async(req,res)=>{
+const updateTestimonials = catchAsync(async (req, res) => {
   const data = await updateTestimonial(req);
-  res.status(200).send(data)
-})
+  res.status(200).send(data);
+});
 
-const deleteTestimonials = catchAsync(async(req,res)=>{
-    const data = await deleteTestimonial(req);
-    res.status(200).send(data)
-})
-
+const deleteTestimonials = catchAsync(async (req, res) => {
+  const data = await deleteTestimonial(req);
+  res.status(200).send(data);
+});
 
 const createTopbarController = catchAsync(async (req, res) => {
   const data = await createTopbarMessage(req);
@@ -686,7 +720,6 @@ const getTopbarsController = catchAsync(async (req, res) => {
   const data = await getAllTopbarMessages();
   res.status(200).send(data);
 });
-
 
 const updateTopbarController = catchAsync(async (req, res) => {
   const data = await updateTopbarMessage(req);
@@ -702,9 +735,6 @@ const deleteTopbarController = catchAsync(async (req, res) => {
   const data = await deleteTopbarMessage(req);
   res.status(200).send(data);
 });
-
-
-
 
 module.exports = {
   GetAllUserQueries,
@@ -841,5 +871,9 @@ module.exports = {
   getOneProducts,
   editProducts,
   toggleProductStatus,
-  deleteProducts
+  deleteProducts,
+  createPattern,
+  getPatterns,
+  deletePattern,
+  getPatternsByIds
 };

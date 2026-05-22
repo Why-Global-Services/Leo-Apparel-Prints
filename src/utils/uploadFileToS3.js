@@ -15,6 +15,11 @@ const s3 = new AWS.S3({
 const uploadToCloud = async (file, keyPrefix = "products") => {
   try {
     if (!file) throw new ApiError(httpStatus.BAD_REQUEST, "File not found");
+      console.log({
+      name: file.originalname,
+      type: file.mimetype,
+      size: file.size,
+    });
 
     const safeFileName = file.originalname.replace(/\s+/g, "_");
     const key = `LEOCULT/${keyPrefix}/LEOCULT_${Date.now()}_${safeFileName}`;
@@ -23,7 +28,7 @@ const uploadToCloud = async (file, keyPrefix = "products") => {
       Bucket: "facesync",
       Key: key,
       Body: file.buffer,
-      ContentType: file.mimetype,
+      ContentType: file.mimetype|| "application/octet-stream",
       ACL: "public-read",
     };
 

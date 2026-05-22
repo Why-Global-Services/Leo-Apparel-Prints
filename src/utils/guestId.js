@@ -1,7 +1,7 @@
 // ⭐ 1. NORMAL FUNCTION (generate guestId)
 const generateGuestId = () => {
   return (
-    "POVII-" +
+    "LEO-" +
     Date.now() +
     "-" +
     Math.random().toString(36).substring(2, 8).toUpperCase()

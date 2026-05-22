@@ -7,6 +7,9 @@ const addAddress = async (req, res) => {
 
   console.log(req.body,"address");
 
+   console.log("Received body:", req.body);
+  console.log("Address data:", address);
+
   const newAddress = {
     ...address,
   };

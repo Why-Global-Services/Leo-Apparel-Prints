@@ -1,5 +1,5 @@
 const config = require("../../../config/config");
-const { cart } = require("../../../models/cart.model");
+const cart  = require("../../../models/cart.model");
 const { orderDetailsModel } = require("../../../models/orders.model");
 const { paymentDetailsModel } = require("../../../models/payment.model");
 const stripe = require("stripe")(config.stripe.secretKey);

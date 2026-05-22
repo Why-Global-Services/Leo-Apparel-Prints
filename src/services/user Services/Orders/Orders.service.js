@@ -1,14 +1,18 @@
+// 1. REMOVE COUPON IMPORT - DELETE THIS LINE:
+// const { CouponModel } = require("../../../models/coupons.model");
+
+// REST OF IMPORTS (keep as is)
 const mongoose = require("mongoose");
 const crypto = require("crypto");
 const Razorpay = require("razorpay");
 
 // Models
-const { cart } = require("../../../models/cart.model");
+const cart = require("../../../models/cart.model");
 const { orderDetailsModel } = require("../../../models/orders.model");
 const { paymentDetailsModel } = require("../../../models/payment.model");
-const { Product } = require("../../../models/Product.model");
+const Product = require("../../../models/Product.model");
 const { User } = require("../../../models/users.model");
-const { CouponModel } = require("../../../models/coupons.model");
+// COUPON IMPORT REMOVED
 
 // Services & Utils
 const { generateOrderId } = require("../../../utils/generateId");
@@ -80,7 +84,8 @@ class OrderService {
       await session.startTransaction();
       logger.info("Order placement started", { userId: req.user?._id });
 
-      const { couponCode, paymentMethod, isBuyNow = false } = req.body;
+      // 2. CHANGE placeOrder() - REMOVE couponCode from destructuring
+      const { paymentMethod, isBuyNow = false } = req.body;
       const userId = this.validateUser(req.user);
 
       const preparationResult = await this.prepareOrderData({
@@ -94,7 +99,6 @@ class OrderService {
       const pricing = await this.calculatePricing({
         cartItems: preparationResult.cartItems,
         totalAmount: preparationResult.totalAmount,
-        couponCode,
         userId,
       });
 
@@ -127,27 +131,27 @@ class OrderService {
       this.logOrderSuccess(order, userId, duration);
 
       /* ================================
-   SEND WHATSAPP (AISENSY)
-================================ */
-try {
-  await sendOrderCreatedWhatsApp({
-    name: order.userName,
-    email: order.email,
-    phone: order.contactNumber,
-    orderId: order.orderId,
-    amount: order.totalPrice,
-    paymentType: order.paymentMethod,
+     SEND WHATSAPP (AISENSY)
+  ================================ */
+      try {
+        await sendOrderCreatedWhatsApp({
+          name: order.userName,
+          email: order.email,
+          phone: order.contactNumber,
+          orderId: order.orderId,
+          amount: order.totalPrice,
+          paymentType: order.paymentMethod,
 
-    // Shiprocket not yet → keep default
-    awbNumber: "-",
-    courierName: "-",
-    shippingStatus: "Order Confirmed",
-  });
-} catch (err) {
-  console.error("❌ WhatsApp send failed:", err.message);
-}
+          // Shiprocket not yet → keep default
+          awbNumber: "-",
+          courierName: "-",
+          shippingStatus: "Order Confirmed",
+        });
+      } catch (err) {
+        console.error("❌ WhatsApp send failed:", err.message);
+      }
 
-/* ================================ */
+      /* ================================ */
 
       return this.formatOrderResponse(order, paymentResult, pricing);
     } catch (error) {
@@ -175,350 +179,148 @@ try {
     };
   }
 
-/**
- * UPDATED: Enhanced pricing calculation with automatic discounts
- */
-async calculatePricing({ cartItems, totalAmount, couponCode, userId, paymentMethod }) {
-  console.log("💰 Starting simplified pricing calculation:", {
-    cartItemsCount: cartItems.length,
-    totalAmount,
-    couponCode,
-    paymentMethod,
-  });
+  /**
+   * 3. REPLACE ENTIRE calculatePricing() FUNCTION
+   * Simple pricing without coupons
+   */
+  async calculatePricing({ cartItems }) {
+    console.log("💰 Simple pricing calculation");
 
-    let updatedCartItems = [...cartItems];
+    const updatedCartItems = [...cartItems];
 
-  // Step 1: Calculate subtotal from sale prices only
-  const subtotal = updatedCartItems.reduce((sum, item) => {
-    return sum + item.price * item.quantity;
-  }, 0);
+    // =========================
+    // SUBTOTAL
+    // =========================
+    const subtotal = updatedCartItems.reduce((sum, item) => {
+      const itemSubtotal =
+        item.subtotal ||
+        ((item.price || 0) * (item.quantity || 1));
 
-  console.log("📊 Subtotal (from sale prices):", subtotal);
+      return sum + itemSubtotal;
+    }, 0);
 
-  // Step 2: Apply coupon discount
-  const couponResult = await this.applyCouponWithValidation(
-    couponCode,
-    subtotal,
-    userId
-  );
+    // =========================
+    // SHIPPING
+    // =========================
+    const shippingCharge =
+      subtotal >= 999 ? 0 : 50;
 
+    // =========================
+    // FINAL TOTAL
+    // =========================
+    const finalTotal = subtotal + shippingCharge;
 
+    console.log("✅ Pricing:", {
+      subtotal,
+      shippingCharge,
+      finalTotal,
+    });
 
-/* ===============================
-   ADD FREE PRODUCT IF EXISTS
-================================ */
-if (
-  couponResult?.couponDetails?.offerType === "FREE_PRODUCT" &&
-  couponResult?.couponDetails?.freeProduct
-) {
-  const freeProd = couponResult.couponDetails.freeProduct;
-
-  console.log("🎁 Adding free product:", freeProd);
-
-  const product = await Product.findById(freeProd.productId);
-
-  if (!product) {
-    throw new ApiError(404, "Free product not found");
+    return {
+      subtotal,
+      shipping: shippingCharge,
+      finalTotal,
+      couponDiscount: 0,
+      couponDetails: null,
+      cartItems: updatedCartItems,
+    };
   }
 
-  const variant = this.findProductVariant(
-    product,
-    freeProd.variantId,
-    freeProd.productType
-  );
-
-  if (!variant && freeProd.productType !== "nonVariant") {
-    throw new ApiError(404, "Free product variant not found");
-  }
-
-  const freeItem = {
-    productId: product._id,
-    variantId: freeProd.variantId || null,
-    productType: freeProd.productType,
-    quantity: 1,
-
-    // ✅ FREE
-    price: 0,
-    subtotal: 0,
-
-    productName: product.productName,
-    productImage: product.productImages?.[0],
-
-    isFreeProduct: true, // ⭐ Important flag
-  };
-
-  updatedCartItems.push(freeItem);
-}
-
-
-  console.log("🎟️ Coupon result:", {
-    discount: couponResult.discount,
-    couponCode: couponResult.couponDetails?.code,
-  });
-
-  // Step 3: Calculate subtotal after coupon
-  const subtotalAfterCoupon = Math.max(0, subtotal - couponResult.discount);
-
-  console.log("📊 Subtotal after coupon:", subtotalAfterCoupon);
-
-  // Step 4: Add shipping charge (configurable)
-  const shippingCharge = this.calculateShippingCharge(cartItems, subtotalAfterCoupon);
-
-  console.log("📦 Shipping charge:", shippingCharge);
-
-  // Step 5: Calculate final total
-  const finalTotal = subtotalAfterCoupon + shippingCharge;
-
-  const pricing = {
-    subtotal: subtotal, // Original sale price total
-    couponDiscount: couponResult.discount,
-    couponDetails: couponResult.couponDetails,
-    subtotalAfterCoupon: subtotalAfterCoupon, // After coupon discount
-    shipping: shippingCharge,
-    finalTotal: Number(finalTotal.toFixed(2)),
-  };
-
-  console.log("💰 Final pricing calculation:", {
-    subtotal: pricing.subtotal,
-    couponDiscount: pricing.couponDiscount,
-    subtotalAfterCoupon: pricing.subtotalAfterCoupon,
-    shipping: pricing.shipping,
-    finalTotal: pricing.finalTotal,
-  });
-
-  // Validation check
-  if (pricing.finalTotal < 0) {
-    console.error("❌ NEGATIVE TOTAL DETECTED!", pricing);
-    throw new ApiError(500, "Pricing calculation error: negative total");
-  }
-
-  return {
-  ...pricing,
-  cartItems: updatedCartItems, // ✅ pass updated cart
-};
-}
+  // 4. DELETE THESE FULL FUNCTIONS - REMOVED COMPLETELY:
+  // async applyCouponWithValidation() - DELETED
+  // calculateDiscountAmount() - DELETED
 
   /**
    * Calculate total tax from cart items
    */
   calculateTax(cartItems) {
-  const totalTax = cartItems.reduce((sum, item) => {
-    const itemTax = item.tax || 0; // Tax percentage
-    const itemPrice = item.price || 0;
-    const itemQuantity = item.quantity || 1;
-    
-    // Calculate tax on base price
-    const itemTaxAmount = (itemPrice * itemQuantity * itemTax) / 100;
-    
-    console.log("🧮 Tax calculation for item:", {
-      productName: item.productName,
-      price: itemPrice,
-      quantity: itemQuantity,
-      taxPercent: itemTax,
-      taxAmount: itemTaxAmount,
-    });
-    
-    return sum + itemTaxAmount;
-  }, 0);
+    const totalTax = cartItems.reduce((sum, item) => {
+      const itemTax = item.tax || 0; // Tax percentage
+      const itemPrice = item.price || 0;
+      const itemQuantity = item.quantity || 1;
 
-  console.log("💵 Total tax calculated:", totalTax);
-  return Number(totalTax.toFixed(2));
-}
+      // Calculate tax on base price
+      const itemTaxAmount = (itemPrice * itemQuantity * itemTax) / 100;
 
-/**
- * Calculate automatic discounts (First Order + Prepaid)
- * Called BEFORE coupon application
- */
-async calculateAutomaticDiscounts({ userId, paymentMethod, subtotalBeforeTax }) {
-  const discounts = {
-    firstOrderDiscount: 0,
-    prepaidDiscount: 0,
-    totalAutomaticDiscount: 0,
-    isFirstOrder: false,
-    isPrepaid: false,
-  };
-
-  // Check if this is user's first order
-  const existingOrders = await orderDetailsModel.countDocuments({
-    userId,
-    orderStatus: { $nin: ["Cancelled", "Pending"] }, // Don't count cancelled/pending
-  });
-
-  const isFirstOrder = existingOrders === 0;
-  discounts.isFirstOrder = isFirstOrder;
-
-  // Check if payment is prepaid (not COD)
-  const isPrepaid = paymentMethod && paymentMethod !== "COD";
-  discounts.isPrepaid = isPrepaid;
-
-  const DISCOUNT_PERCENTAGE = 5; // 5% discount
-
-  // Apply first order discount (5%)
-  if (isFirstOrder) {
-    discounts.firstOrderDiscount = (subtotalBeforeTax * DISCOUNT_PERCENTAGE) / 100;
-    console.log("🎉 First order discount applied:", {
-      percentage: DISCOUNT_PERCENTAGE,
-      amount: discounts.firstOrderDiscount,
-    });
-  }
-
-  // Apply prepaid discount (5%) - only if NOT first order
-  // Note: User gets EITHER first order OR prepaid discount, not both
-  if (isPrepaid && !isFirstOrder) {
-    discounts.prepaidDiscount = (subtotalBeforeTax * DISCOUNT_PERCENTAGE) / 100;
-    console.log("💳 Prepaid discount applied:", {
-      percentage: DISCOUNT_PERCENTAGE,
-      amount: discounts.prepaidDiscount,
-    });
-  }
-
-  // Total automatic discount
-  discounts.totalAutomaticDiscount =
-    discounts.firstOrderDiscount + discounts.prepaidDiscount;
-
-  console.log("✅ Automatic discounts calculated:", {
-    isFirstOrder,
-    isPrepaid,
-    firstOrderDiscount: discounts.firstOrderDiscount.toFixed(2),
-    prepaidDiscount: discounts.prepaidDiscount.toFixed(2),
-    total: discounts.totalAutomaticDiscount.toFixed(2),
-  });
-
-  return discounts;
-}
-
-  /**
-   * Enhanced coupon validation with simple rate limiting
-   */
-async applyCouponWithValidation(couponCode, totalAmount, userId) {
-  if (!couponCode) {
-    return { discount: 0, couponDetails: null };
-  }
-
-  // Simple in-memory rate limiting
-  const rateLimitKey = `${userId}:${couponCode}`;
-  const currentAttempts = this.couponAttempts.get(rateLimitKey) || 0;
-
-  if (currentAttempts > 5) {
-    throw new ApiError(
-      429,
-      "Too many coupon attempts. Please try again later."
-    );
-  }
-
-  try {
-    const coupon = await CouponModel.findOne({
-      code: couponCode,
-      status: "active",
-      validFrom: { $lte: new Date() },
-      validUntil: { $gte: new Date() },
-    });
-
-    if (!coupon) {
-      this.couponAttempts.set(rateLimitKey, currentAttempts + 1);
-      throw new ApiError(400, "Invalid or expired coupon");
-    }
-
-    // Check repeat usage
-    if (coupon.repeatUsage === "notAllowed") {
-      const existingOrder = await orderDetailsModel.findOne({
-        userId: userId,
-        "orderDetails.couponCode": coupon.code,
+      console.log("🧮 Tax calculation for item:", {
+        productName: item.productName,
+        price: itemPrice,
+        quantity: itemQuantity,
+        taxPercent: itemTax,
+        taxAmount: itemTaxAmount,
       });
 
-      if (existingOrder) {
-        throw new ApiError(400, "You have already used this coupon");
-      }
-    }
+      return sum + itemTaxAmount;
+    }, 0);
 
-    // Check global usage limits
-    if (coupon.usageLimit && coupon.usedCount >= coupon.usageLimit) {
-      throw new ApiError(400, "Coupon usage limit exceeded");
-    }
-
-    // Check minimum purchase
-    if (totalAmount < coupon.minPurchaseAmount) {
-      throw new ApiError(
-        400,
-        `Minimum purchase of ₹${coupon.minPurchaseAmount} required`
-      );
-    }
-
-    // Calculate discount
-    let discount = this.calculateDiscountAmount(coupon, totalAmount);
-
-    // Ensure discount never exceeds total
-    discount = Math.min(discount, totalAmount);
-
-    console.log("🎟️ Coupon validation successful:", {
-      code: coupon.code,
-      discountType: coupon.discountType,
-      discountValue: coupon.discountValue,
-      calculatedDiscount: discount,
-      maxDiscountAmount: coupon.maxDiscountAmount,
-      totalAmount: totalAmount,
-    });
-
-    // Update coupon usage
-    await CouponModel.updateOne(
-      { _id: coupon._id },
-      { $inc: { usedCount: 1 } }
-    );
-
-    // Reset attempts on successful coupon application
-    this.couponAttempts.delete(rateLimitKey);
-
-    return {
-      discount,
-      couponDetails: {
-        code: coupon.code,
-        discountType: coupon.discountType,
-        discountValue: coupon.discountValue,
-        maxDiscount: coupon.maxDiscountAmount,
-        offerType: coupon.offerType,
-        freeProduct: coupon.offerType === "FREE_PRODUCT"
-      ? coupon.freeProduct
-      : null,
-      },
-    };
-  } catch (error) {
-    this.couponAttempts.set(rateLimitKey, currentAttempts + 1);
-    throw error;
+    console.log("💵 Total tax calculated:", totalTax);
+    return Number(totalTax.toFixed(2));
   }
-}
 
   /**
-   * Separate discount calculation for testability
+   * Calculate automatic discounts (First Order + Prepaid)
+   * Called BEFORE coupon application
    */
-calculateDiscountAmount(coupon, totalAmount) {
-  let discount = 0;
+  async calculateAutomaticDiscounts({ userId, paymentMethod, subtotalBeforeTax }) {
+    const discounts = {
+      firstOrderDiscount: 0,
+      prepaidDiscount: 0,
+      totalAutomaticDiscount: 0,
+      isFirstOrder: false,
+      isPrepaid: false,
+    };
 
-  if (coupon.discountType === "fixed") {
-    // Fixed discount: use the discount value directly
-    discount = coupon.discountValue;
-  } else if (coupon.discountType === "percentage") {
-    // Percentage discount
-    discount = (totalAmount * coupon.discountValue) / 100;
-    
-    // Apply max discount cap if specified
-    if (coupon.maxDiscountAmount && coupon.maxDiscountAmount > 0) {
-      discount = Math.min(discount, coupon.maxDiscountAmount);
+    // Check if this is user's first order
+    const existingOrders = await orderDetailsModel.countDocuments({
+      userId,
+      orderStatus: { $nin: ["Cancelled", "Pending"] }, // Don't count cancelled/pending
+    });
+
+    const isFirstOrder = existingOrders === 0;
+    discounts.isFirstOrder = isFirstOrder;
+
+    // Check if payment is prepaid (not COD)
+    const isPrepaid = paymentMethod && paymentMethod !== "COD";
+    discounts.isPrepaid = isPrepaid;
+
+    const DISCOUNT_PERCENTAGE = 5; // 5% discount
+
+    // Apply first order discount (5%)
+    if (isFirstOrder) {
+      discounts.firstOrderDiscount = (subtotalBeforeTax * DISCOUNT_PERCENTAGE) / 100;
+      console.log("🎉 First order discount applied:", {
+        percentage: DISCOUNT_PERCENTAGE,
+        amount: discounts.firstOrderDiscount,
+      });
     }
+
+    // Apply prepaid discount (5%) - only if NOT first order
+    // Note: User gets EITHER first order OR prepaid discount, not both
+    if (isPrepaid && !isFirstOrder) {
+      discounts.prepaidDiscount = (subtotalBeforeTax * DISCOUNT_PERCENTAGE) / 100;
+      console.log("💳 Prepaid discount applied:", {
+        percentage: DISCOUNT_PERCENTAGE,
+        amount: discounts.prepaidDiscount,
+      });
+    }
+
+    // Total automatic discount
+    discounts.totalAutomaticDiscount =
+      discounts.firstOrderDiscount + discounts.prepaidDiscount;
+
+    console.log("✅ Automatic discounts calculated:", {
+      isFirstOrder,
+      isPrepaid,
+      firstOrderDiscount: discounts.firstOrderDiscount.toFixed(2),
+      prepaidDiscount: discounts.prepaidDiscount.toFixed(2),
+      total: discounts.totalAutomaticDiscount.toFixed(2),
+    });
+
+    return discounts;
   }
 
-  // Never allow discount to exceed total amount
-  discount = Math.min(discount, totalAmount);
-
-  console.log("🧮 Discount calculation:", {
-    discountType: coupon.discountType,
-    discountValue: coupon.discountValue,
-    maxDiscountAmount: coupon.maxDiscountAmount,
-    totalAmount: totalAmount,
-    calculatedDiscount: discount,
-  });
-
-  return Number(discount.toFixed(2));
-}
+  // applyCouponWithValidation() - DELETED (line removed)
+  // calculateDiscountAmount() - DELETED (line removed)
 
   /**
    * Optimized order creation with validation
@@ -581,109 +383,111 @@ calculateDiscountAmount(coupon, totalAmount) {
   }
 
   normalizeAddress(address) {
-  if (!address) return null;
+    if (!address) return null;
 
-  return {
-    _id: address._id,
-    fullName: address.fullName || "",
-    addressLine1: address.addressLine1 || "",
-    landMark: address.landMark || "",   // ✅ FIX
-    city: address.city || "",
-    state: address.state || "",
-    zipCode: address.zipCode || "",     // ✅ FIX
-    country: address.country || "India",
-    phone: address.phone || "",
-    addressType: address.addressType || "",
-    checkoutAddress: address.checkoutAddress || "",
-  };
-}
+    return {
+      _id: address._id,
+      fullName: address.fullName || "",
+      addressLine1: address.addressLine1 || "",
+      landMark: address.landMark || "",   // ✅ FIX
+      city: address.city || "",
+      state: address.state || "",
+      zipCode: address.zipCode || "",     // ✅ FIX
+      country: address.country || "India",
+      phone: address.phone || "",
+      addressType: address.addressType || "",
+      checkoutAddress: address.checkoutAddress || "",
+    };
+  }
 
-
-/**
- * UPDATED: Build order payload to include automatic discounts
- */
-buildOrderPayload({
-  orderId,
-  userId,
-  userData,
-  cartItems,
-  pricing,
-  paymentMethod,
-  isBuyNow,
-  expiresAt,
-}) {
-  console.log("userData", userData);
-  const userName = userData.fullName || userData.userName || "Customer";
-  const contactNumber = userData.phone || userData.contactNumber || "Not Provided";
-  const email = userData.email || "no-email@example.com";
-
-const validatedCartItems = cartItems.map((item) => {
-  // ✅ Use the normalizeProductType helper
-  const productType = this.normalizeProductType(item.productType);
-
-  const subtotal = item.subtotal || item.price * item.quantity || 0;
-
-  return {
-    ...item,
-    productType,
-    subtotal,
-  };
-});
-
-  const orderPayload = {
+  /**
+   * UPDATED: Build order payload to include automatic discounts
+   */
+  buildOrderPayload({
     orderId,
     userId,
-    email: email,
-    userName: userName,
-    orderStatus: "Pending",
-    contactNumber: contactNumber,
-    billingAddress: userData.billingAddress,
-    deliveryAddress: userData.deliveryAddress,
-    isBuyNow: isBuyNow || false,
-    expiresAt,
-    orderDetails: [
-      {
-        products: validatedCartItems.map((item) => ({
-          productId: item.productId,
-          variantId: item.variantId,
-          productType: item.productType,
-          quantity: item.quantity,
-          price: item.price,
-          isFreeProduct: item.isFreeProduct || false,
-          customizationCost: item.customizationCost || 0,
-          customization: item.customization || null,
-          subtotal: item.subtotal,
-          orderStatus: "Pending",
-          paymentStatus: "Pending",
-        })),
-        
-        // Simplified pricing details
-        couponCode: pricing.couponDetails?.code || null,
-        couponDetails: pricing.couponDetails || null,
-        cartQuantity: validatedCartItems.length,
-        price: pricing.subtotalAfterCoupon, // After coupon discount
-        discount: pricing.couponDiscount || 0, // Only coupon discount
-        tax: 0, // No tax calculation
-        shippingCharge: pricing.shipping,
-        finalAmount: pricing.finalTotal,
-      },
-    ],
+    userData,
+    cartItems,
+    pricing,
     paymentMethod,
-    paymentStatus: "Pending",
-    totalPrice: pricing.finalTotal,
-    metadata: {
-      version: "1.0",
-      createdAt: new Date(),
-      source: isBuyNow ? "buy_now" : "cart",
-      discountsApplied: {
-        coupon: pricing.couponDiscount || 0,
-      },
-    },
-  };
+    isBuyNow,
+    expiresAt,
+  }) {
+    console.log("userData", userData);
+    const userName = userData.fullName || userData.userName || "Customer";
+    const contactNumber = userData.phone || userData.contactNumber || "Not Provided";
+    const email = userData.email || "no-email@example.com";
 
-  console.log("✅ Order payload validation passed");
-  return orderPayload;
-}
+    const validatedCartItems = cartItems.map((item) => {
+      // ✅ Use the normalizeProductType helper
+      const productType = this.normalizeProductType(item.productType);
+
+      const subtotal = item.subtotal || item.price * item.quantity || 0;
+
+      return {
+        ...item,
+        productType,
+        subtotal,
+      };
+    });
+
+    const orderPayload = {
+      orderId,
+      userId,
+      email: email,
+      userName: userName,
+      orderStatus: "Pending",
+      contactNumber: contactNumber,
+      billingAddress: userData.billingAddress,
+      deliveryAddress: userData.deliveryAddress,
+      isBuyNow: isBuyNow || false,
+      expiresAt,
+      orderDetails: [
+        {
+          products: validatedCartItems.map((item) => ({
+            productId: item.productId,
+            variantId: item.variantId,
+            productType: item.productType,
+            quantity: item.quantity,
+            price: item.price,
+            isFreeProduct: item.isFreeProduct || false,
+            customizationCost: item.customizationCost || 0,
+            customization: item.customization || null,
+            subtotal: item.subtotal,
+            orderStatus: "Pending",
+            paymentStatus: "Pending",
+          })),
+          
+          // Simplified pricing details
+          couponCode: null, // No coupon code
+          couponDetails: null, // No coupon details
+          cartQuantity: validatedCartItems.reduce(
+  (sum, item) => sum + (item.quantity || 1),
+  0
+),
+          price: pricing.subtotalAfterCoupon || pricing.subtotal, // After coupon discount (or subtotal)
+          discount: pricing.couponDiscount || 0, // No coupon discount
+          tax: 0, // No tax calculation
+          shippingCharge: pricing.shipping,
+          finalAmount: pricing.finalTotal,
+        },
+      ],
+      paymentMethod,
+      paymentStatus: "Pending",
+      totalPrice: pricing.finalTotal,
+      metadata: {
+        version: "1.0",
+        createdAt: new Date(),
+        source: isBuyNow ? "buy_now" : "cart",
+        discountsApplied: {
+          coupon: 0, // No coupon discount
+        },
+      },
+    };
+
+    console.log("✅ Order payload validation passed");
+    return orderPayload;
+  }
 
   /**
    * Enhanced payment processing with retry mechanism
@@ -799,59 +603,77 @@ const validatedCartItems = cartItems.map((item) => {
   /**
    * Enhanced stock validation
    */
-  async validateStockAvailability(cartItems, session) {
-    console.log(
-      "🔍 Validating stock availability for",
-      cartItems.length,
-      "items"
+async validateStockAvailability(cartItems, session) {
+  console.log(
+    "🔍 Validating stock availability",
+    cartItems.length
+  );
+
+  try {
+
+    // =========================
+    // TOTAL CART QUANTITY CHECK
+    // =========================
+    const totalCartQuantity = cartItems.reduce(
+      (sum, item) => sum + (item.quantity || 0),
+      0
     );
 
-    const stockPromises = cartItems.map(async (item) => {
-      console.log("📦 Validating item:", {
-        productId: item.productId,
-        variantId: item.variantId,
-        productType: item.productType,
-        quantity: item.quantity,
-      });
+    console.log(
+      "🛒 Total cart quantity:",
+      totalCartQuantity
+    );
 
-      // Use Product model
-      const product = await Product.findById(item.productId).session(session);
-      if (!product) {
-        throw new ApiError(404, `Product ${item.productId} not found`);
-      }
-
-      const variant = this.findProductVariant(
-        product,
-        item.variantId,
-        item.productType
+    if (totalCartQuantity < 10) {
+      throw new ApiError(
+        400,
+        "Minimum total order quantity is 10"
       );
-      if (!variant) {
-        throw new ApiError(
-          404,
-          `Variant ${item.variantId} not found for product ${product.productName}`
+    }
+
+    await Promise.all(
+      cartItems.map(async (item) => {
+
+        console.log("📦 Checking item:", {
+          productId: item.productId,
+          quantity: item.quantity,
+        });
+
+        const product = await Product.findById(
+          item.productId
+        ).session(session);
+
+        if (!product) {
+          throw new ApiError(
+            404,
+            `Product not found: ${item.productId}`
+          );
+        }
+
+        if (product.isActive === false) {
+          throw new ApiError(
+            400,
+            `${product.name} is inactive`
+          );
+        }
+
+        console.log(
+          `✅ Product validated: ${product.name}`
         );
-      }
+      })
+    );
 
-      const availableStock =
-        item.productType === "nonVariation" || item.productType === "nonVariant"
-          ? product.nonVariant?.stockCount
-          : variant.stockCount;
+    console.log("✅ All products validated");
 
-      if (!availableStock || availableStock < item.quantity) {
-        throw new ApiError(
-          400,
-          `Insufficient stock for ${product.productName}. Available: ${availableStock}, Requested: ${item.quantity}`
-        );
-      }
+  } catch (error) {
+    console.error(
+      "❌ validateStockAvailability ERROR",
+      error
+    );
 
-      console.log(
-        `✅ Stock validated for ${product.productName}: ${availableStock} available`
-      );
-    });
-
-    await Promise.all(stockPromises);
-    console.log("✅ All stock validated successfully");
+    throw error;
   }
+}
 
   /**
    * Enhanced error handling
@@ -998,268 +820,147 @@ const validatedCartItems = cartItems.map((item) => {
    * Optimized cart items with aggregation pipeline
    */
   async getCartItems(userId, session) {
-    console.log("🛒 START: getCartItems()", { userId, hasSession: !!session });
+    console.log("🛒 START: getCartItems()", {
+      userId,
+      hasSession: !!session,
+    });
 
     try {
-      console.log("🔍 STEP 1: Finding user cart...");
+      // ==============================
+      // FIND CART
+      // ==============================
       const userCart = await cart.findOne({ userId }).session(session);
+
       console.log("✅ Cart query completed:", {
         cartExists: !!userCart,
         itemCount: userCart?.items?.length || 0,
-        cartId: userCart?._id,
       });
 
-      if (!userCart?.items?.length) {
-        console.error("❌ Cart is empty or has no items");
+      if (!userCart || !userCart.items?.length) {
         throw new ApiError(400, "Cart is empty");
       }
 
-      console.log("🎯 STEP 2: Starting aggregation pipeline...");
-      console.log("📊 Cart items to process:", userCart.items.length);
+      // ==============================
+      // PROCESS ITEMS
+      // ==============================
+      const cartItems = await Promise.all(
+        userCart.items.map(async (item) => {
+          // ==============================
+          // PRODUCT
+          // ==============================
+          const product = await Product.findById(
+            item.productId
+          ).session(session);
 
-      // Single aggregation to get all product data
-      const cartWithProducts = await cart
-        .aggregate([
-          {
-            $match: { userId: userId },
-          },
-          {
-            $unwind: "$items",
-          },
-          {
-            $lookup: {
-              from: "product",
-              let: {
-                productId: "$items.productId",
-                variantId: "$items.variantId",
-              },
-              pipeline: [
-                {
-                  $match: {
-                    $expr: { $eq: ["$_id", "$$productId"] },
-                  },
-                },
-                {
-                  $unwind: {
-                    path: "$variant",
-                    preserveNullAndEmptyArrays: true,
-                  },
-                },
-                {
-                  $unwind: {
-                    path: "$nonVariant",
-                    preserveNullAndEmptyArrays: true,
-                  },
-                },
-                {
-                  $addFields: {
-                    matchedVariant: {
-                      $switch: {
-                        branches: [
-                          {
-                            case: {
-                              $eq: ["$variant.variantType", "sizeColor"],
-                            },
-                            then: {
-                              $filter: {
-                                input: "$variant.sizeColorVariants",
-                                as: "v",
-                                cond: { $eq: ["$$v._id", "$$variantId"] },
-                              },
-                            },
-                          },
-                          {
-                            case: {
-                              $eq: ["$variant.variantType", "colorOnly"],
-                            },
-                            then: {
-                              $filter: {
-                                input: "$variant.colorOnlyVariants",
-                                as: "v",
-                                cond: { $eq: ["$$v._id", "$$variantId"] },
-                              },
-                            },
-                          },
-                          {
-                            case: { $eq: ["$variant.variantType", "sizeOnly"] },
-                            then: {
-                              $filter: {
-                                input: "$variant.sizeOnlyVariants",
-                                as: "v",
-                                cond: { $eq: ["$$v._id", "$$variantId"] },
-                              },
-                            },
-                          },
-                        ],
-                        default: [],
-                      },
-                    },
-                  },
-                },
-                {
-                  $addFields: {
-                    matchedVariant: { $arrayElemAt: ["$matchedVariant", 0] },
-                  },
-                },
-                {
-                  $addFields: {
-                    finalPrice: {
-                      $cond: {
-                        if: { $gt: [{ $type: "$matchedVariant" }, "missing"] },
-                        then: "$matchedVariant.price.salePrice",
-                        else: "$nonVariant.price.salePrice",
-                      },
-                    },
-                    stockCount: {
-                      $cond: {
-                        if: { $gt: [{ $type: "$matchedVariant" }, "missing"] },
-                        then: "$matchedVariant.stockCount",
-                        else: "$nonVariant.stockCount",
-                      },
-                    },
-                    discount: {
-                      $cond: {
-                        if: { $gt: [{ $type: "$matchedVariant" }, "missing"] },
-                        then: "$matchedVariant.price.discount",
-                        else: "$nonVariant.price.discount",
-                      },
-                    },
-                    tax: {
-                      $cond: {
-                        if: { $gt: [{ $type: "$matchedVariant" }, "missing"] },
-                        then: "$matchedVariant.price.tax",
-                        else: "$nonVariant.price.tax",
-                      },
-                    },
-                  },
-                },
-                {
-                  $project: {
-                    productName: 1,
-                    productCategory: 1,
-                    productImages: 1,
-                    productType: 1,
-                    variant: 1,
-                    nonVariant: 1,
-                    matchedVariant: 1,
-                    finalPrice: 1,
-                    discount: 1,
-                    stockCount: 1,
-                    tax: 1,
-                  },
-                },
-              ],
-              as: "productDetails",
-            },
-          },
-          {
-            $unwind: "$productDetails",
-          },
-          {
-            $group: {
-              _id: "$_id",
-              items: {
-                $push: {
-                  $mergeObjects: [
-                    "$items",
-                    {
-                      productDetails: "$productDetails",
-                      productName: "$productDetails.productName",
-                      productImage: "$productDetails.productImages",
-                      productCategory: "$productDetails.productCategory",
-                      price: "$productDetails.finalPrice",
-                      discount: "$productDetails.discount",
-                      stockCount: "$productDetails.stockCount",
-                      tax: "$productDetails.tax",
-                    },
-                  ],
-                },
-              },
-            },
-          },
-        ])
-        .session(session);
+          if (!product) {
+            throw new ApiError(
+              404,
+              `Product not found: ${item.productId}`
+            );
+          }
 
-      console.log("✅ Aggregation pipeline completed");
-      console.log("📦 Aggregation result:", {
-        resultCount: cartWithProducts.length,
-        hasData: cartWithProducts.length > 0,
-      });
+          // ==============================
+          // QUANTITY
+          // ==============================
+          const quantity =
+            item.quantity ||
+            item.qty ||
+            (Array.isArray(item.sizes)
+              ? item.sizes.reduce(
+                  (total, sizeObj) =>
+                    total + (sizeObj.quantity || 0),
+                  0
+                )
+              : 0) ||
+            1;
 
-      if (!cartWithProducts.length) {
-        console.error("❌ No cart products found in aggregation result");
-        throw new ApiError(404, "Cart products not found");
-      }
+          // ==============================
+          // PRICE
+          // ==============================
+          const price =
+            product.finalPrice && product.finalPrice > 0
+              ? product.finalPrice
+              : product.basePrice || 0;
 
-      console.log("🎯 STEP 3: Processing aggregated cart items...");
-      const cartItems = cartWithProducts[0].items.map((item) => {
-        // Fix product type mapping
-        const productType =
-          item.productType === "variant"
-            ? "variation"
-            : item.productType === "nonVariant"
-            ? "nonVariation"
-            : item.productType;
+          // ==============================
+          // SUBTOTAL
+          // ==============================
+          const subtotal = price * quantity;
 
-        // Calculate subtotal
-        const price = parseFloat(item.price) || 0;
-        const tax = parseFloat(item.tax) || 0;
-        const subtotal = price * item.quantity;
+          // ==============================
+          // IMAGE
+          // ==============================
+          const productImage =
+            product.images?.[0] ||
+            product.viewImages?.front ||
+            "";
 
-        return {
-          ...item,
-          productType,
-          price,
-          tax,
-          subtotal,
-          productImage: item.productImages?.[0] || item.productImage,
-        };
-      });
+          // ==============================
+          // RETURN ITEM
+          // ==============================
+          return {
+            productId: product._id,
 
-      console.log("📋 Processed cart items:", {
+            customizationId: item.customizationId || null,
+
+            quantity,
+
+            sizes: item.sizes || [],
+
+            price,
+
+            subtotal,
+
+            tax: 0,
+
+            discount: 0,
+
+            productName: product.name,
+
+            productImage,
+
+            productImages: product.images || [],
+
+            productType: "nonVariation",
+
+            productCategory: product.categoryId,
+
+            stockCount: 9999,
+          };
+        })
+      );
+
+      // ==============================
+      // TOTAL
+      // ==============================
+      const totalAmount = cartItems.reduce(
+        (sum, item) => sum + item.subtotal,
+        0
+      );
+
+      // ==============================
+      // PRODUCT IDS
+      // ==============================
+      const productsId = cartItems.map(
+        (item) => item.productId
+      );
+
+      console.log("✅ getCartItems SUCCESS", {
         itemCount: cartItems.length,
-        sampleItem:
-          cartItems.length > 0
-            ? {
-                productId: cartItems[0].productId,
-                productName: cartItems[0].productName,
-                productType: cartItems[0].productType,
-                price: cartItems[0].price,
-                tax: cartItems[0].tax,
-                quantity: cartItems[0].quantity,
-                subtotal: cartItems[0].subtotal,
-              }
-            : "No items",
+        totalAmount,
       });
 
-      console.log("💰 STEP 4: Calculating total amount...");
-      const totalAmount = cartItems.reduce((sum, item) => {
-        return sum + item.subtotal;
-      }, 0);
-
-      console.log("✅ Total amount calculated:", totalAmount);
-
-      console.log("🎯 STEP 5: Extracting product IDs...");
-      const productsId = cartItems.map((item) => item.productId);
-      console.log("📋 Product IDs extracted:", {
-        count: productsId.length,
-        uniqueProducts: [...new Set(productsId)].length,
-      });
-
-      console.log("🎉 SUCCESS: getCartItems() completed successfully");
-      console.log("📊 FINAL RESULT:", {
-        cartItemsCount: cartItems.length,
-        totalAmount: totalAmount,
-        productsIdCount: productsId.length,
-      });
-
-      return { cartItems, totalAmount, productsId };
+      return {
+        cartItems,
+        totalAmount,
+        productsId,
+      };
     } catch (error) {
-      console.error("💥 ERROR in getCartItems():", {
+      console.error("💥 ERROR in getCartItems()", {
         error: error.message,
         stack: error.stack,
-        userId: userId,
       });
+
       throw error;
     }
   }
@@ -1268,68 +969,6 @@ const validatedCartItems = cartItems.map((item) => {
    * Enhanced variant finding for new product structure
    */
   findProductVariant(product, variantId, productType) {
-    console.log("🔍 Finding product variant:", {
-      productId: product._id,
-      variantId,
-      productType,
-      hasVariant: !!product.variant,
-      hasNonVariant: !!product.nonVariant,
-    });
-
-    if (productType === "nonVariation" || productType === "nonVariant") {
-      // For non-variant products
-      if (
-        product.nonVariant &&
-        product.nonVariant._id.toString() === variantId?.toString()
-      ) {
-        console.log("✅ Found non-variant product");
-        return product.nonVariant;
-      }
-    } else {
-      // For variant products - search through all variant types
-      if (product.variant) {
-        let foundVariant = null;
-
-        // Search in size-color variants
-        if (product.variant.sizeColorVariants) {
-          foundVariant = product.variant.sizeColorVariants.find(
-            (v) => v._id.toString() === variantId?.toString()
-          );
-        }
-
-        // Search in color-only variants
-        if (!foundVariant && product.variant.colorOnlyVariants) {
-          foundVariant = product.variant.colorOnlyVariants.find(
-            (v) => v._id.toString() === variantId?.toString()
-          );
-        }
-
-        // Search in size-only variants
-        if (!foundVariant && product.variant.sizeOnlyVariants) {
-          foundVariant = product.variant.sizeOnlyVariants.find(
-            (v) => v._id.toString() === variantId?.toString()
-          );
-        }
-
-        if (foundVariant) {
-          console.log("✅ Found variant product:", foundVariant._id);
-          return foundVariant;
-        }
-      }
-    }
-
-    console.error("❌ Variant not found:", {
-      variantId,
-      productType,
-      availableNonVariantId: product.nonVariant?._id,
-      availableSizeColorVariants:
-        product.variant?.sizeColorVariants?.map((v) => v._id) || [],
-      availableColorOnlyVariants:
-        product.variant?.colorOnlyVariants?.map((v) => v._id) || [],
-      availableSizeOnlyVariants:
-        product.variant?.sizeOnlyVariants?.map((v) => v._id) || [],
-    });
-
     return null;
   }
 
@@ -1347,57 +986,43 @@ const validatedCartItems = cartItems.map((item) => {
   }
 
   /**
- * Calculate shipping charge based on category & price
- */
-/**
- * Calculate shipping charge based on category & price
- */
-calculateShippingCharge(cartItems, subtotalAfterCoupon) {
-  // Configuration - change these values as needed
-  const SHIPPING_CHARGE = 50; // Default shipping charge
-  const FREE_SHIPPING_THRESHOLD = 999; // Free shipping above this amount
-  
-  console.log("📦 Calculating shipping:", {
-    subtotalAfterCoupon,
-    freeShippingThreshold: FREE_SHIPPING_THRESHOLD,
-    defaultShipping: SHIPPING_CHARGE,
-  });
+   * Calculate shipping charge based on category & price
+   */
+  /**
+   * Calculate shipping charge based on category & price
+   */
+  calculateShippingCharge(cartItems, subtotalAfterCoupon) {
+    // Configuration - change these values as needed
+    const SHIPPING_CHARGE = 50; // Default shipping charge
+    const FREE_SHIPPING_THRESHOLD = 999; // Free shipping above this amount
+    
+    console.log("📦 Calculating shipping:", {
+      subtotalAfterCoupon,
+      freeShippingThreshold: FREE_SHIPPING_THRESHOLD,
+      defaultShipping: SHIPPING_CHARGE,
+    });
 
-  // Apply free shipping if subtotal is above threshold
-  if (subtotalAfterCoupon >= FREE_SHIPPING_THRESHOLD) {
-    console.log("✅ Free shipping applied (above threshold)");
-    return 0;
+    // Apply free shipping if subtotal is above threshold
+    if (subtotalAfterCoupon >= FREE_SHIPPING_THRESHOLD) {
+      console.log("✅ Free shipping applied (above threshold)");
+      return 0;
+    }
+
+    console.log(`📦 Applying ₹${SHIPPING_CHARGE} shipping charge`);
+    return SHIPPING_CHARGE;
   }
 
-  console.log(`📦 Applying ₹${SHIPPING_CHARGE} shipping charge`);
-  return SHIPPING_CHARGE;
-}
   /**
    * Validate stock for a single product
    */
-  async validateStock(product, variant, quantity, productType, session) {
-    let stock = 0;
-
-    if (productType === "nonVariation" || productType === "nonVariant") {
-      stock = product.nonVariant?.stockCount || 0;
-    } else {
-      stock = variant?.stockCount || 0;
-    }
-
-    console.log("📦 Stock validation:", {
-      productName: product.productName,
-      productType,
-      variantId: variant?._id,
-      availableStock: stock,
-      requestedQuantity: quantity,
-    });
-
-    if (!stock || stock < quantity) {
-      throw new ApiError(
-        400,
-        `Insufficient stock for ${product.productName}. Available: ${stock}, Requested: ${quantity}`
-      );
-    }
+  async validateStock(
+    product,
+    variant,
+    quantity,
+    productType,
+    session
+  ) {
+    return true;
   }
 
   /**
@@ -1612,101 +1237,38 @@ calculateShippingCharge(cartItems, subtotalAfterCoupon) {
     }
   }
 
-
   /**
- * NEW: Helper method to normalize product types consistently
- */
-normalizeProductType(productType) {
-  console.log([productType,"thid id is the pdicut type i have"]);
-  
-  if (!productType) return "nonVariation";
-  
-  const normalized = productType.toLowerCase();
-  
-  // Map all variations of variant types to standard enum values
-  if (normalized === "variant" || normalized === "variation") {
-    return "variation";
+   * NEW: Helper method to normalize product types consistently
+   */
+  normalizeProductType(productType) {
+    console.log([productType,"thid id is the pdicut type i have"]);
+    
+    if (!productType) return "nonVariation";
+    
+    const normalized = productType.toLowerCase();
+    
+    // Map all variations of variant types to standard enum values
+    if (normalized === "variant" || normalized === "variation") {
+      return "variation";
+    }
+    
+    if (normalized === "nonvariant" || normalized === "nonvariation") {
+      return "nonVariation";
+    }
+    
+    return productType;
   }
-  
-  if (normalized === "nonvariant" || normalized === "nonvariation") {
-    return "nonVariation";
-  }
-  
-  return productType;
-}
 
   /**
    * Secure stock update for new product structure
    */
-async updateStockSecure(order, session) {
-  console.log("📦 Updating stock for order:", order.orderId);
-  
+  async updateStockSecure(order, session) {
+    console.log(
+      "📦 updateStockSecure skipped"
+    );
 
-  const stockUpdates = order.orderDetails[0].products.map(
-    
-    async (productItem) => {
-      if (productItem.isFreeProduct) {
-  console.log("🎁 Processing free product stock");
-}
-      const product = await Product.findById(productItem.productId).session(
-        session
-      );
-      if (!product) {
-        throw new ApiError(404, `Product ${productItem.productId} not found`);
-      }
-
-      // ✅ FIX: Normalize product type BEFORE using it
-      const normalizedProductType = this.normalizeProductType(productItem.productType);
-
-      console.log("🔄 Updating stock for:", {
-        productId: productItem.productId,
-        variantId: productItem.variantId,
-        originalProductType: productItem.productType,
-        normalizedProductType: normalizedProductType,
-        quantity: productItem.quantity,
-      });
-
-      if (
-        normalizedProductType === "nonVariation" ||
-        normalizedProductType === "nonVariant"
-      ) {
-        // Update non-variant product stock
-        if (
-          !product.nonVariant ||
-          product.nonVariant.stockCount < productItem.quantity
-        ) {
-          throw new ApiError(
-            400,
-            `Insufficient stock for product ${product.productName}`
-          );
-        }
-
-        product.nonVariant.stockCount -= productItem.quantity;
-      } else {
-        // Update variant product stock
-        const variant = this.findProductVariant(
-          product,
-          productItem.variantId,
-          normalizedProductType
-        );
-        if (!variant || variant.stockCount < productItem.quantity) {
-          throw new ApiError(
-            400,
-            `Insufficient stock for variant ${productItem.variantId} of ${product.productName}`
-          );
-        }
-
-        variant.stockCount -= productItem.quantity;
-      }
-
-      await product.save({ session });
-      console.log(`✅ Stock updated for product ${product.productName}`);
-    }
-  );
-
-  await Promise.all(stockUpdates);
-  console.log("✅ All stock updates completed");
-}
+    return true;
+  }
 
   /**
    * Get user with addresses - ensure all required fields are present
@@ -1814,11 +1376,11 @@ async updateStockSecure(order, session) {
 
     console.log("🎯 [getUserWithAddresses] Successfully retrieved addresses");
 
-return {
-  ...userData,
-  billingAddress: this.normalizeAddress(billingAddress),
-  deliveryAddress: this.normalizeAddress(deliveryAddress),
-};
+    return {
+      ...userData,
+      billingAddress: this.normalizeAddress(billingAddress),
+      deliveryAddress: this.normalizeAddress(deliveryAddress),
+    };
   }
 
   // Utility methods

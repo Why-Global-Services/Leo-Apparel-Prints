@@ -49,6 +49,7 @@ const {
   forgotPassword,
   verifyResetOtp,
   resetPassword,
+  refreshAccessToken,
 } = require("../services/user Services/User/user.service");
 const {
   addAddress,

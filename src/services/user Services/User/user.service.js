@@ -386,4 +386,5 @@ module.exports = {
   forgotPassword,
   verifyResetOtp,
   resetPassword,
+  refreshAccessToken,
 };

@@ -656,92 +656,177 @@ const getTemplate = async (req) => {
 };
 
 
+// const createProducts = async (req, res) => {
+//   const data = req.body;
+
+//   console.log("body",req.body)
+
+//   console.log("files",req.files)
+
+//   let glbUrl = null;
+
+//   let allowedPatterns = [];
+
+// if (data.allowedPatterns) {
+//   allowedPatterns =
+//     Array.isArray(data.allowedPatterns)
+//       ? data.allowedPatterns
+//       : [data.allowedPatterns];
+// }
+
+//   // 🔥 GLB upload
+//   if (req.files?.glbFile?.[0]) {
+//     glbUrl = await uploadToCloud(
+//       req.files.glbFile[0],
+//       "products/glb"
+//     );
+//   }
+
+//   // 🔥 FRONT / BACK IMAGE UPLOAD
+//   let frontImage = null;
+//   let backImage = null;
+
+//   if (req.files?.frontImage?.[0]) {
+//     frontImage = await uploadToCloud(
+//       req.files.frontImage[0],
+//       "products/images"
+//     );
+//   }
+
+//   if (req.files?.backImage?.[0]) {
+//     backImage = await uploadToCloud(
+//       req.files.backImage[0],
+//       "products/images"
+//     );
+//   }
+
+//   // 🔥 VALIDATION
+//   if (!frontImage) {
+//     throw new ApiError(400, "Front image is required");
+//   }
+
+//   // fallback
+//   if (!backImage) {
+//     backImage = frontImage;
+//   }
+
+//   // 🔥 Templates
+//   let templates = [];
+//   if (data.templates) {
+//     templates = Array.isArray(data.templates)
+//       ? data.templates
+//       : [data.templates];
+//   }
+
+//   // 🔥 DISCOUNT
+//   const basePrice = Number(data.basePrice) || 0;
+//   const discountType = data.discountType || "percentage";
+//   const discountValue = Number(data.discountValue) || 0;
+
+//   const finalPrice = calculateFinalPrice(
+//     basePrice,
+//     discountType,
+//     discountValue
+//   );
+
+//   const createdProduct = await Product.create({
+//     ...data,
+//     templates,
+//     glbUrl,
+
+//     // 🔥 main usage
+//     viewImages: {
+//       front: frontImage,
+//       back: backImage
+//     },
+//     allowedPatterns,
+//     basePrice,
+//     discountType,
+//     discountValue,
+//     finalPrice
+//   });
+
+//   return {
+//     success: true,
+//     message: "Product created successfully",
+//     data: createdProduct
+//   };
+// };
+
+
 const createProducts = async (req, res) => {
   const data = req.body;
 
+  // ── File uploads ──────────────────────────────────────────
   let glbUrl = null;
-
-  // 🔥 GLB upload
   if (req.files?.glbFile?.[0]) {
-    glbUrl = await uploadToCloud(
-      req.files.glbFile[0],
-      "products/glb"
-    );
+    glbUrl = await uploadToCloud(req.files.glbFile[0], "products/glb");
   }
 
-  // 🔥 FRONT / BACK IMAGE UPLOAD
   let frontImage = null;
-  let backImage = null;
-
+  let backImage  = null;
   if (req.files?.frontImage?.[0]) {
-    frontImage = await uploadToCloud(
-      req.files.frontImage[0],
-      "products/images"
-    );
+    frontImage = await uploadToCloud(req.files.frontImage[0], "products/images");
   }
-
   if (req.files?.backImage?.[0]) {
-    backImage = await uploadToCloud(
-      req.files.backImage[0],
-      "products/images"
-    );
+    backImage = await uploadToCloud(req.files.backImage[0], "products/images");
   }
 
-  // 🔥 VALIDATION
-  if (!frontImage) {
-    throw new ApiError(400, "Front image is required");
+  if (!frontImage) throw new ApiError(400, "Front image is required");
+  if (!backImage)  backImage = frontImage;
+
+  // ── Parse array / JSON fields from multipart ──────────────
+  const templates = Array.isArray(data.templates)
+    ? data.templates
+    : data.templates ? [data.templates] : [];
+
+  const allowedPatterns = Array.isArray(data["allowedPatterns[]"] || data.allowedPatterns)
+    ? (data["allowedPatterns[]"] || data.allowedPatterns)
+    : data.allowedPatterns ? [data.allowedPatterns] : [];
+
+  // ✅ customFields comes in as a JSON string — parse it
+  let customFields = [];
+  if (data.customFields) {
+    try { customFields = JSON.parse(data.customFields); } catch (e) { customFields = []; }
   }
 
-  // fallback
-  if (!backImage) {
-    backImage = frontImage;
+  // ✅ printZones same
+  let printZones = {};
+  if (data.printZones) {
+    try { printZones = JSON.parse(data.printZones); } catch (e) { printZones = {}; }
   }
 
-  // 🔥 Templates
-  let templates = [];
-  if (data.templates) {
-    templates = Array.isArray(data.templates)
-      ? data.templates
-      : [data.templates];
-  }
-
-  // 🔥 DISCOUNT
-  const basePrice = Number(data.basePrice) || 0;
-  const discountType = data.discountType || "percentage";
+  // ── Pricing ───────────────────────────────────────────────
+  const basePrice     = Number(data.basePrice)     || 0;
   const discountValue = Number(data.discountValue) || 0;
+  const discountType  = data.discountType || "percentage";
+  const finalPrice    = calculateFinalPrice(basePrice, discountType, discountValue);
 
-  const finalPrice = calculateFinalPrice(
-    basePrice,
-    discountType,
-    discountValue
-  );
-
+  // ── Create — no ...data spread ────────────────────────────
   const createdProduct = await Product.create({
-    ...data,
-    templates,
+    name:           data.name,
+    categoryId:     data.categoryId,
+    subCategoryId:  data.subCategoryId || null,
     glbUrl,
-
-    // 🔥 gallery (optional)
-    images: [frontImage, backImage],
-
-    // 🔥 main usage
-    viewImages: {
-      front: frontImage,
-      back: backImage
-    },
-
+    viewImages:     { front: frontImage, back: backImage },
+    templates,
+    allowedPatterns,
+    customFields,
+    printZones,
     basePrice,
     discountType,
     discountValue,
-    finalPrice
+    finalPrice,
+    isActive: data.isActive === "false" ? false : true,
   });
 
-  return {
+  return{
     success: true,
     message: "Product created successfully",
-    data: createdProduct
-  };
+    data: createdProduct,
+  }
 };
+
 
 const getAllProducts = async () => {
   try {
@@ -849,7 +934,7 @@ const getAllProducts = async () => {
 
 const getOneProducts = async (req, res) => {
     const { _id } = req.params;
-    const product = await Product.findById(_id);
+    const product = await Product.findById(_id).populate("allowedPatterns").populate("categoryId", "name");
     if (!product) {
       throw new ApiError(404, "Product not found");
     }
@@ -932,6 +1017,15 @@ const editProducts = async (req, res) => {
     );
   }
 
+  let allowedPatterns = [];
+
+if (data.allowedPatterns) {
+  allowedPatterns =
+    Array.isArray(data.allowedPatterns)
+      ? data.allowedPatterns
+      : [data.allowedPatterns];
+}
+
   // fallback
   if (frontImage && !backImage) {
     backImage = frontImage;
@@ -969,6 +1063,7 @@ const editProducts = async (req, res) => {
         front: frontImage,
         back: backImage
       },
+      allowedPatterns,
 
       basePrice,
       discountType,
