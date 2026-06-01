@@ -1,0 +1,29 @@
+@import "tailwindcss";
+
+/* src/index.css - Add these CSS variables */
+:root {
+  /* Sidebar */
+  --sidebar-gradient: linear-gradient(135deg, #09185b 0%, #0B3C6D 50%, #1E3A8A 100%);
+  
+  /* Top Navigation */
+  --topnav-bg: linear-gradient(135deg, #09185b 0%, #0B3C6D 50%, #1E3A8A 100%);
+  --topnav-backdrop: none;
+  --topnav-border: 1px solid rgba(255, 255, 255, 0.1);
+  
+  /* Colors */
+  --primary-color: #F5B800;
+  --primary-gradient: linear-gradient(135deg, #F5B800, #E8960A);
+  --primary-light: rgba(245, 184, 0, 0.1);
+  
+  /* Other variables */
+  --border-radius-base: 8px;
+  --font-size-base: 14px;
+  --transition-duration: 0.3s;
+  --background: #F8FAFC;
+  --foreground: #0F172A;
+}
+
+[data-theme="dark"] {
+  --background: #0F172A;
+  --foreground: #F1F5F9;
+}
