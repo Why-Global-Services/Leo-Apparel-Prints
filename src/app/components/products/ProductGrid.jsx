@@ -497,6 +497,7 @@ import { useState, useMemo, useCallback, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { fetchAllProducts } from "@/features/products/productThunks";
 import ProductCard from "./ProductCard";
+import { useSearchParams } from "next/navigation";
 import {
   Search,
   SlidersHorizontal,
@@ -712,6 +713,7 @@ function SidebarContent({
 
 export default function ProductGrid() {
   const dispatch = useDispatch();
+  const searchParams = useSearchParams();
   const [mounted, setMounted] = useState(false);
 
   // ── Redux state ──
@@ -729,17 +731,37 @@ export default function ProductGrid() {
   const [appliedCategories, setAppliedCategories] = useState([]);
   const [appliedSubCategories, setAppliedSubCategories] = useState([]);
 
+  
+
   // Set mounted state to avoid hydration mismatch
   useEffect(() => {
     setMounted(true);
   }, []);
 
   // ── Fetch on mount - only on client side ──
-  useEffect(() => {
-    if (mounted && allProducts.length === 0) {
-      dispatch(fetchAllProducts());
-    }
-  }, [dispatch, allProducts.length, mounted]);
+useEffect(() => {
+
+  if (!mounted) return;
+
+  const segment = searchParams.get("segment");
+  const sport = searchParams.get("sport");
+  const apparel = searchParams.get("apparel");
+
+  console.log("FILTERS :", {
+    segment,
+    sport,
+    apparel,
+  });
+
+  dispatch(
+    fetchAllProducts({
+      segment,
+      sport,
+      apparel,
+    })
+  );
+
+}, [dispatch, mounted, searchParams]);
 
   const handleCategoryChange = useCallback(
     (categoryId, isChecked) => {

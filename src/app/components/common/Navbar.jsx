@@ -41,45 +41,99 @@ const SPORTS_INDIA_MENU = [
     name: "Cricket", 
     href: "/sports/cricket", 
     accessories: [
-      { name: "Cricket Jersey", href: "/cricket/playing-jersey" },
-      { name: "Cricket Trousers", href: "/cricket/playing-trousers" },
-      { name: "Cricket Shorts", href: "/cricket/caps-accessories" },
+    {
+  name: "Cricket Jersey",
+  href: "/products?segment=Custom Sportswear&sport=Cricket&apparel=Jersey / T-Shirt"
+},
+
+{
+  name: "Cricket Trousers",
+  href: "/products?segment=Custom Sportswear&sport=Cricket&apparel=Track Pants"
+},
+
+{
+  name: "Cricket Shorts",
+  href: "/products?segment=Custom Sportswear&sport=Cricket&apparel=Shorts"
+},
     ]
   },
   { 
     name: "Soccer", 
     href: "/sports/soccer", 
     accessories: [
-      { name: "Soccer Jersey", href: "/soccer/jersey" },
-      { name: "Soccer Trousers", href: "/soccer/trousers" },
-      { name: "Soccer Shorts", href: "/soccer/shorts" },
+      {
+  name: "Soccer Jersey",
+  href: "/products?segment=Custom Sportswear&sport=Soccer&apparel=Jersey / T-Shirt"
+},
+
+{
+  name: "Soccer Trousers",
+  href: "/products?segment=Custom Sportswear&sport=Soccer&apparel=Track Pants"
+},
+
+{
+  name: "Soccer Shorts",
+  href: "/products?segment=Custom Sportswear&sport=Soccer&apparel=Shorts"
+},
     ]
   },
   { 
     name: "Tennis", 
     href: "/sports/tennis", 
     accessories: [
-      { name: "Tennis Jersey", href: "/tennis/jersey" },
-      { name: "Tennis Trousers", href: "/tennis/trousers" },
-      { name: "Tennis Shorts ", href: "/tennis/shorts" },
+   {
+  name: "Tennis Jersey",
+  href: "/products?segment=Custom Sportswear&sport=Tennis&apparel=Jersey / T-Shirt"
+},
+{
+  name: "Tennis Shorts",
+  href: "/products?segment=Custom Sportswear&sport=Tennis&apparel=Shorts"
+},
+
+{
+  name: "Tennis Trousers",
+  href: "/products?segment=Custom Sportswear&sport=Tennis&apparel=Track Pants"
+},
     ]
   },
   { 
     name: "Badminton", 
     href: "/sports/badminton", 
     accessories: [
-      { name: "Badminton Jersey", href: "/badminton/jersey" },
-      { name: "Badminton Trousers", href: "/badminton/trousers" },
-      { name: "Wristband Shorts", href: "/badminton/wristband" },
+     {
+  name: "Badminton Jersey",
+  href: "/products?segment=Custom Sportswear&sport=Badminton&apparel=Jersey / T-Shirt"
+},
+
+{
+  name: "Badminton Trousers",
+  href: "/products?segment=Custom Sportswear&sport=Badminton&apparel=Track Pants"
+},
+
+{
+  name: "Badminton Shorts",
+  href: "/products?segment=Custom Sportswear&sport=Badminton&apparel=Shorts"
+},
     ]
   },
   { 
     name: "Pickleball", 
     href: "/sports/pickleball", 
     accessories: [
-      { name: "Pickleball Jersey", href: "/pickleball/jersey" },
-      { name: "Pickleball Trousers", href: "/pickleball/Trousers" },
-      { name: "Pickleball Shorts", href: "/pickleball/shorts" },
+{
+  name: "Pickleball Jersey",
+  href: "/products?segment=Custom Sportswear&sport=Pickleball&apparel=Jersey / T-Shirt"
+},
+
+{
+  name: "Pickleball Trousers",
+  href: "/products?segment=Custom Sportswear&sport=Pickleball&apparel=Track Pants"
+},
+
+{
+  name: "Pickleball Shorts",
+  href: "/products?segment=Custom Sportswear&sport=Pickleball&apparel=Shorts"
+},
     ]
   },
 ];

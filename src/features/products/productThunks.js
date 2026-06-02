@@ -39,14 +39,37 @@ import {
   getProductByIdAPI,
 } from "@/services/productService";
 
+// export const fetchAllProducts = createAsyncThunk(
+//   "products/fetchAll",
+//   async (_, { rejectWithValue }) => {
+//     try {
+//       const res = await getAllProductsAPI();
+//       return Array.isArray(res) ? res : res.data || [];
+//     } catch (err) {
+//       return rejectWithValue(err.response?.data || "Failed to fetch products");
+//     }
+//   }
+// );
+
+
 export const fetchAllProducts = createAsyncThunk(
   "products/fetchAll",
-  async (_, { rejectWithValue }) => {
+
+  async (filters, { rejectWithValue }) => {
     try {
-      const res = await getAllProductsAPI();
-      return Array.isArray(res) ? res : res.data || [];
+
+      const res = await getAllProductsAPI(filters);
+
+      return Array.isArray(res)
+        ? res
+        : res.data || [];
+
     } catch (err) {
-      return rejectWithValue(err.response?.data || "Failed to fetch products");
+
+      return rejectWithValue(
+        err.response?.data || "Failed to fetch products"
+      );
+
     }
   }
 );
