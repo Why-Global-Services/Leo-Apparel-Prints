@@ -754,86 +754,225 @@ const getTemplate = async (req) => {
 // };
 
 
-const createProducts = async (req, res) => {
-  const data = req.body;
+  const createProducts = async (req, res) => {
+    const data = req.body;
 
-  // ── File uploads ──────────────────────────────────────────
-  let glbUrl = null;
-  if (req.files?.glbFile?.[0]) {
-    glbUrl = await uploadToCloud(req.files.glbFile[0], "products/glb");
-  }
+    // ── File uploads ──────────────────────────────────────────
+    let glbUrl = null;
+    if (req.files?.glbFile?.[0]) {
+      glbUrl = await uploadToCloud(req.files.glbFile[0], "products/glb");
+    }
 
-  let frontImage = null;
-  let backImage  = null;
-  if (req.files?.frontImage?.[0]) {
-    frontImage = await uploadToCloud(req.files.frontImage[0], "products/images");
-  }
-  if (req.files?.backImage?.[0]) {
-    backImage = await uploadToCloud(req.files.backImage[0], "products/images");
-  }
+    let frontImage = null;
+    let backImage  = null;
+    if (req.files?.frontImage?.[0]) {
+      frontImage = await uploadToCloud(req.files.frontImage[0], "products/images");
+    }
+    if (req.files?.backImage?.[0]) {
+      backImage = await uploadToCloud(req.files.backImage[0], "products/images");
+    }
 
-  if (!frontImage) throw new ApiError(400, "Front image is required");
-  if (!backImage)  backImage = frontImage;
+    if (!frontImage) throw new ApiError(400, "Front image is required");
+    if (!backImage)  backImage = frontImage;
 
-  // ── Parse array / JSON fields from multipart ──────────────
-  const templates = Array.isArray(data.templates)
-    ? data.templates
-    : data.templates ? [data.templates] : [];
+    // ── Parse array / JSON fields from multipart ──────────────
+    const templates = Array.isArray(data.templates)
+      ? data.templates
+      : data.templates ? [data.templates] : [];
 
-  const allowedPatterns = Array.isArray(data["allowedPatterns[]"] || data.allowedPatterns)
-    ? (data["allowedPatterns[]"] || data.allowedPatterns)
-    : data.allowedPatterns ? [data.allowedPatterns] : [];
+    const allowedPatterns = Array.isArray(data["allowedPatterns[]"] || data.allowedPatterns)
+      ? (data["allowedPatterns[]"] || data.allowedPatterns)
+      : data.allowedPatterns ? [data.allowedPatterns] : [];
 
-  // ✅ customFields comes in as a JSON string — parse it
-  let customFields = [];
-  if (data.customFields) {
-    try { customFields = JSON.parse(data.customFields); } catch (e) { customFields = []; }
-  }
+    // ✅ customFields comes in as a JSON string — parse it
+    let customFields = [];
+    if (data.customFields) {
+      try { customFields = JSON.parse(data.customFields); } catch (e) { customFields = []; }
+    }
 
-  // ✅ printZones same
-  let printZones = {};
-  if (data.printZones) {
-    try { printZones = JSON.parse(data.printZones); } catch (e) { printZones = {}; }
-  }
+    // ✅ printZones same
+    let printZones = {};
+    if (data.printZones) {
+      try { printZones = JSON.parse(data.printZones); } catch (e) { printZones = {}; }
+    }
 
-  // ── Pricing ───────────────────────────────────────────────
-  const basePrice     = Number(data.basePrice)     || 0;
-  const discountValue = Number(data.discountValue) || 0;
-  const discountType  = data.discountType || "percentage";
-  const finalPrice    = calculateFinalPrice(basePrice, discountType, discountValue);
+    // ── Pricing ───────────────────────────────────────────────
+    const basePrice     = Number(data.basePrice)     || 0;
+    const discountValue = Number(data.discountValue) || 0;
+    const discountType  = data.discountType || "percentage";
+    const finalPrice    = calculateFinalPrice(basePrice, discountType, discountValue);
 
-  // ── Create — no ...data spread ────────────────────────────
-  const createdProduct = await Product.create({
-    name:           data.name,
-    categoryId:     data.categoryId,
-    subCategoryId:  data.subCategoryId || null,
-    glbUrl,
-    viewImages:     { front: frontImage, back: backImage },
-    templates,
-    allowedPatterns,
-    customFields,
-    printZones,
-    basePrice,
-    discountType,
-    discountValue,
-    finalPrice,
-    isActive: data.isActive === "false" ? false : true,
-  });
+    // ── Create — no ...data spread ────────────────────────────
+    const createdProduct = await Product.create({
+      name:           data.name,
+      categoryId:     data.categoryId,
+      subCategoryId:  data.subCategoryId || null,
+      glbUrl,
+      viewImages:     { front: frontImage, back: backImage },
+      templates,
+      allowedPatterns,
+      customFields,
+      printZones,
+      basePrice,
+      discountType,
+      discountValue,
+      finalPrice,
+      isActive: data.isActive === "false" ? false : true,
+      segment: data.segment,
+  sport: data.sport,
+  apparel: data.apparel,
+    });
 
-  return{
-    success: true,
-    message: "Product created successfully",
-    data: createdProduct,
-  }
-};
+    return{
+      success: true,
+      message: "Product created successfully",
+      data: createdProduct,
+    }
+  };
 
 
-const getAllProducts = async () => {
+// const getAllProducts = async () => {
+//   try {
+//     console.log("🔥 Aggregation started...");
+
+//     const products = await Product.aggregate([
+//       // 1️⃣ Join category
+//       {
+//         $lookup: {
+//           from: "categories",
+//           localField: "categoryId",
+//           foreignField: "_id",
+//           as: "category"
+//         }
+//       },
+
+//       // 2️⃣ Convert category array → object
+//       {
+//         $unwind: {
+//           path: "$category",
+//           preserveNullAndEmptyArrays: true
+//         }
+//       },
+
+//       // 3️⃣ Join parent category (for subcategory case)
+//       {
+//         $lookup: {
+//           from: "categories",
+//           localField: "category.parentId",
+//           foreignField: "_id",
+//           as: "parentCategory"
+//         }
+//       },
+
+//       {
+//         $unwind: {
+//           path: "$parentCategory",
+//           preserveNullAndEmptyArrays: true
+//         }
+//       },
+
+//     {
+//   $addFields: {
+//     categoryName: {
+//       $ifNull: [
+//         {
+//           $cond: [
+//             { $eq: ["$category.parentId", null] },
+//             "$category.name",
+//             "$parentCategory.name"
+//           ]
+//         },
+//         null
+//       ]
+//     },
+//     subCategoryName: {
+//       $ifNull: [
+//         {
+//           $cond: [
+//             { $eq: ["$category.parentId", null] },
+//             null,
+//             "$category.name"
+//           ]
+//         },
+//         null
+//       ]
+//     }
+//   }
+// },
+
+
+//     {
+//   $project: {
+//     _id: 1,
+//     name: 1,
+//     categoryId: 1,
+//     categoryName: 1,
+//     subCategoryName: 1,
+//     glbUrl: 1,
+//     templates: 1,
+//     images: 1,
+//     viewImages:1,
+//     basePrice: 1,
+//     discountType: 1,
+//     discountValue: 1,
+//     finalPrice: 1,
+//     isActive: 1,
+//     createdAt: 1,
+//     updatedAt: 1
+//   }
+// }
+//     ]);
+
+//     return products;
+
+//   } catch (error) {
+//     console.error("❌ Aggregation Error:", error);
+//     throw error;
+//   }
+// };
+
+
+const getAllProducts = async (req) => {
   try {
-    console.log("🔥 Aggregation started...");
+
+    const {
+      segment,
+      sport,
+      apparel,
+      categoryId,
+    } = req.query;
+
+    // FILTER OBJECT
+    let matchFilter = {
+      isActive: true,
+    };
+
+    if (segment) {
+      matchFilter.segment = segment;
+    }
+
+    if (sport) {
+      matchFilter.sport = sport;
+    }
+
+    if (apparel) {
+      matchFilter.apparel = apparel;
+    }
+
+    if (categoryId) {
+      matchFilter.categoryId = categoryId;
+    }
+
+    console.log("FILTER :", matchFilter);
 
     const products = await Product.aggregate([
-      // 1️⃣ Join category
+
+      // FILTER PRODUCTS
+      {
+        $match: matchFilter
+      },
+
+      // CATEGORY JOIN
       {
         $lookup: {
           from: "categories",
@@ -843,7 +982,6 @@ const getAllProducts = async () => {
         }
       },
 
-      // 2️⃣ Convert category array → object
       {
         $unwind: {
           path: "$category",
@@ -851,7 +989,7 @@ const getAllProducts = async () => {
         }
       },
 
-      // 3️⃣ Join parent category (for subcategory case)
+      // PARENT CATEGORY
       {
         $lookup: {
           from: "categories",
@@ -868,66 +1006,73 @@ const getAllProducts = async () => {
         }
       },
 
-    {
-  $addFields: {
-    categoryName: {
-      $ifNull: [
-        {
-          $cond: [
-            { $eq: ["$category.parentId", null] },
-            "$category.name",
-            "$parentCategory.name"
-          ]
-        },
-        null
-      ]
-    },
-    subCategoryName: {
-      $ifNull: [
-        {
-          $cond: [
-            { $eq: ["$category.parentId", null] },
-            null,
-            "$category.name"
-          ]
-        },
-        null
-      ]
-    }
-  }
-},
+      // CATEGORY NAME
+      {
+        $addFields: {
+          categoryName: {
+            $ifNull: [
+              {
+                $cond: [
+                  { $eq: ["$category.parentId", null] },
+                  "$category.name",
+                  "$parentCategory.name"
+                ]
+              },
+              null
+            ]
+          },
 
+          subCategoryName: {
+            $ifNull: [
+              {
+                $cond: [
+                  { $eq: ["$category.parentId", null] },
+                  null,
+                  "$category.name"
+                ]
+              },
+              null
+            ]
+          }
+        }
+      },
 
-    {
-  $project: {
-    _id: 1,
-    name: 1,
-    categoryId: 1,
-    categoryName: 1,
-    subCategoryName: 1,
-    glbUrl: 1,
-    templates: 1,
-    images: 1,
-    viewImages:1,
-    basePrice: 1,
-    discountType: 1,
-    discountValue: 1,
-    finalPrice: 1,
-    isActive: 1,
-    createdAt: 1,
-    updatedAt: 1
-  }
-}
+      // FINAL RESPONSE
+      {
+        $project: {
+          _id: 1,
+          name: 1,
+          segment: 1,
+          sport: 1,
+          apparel: 1,
+          categoryId: 1,
+          categoryName: 1,
+          subCategoryName: 1,
+          glbUrl: 1,
+          templates: 1,
+          images: 1,
+          viewImages: 1,
+          basePrice: 1,
+          discountType: 1,
+          discountValue: 1,
+          finalPrice: 1,
+          isActive: 1,
+          createdAt: 1,
+          updatedAt: 1
+        }
+      }
+
     ]);
 
     return products;
 
   } catch (error) {
-    console.error("❌ Aggregation Error:", error);
+
+    console.log(error);
     throw error;
+
   }
 };
-
 
 
 

@@ -13,6 +13,18 @@ const productSchema = new mongoose.Schema(
       required: true,
     },
 
+    segment: {
+  type: String,
+},
+
+sport: {
+  type: String,
+},
+
+apparel: {
+  type: String,
+},
+
     categoryId: {
       type: String,
       ref: "Category",
