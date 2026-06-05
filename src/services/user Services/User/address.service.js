@@ -87,7 +87,6 @@ const addAddress = async (req, res) => {
   if (
     !fullName ||
     !addressLine1 ||
-    !landMark ||
     !city ||
     !state ||
     !zipCode ||

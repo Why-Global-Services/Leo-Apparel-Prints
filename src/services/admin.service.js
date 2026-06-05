@@ -2320,10 +2320,27 @@ const getReport = async (req, res) => {
   }
 };
 
-const getOrder = async (req, res) => {
+
+const getOrder= async (req, res) => {
+
   const fetchedOrders = await orderDetailsModel.aggregate([
-    { $unwind: "$orderDetails" },
-    { $unwind: "$orderDetails.products" },
+
+    // ======================
+    // UNWIND ORDER ITEMS
+    // ======================
+
+    {
+      $unwind: "$orderDetails"
+    },
+
+    {
+      $unwind: "$orderDetails.products"
+    },
+
+    // ======================
+    // USER DETAILS
+    // ======================
+
     {
       $lookup: {
         from: "users",
@@ -2332,164 +2349,270 @@ const getOrder = async (req, res) => {
         as: "userDetails",
       },
     },
+
     {
-      $unwind: "$userDetails",
+      $unwind: {
+        path: "$userDetails",
+        preserveNullAndEmptyArrays: true,
+      },
     },
+
+    // ======================
+    // PRODUCT DETAILS
+    // ======================
+
     {
       $lookup: {
-        from: "product",
+        from: "products",
         localField: "orderDetails.products.productId",
         foreignField: "_id",
         as: "productInfo",
       },
     },
 
-    { $unwind: "$productInfo" },
     {
-      $addFields: {
-        "orderDetails.products.selectedVariant": {
-          $let: {
-            vars: {
-              variantType: "$productInfo.variant.variantType",
-              variantId: "$orderDetails.products.variantId"
-            },
-            in: {
-              $cond: [
-                { $eq: ["$orderDetails.products.productType", "variation"] },
-                {
-                  $mergeObjects: [
-                    {
-                      productTitle: "$productInfo.productTitle",
-                      productName: "$productInfo.productName"
-                    },
-                    {
-                      $switch: {
-                        branches: [
-                          {
-                            case: { $eq: ["$$variantType", "sizeColor"] },
-                            then: {
-                              $first: {
-                                $filter: {
-                                  input: "$productInfo.variant.sizeColorVariants",
-                                  as: "v",
-                                  cond: { $eq: ["$$v._id", "$$variantId"] }
-                                }
-                              }
-                            }
-                          },
-                          {
-                            case: { $eq: ["$$variantType", "colorOnly"] },
-                            then: {
-                              $first: {
-                                $filter: {
-                                  input: "$productInfo.variant.colorOnlyVariants",
-                                  as: "v",
-                                  cond: { $eq: ["$$v._id", "$$variantId"] }
-                                }
-                              }
-                            }
-                          },
-                          {
-                            case: { $eq: ["$$variantType", "sizeOnly"] },
-                            then: {
-                              $first: {
-                                $filter: {
-                                  input: "$productInfo.variant.sizeOnlyVariants",
-                                  as: "v",
-                                  cond: { $eq: ["$$v._id", "$$variantId"] }
-                                }
-                              }
-                            }
-                          }
-                        ],
-                        default: null
-                      }
-                    }
-                  ]
-                },
-                {
-                  $mergeObjects: [
-                    "$productInfo.nonVariant",
-                    {
-                      productTitle: "$productInfo.productTitle",
-                      productName: "$productInfo.productName"
-                    }
-                  ]
-                }
-              ]
-            }
-          }
-        }
-      }
+      $unwind: {
+        path: "$productInfo",
+        preserveNullAndEmptyArrays: true,
+      },
+    },
 
-    }
+    // ======================
+    // MAIN PROJECT
+    // ======================
 
-    ,
     {
       $project: {
+
         _id: 1,
+
         orderId: 1,
+
         userId: 1,
+
+        guestId: 1,
+
         orderStatus: 1,
-        returnStatus: 1,
+
         paymentStatus: 1,
-        totalPrice: 1,
+
         paymentMethod: 1,
-        reason: 1,
-        returnImage: 1,
-        deliveryAddress: 1,
+
+        totalPrice: 1,
+
         billingAddress: 1,
+
+        deliveryAddress: 1,
+
         createdAt: 1,
+
         updatedAt: 1,
+
+        // ======================
+        // USER
+        // ======================
+
         userDetails: {
+
           name: "$userDetails.name",
+
           email: "$userDetails.email",
+
+          phoneNumber: "$userDetails.phoneNumber",
         },
-        __v: 1,
+
+        // ======================
+        // ORDER DETAILS
+        // ======================
+
         orderDetails: {
+
           _id: "$orderDetails._id",
+
           cartQuantity: "$orderDetails.cartQuantity",
+
           couponCode: "$orderDetails.couponCode",
+
           price: "$orderDetails.price",
+
           products: {
-            productId: "$orderDetails.products.productId",
-            variantId: "$orderDetails.products.variantId",
-            productType: "$orderDetails.products.productType",
-            quantity: "$orderDetails.products.quantity",
-            price: "$orderDetails.products.price",
-            subtotal: "$orderDetails.products.subtotal",
-            productImage: "$productInfo.productImage",
-            productBrand: "$productInfo.productBrand",
-            orderStatus: "$orderDetails.products.orderStatus",
-            returnReason: "$orderDetails.products.returnReason",
-            returnImage: "$orderDetails.products.returnImage",
-            selectedVariant: "$orderDetails.products.selectedVariant",
+
+            // ======================
+            // PRODUCT
+            // ======================
+
+            productId:
+              "$orderDetails.products.productId",
+
+            productName:
+              "$productInfo.name",
+
+            categoryId:
+              "$productInfo.categoryId",
+
+            sport:
+              "$productInfo.sport",
+
+            apparel:
+              "$productInfo.apparel",
+
+            segment:
+              "$productInfo.segment",
+
+            quantity:
+              "$orderDetails.products.quantity",
+
+            price:
+              "$orderDetails.products.price",
+
+            subtotal:
+              "$orderDetails.products.subtotal",
+
+            basePrice:
+              "$productInfo.basePrice",
+
+            finalPrice:
+              "$productInfo.finalPrice",
+
+            // ======================
+            // PRODUCT IMAGES
+            // ======================
+
+            images:
+              "$productInfo.images",
+
+            viewImages:
+              "$productInfo.viewImages",
+
+            frontImage:
+              "$productInfo.viewImages.front",
+
+            backImage:
+              "$productInfo.viewImages.back",
+
+            // ======================
+            // PRINT ZONES
+            // ======================
+
+            printZones:
+              "$productInfo.printZones",
+
+            // ======================
+            // PATTERNS
+            // ======================
+
+            allowedPatterns:
+              "$productInfo.allowedPatterns",
+
+            // ======================
+            // CUSTOMIZATION
+            // ======================
+
+            customization:
+              "$orderDetails.products.customization",
+
+            // ======================
+            // PREVIEW IMAGES
+            // ======================
+
+            frontPreviewImage:
+              "$orderDetails.products.frontPreviewImage",
+
+            backPreviewImage:
+              "$orderDetails.products.backPreviewImage",
+
+            // ======================
+            // PLAYER DETAILS
+            // ======================
+
+            playerName:
+              "$orderDetails.products.playerName",
+
+            playerNumber:
+              "$orderDetails.products.playerNumber",
+
+            selectedSize:
+              "$orderDetails.products.selectedSize",
+
+            selectedPattern:
+              "$orderDetails.products.selectedPattern",
+
+            // ======================
+            // STATUS
+            // ======================
+
+            orderStatus:
+              "$orderDetails.products.orderStatus",
+
+            returnReason:
+              "$orderDetails.products.returnReason",
+
+            returnImage:
+              "$orderDetails.products.returnImage",
           },
         },
       },
     },
+
+    // ======================
+    // GROUP PRODUCTS
+    // ======================
+
     {
       $group: {
+
         _id: "$_id",
-        rootDoc: { $first: "$$ROOT" },
-        products: { $push: "$orderDetails.products" },
+
+        rootDoc: {
+          $first: "$$ROOT"
+        },
+
+        products: {
+          $push: "$orderDetails.products"
+        },
       },
     },
+
+    // ======================
+    // REBUILD
+    // ======================
+
     {
       $addFields: {
         "rootDoc.orderDetails.products": "$products",
       },
     },
+
     {
       $replaceRoot: {
         newRoot: "$rootDoc",
       },
     },
-    { $sort: { createdAt: -1 } }
+
+    // ======================
+    // SORT
+    // ======================
+
+    {
+      $sort: {
+        createdAt: -1
+      },
+    },
   ]);
 
-  return { success: true, message: "Fetched orders", data: fetchedOrders };
+  return {
+    success: true,
+
+    message: "Orders fetched successfully",
+
+    totalOrders: fetchedOrders.length,
+
+    data: fetchedOrders,
+  };
 };
+
+
+
 
 const editOrders = async (req, res) => {
   const { _id } = req.params;

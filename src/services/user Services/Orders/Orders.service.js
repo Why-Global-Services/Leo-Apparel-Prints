@@ -1,341 +1,390 @@
-// 1. REMOVE COUPON IMPORT - DELETE THIS LINE:
-// const { CouponModel } = require("../../../models/coupons.model");
+  // 1. REMOVE COUPON IMPORT - DELETE THIS LINE:
+  // const { CouponModel } = require("../../../models/coupons.model");
 
-// REST OF IMPORTS (keep as is)
-const mongoose = require("mongoose");
-const crypto = require("crypto");
-const Razorpay = require("razorpay");
+  // REST OF IMPORTS (keep as is)
+  const mongoose = require("mongoose");
+  const crypto = require("crypto");
+  const Razorpay = require("razorpay");
 
-// Models
-const cart = require("../../../models/cart.model");
-const { orderDetailsModel } = require("../../../models/orders.model");
-const { paymentDetailsModel } = require("../../../models/payment.model");
-const Product = require("../../../models/Product.model");
-const { User } = require("../../../models/users.model");
-// COUPON IMPORT REMOVED
+  // Models
+  const cart = require("../../../models/cart.model");
+  const { orderDetailsModel } = require("../../../models/orders.model");
+  const { paymentDetailsModel } = require("../../../models/payment.model");
+  const Product = require("../../../models/Product.model");
+  const { User } = require("../../../models/users.model");
+  const Customization = require("../../../models/customization.model");
+  // COUPON IMPORT REMOVED
 
-// Services & Utils
-const { generateOrderId } = require("../../../utils/generateId");
-const { createStripeCheckoutSession } = require("../Payment/payment.service");
-const ApiError = require("../../../utils/apiError");
-const logger = require("../../../config/logger");
-const { performance } = require("perf_hooks");
-const { sendOrderCreatedWhatsApp } = require("../../../utils/aiSensy");
+  // Services & Utils
+  const { generateOrderId } = require("../../../utils/generateId");
+  const { createStripeCheckoutSession } = require("../Payment/payment.service");
+  const ApiError = require("../../../utils/apiError");
+  const logger = require("../../../config/logger");
+  const { performance } = require("perf_hooks");
 
-class OrderService {
-  constructor() {
-    this.checkEnvironmentVariables();
-    this.razorpayInstance = this.initializeRazorpay();
-    this.circuitBreakers = new Map();
-    this.couponAttempts = new Map();
-  }
-
-  checkEnvironmentVariables() {
-    const requiredEnvVars = ["RAZORPAY_KEY", "RAZORPAY_SECRET"];
-
-    const missingVars = requiredEnvVars.filter(
-      (varName) => !process.env[varName]
-    );
-
-    if (missingVars.length > 0) {
-      console.warn("⚠️ Missing environment variables:", missingVars);
-    } else {
-      console.log("✅ All required environment variables are present");
-    }
-  }
-
-  initializeRazorpay() {
-    // Try both environment variable naming conventions
-    const key_id = process.env.RAZORPAY_KEY || process.env.RAZORPAY_KEY_ID;
-    const key_secret =
-      process.env.RAZORPAY_SECRET || process.env.RAZORPAY_SECRET_KEY;
-
-    if (!key_id || !key_secret) {
-      logger.warn(
-        "Razorpay credentials not found. Razorpay payments will be disabled."
-      );
-      return null;
+  class OrderService {
+    constructor() {
+      this.checkEnvironmentVariables();
+      this.razorpayInstance = this.initializeRazorpay();
+      this.circuitBreakers = new Map();
+      this.couponAttempts = new Map();
     }
 
-    try {
-      return new Razorpay({
-        key_id: key_id,
-        key_secret: key_secret,
-      });
-    } catch (error) {
-      logger.error("Failed to initialize Razorpay", { error: error.message });
-      return null;
-    }
-  }
+    checkEnvironmentVariables() {
+      const requiredEnvVars = ["RAZORPAY_KEY", "RAZORPAY_SECRET"];
 
-  /**
-   * Main order placement with optimized flow
-   */
-  async placeOrder(req) {
-    const startTime = performance.now();
-    const session = await mongoose.startSession();
-
-    console.log("🚀 Starting order placement process", {
-      userId: req.user?._id,
-      bodyKeys: Object.keys(req.body),
-    });
-
-    try {
-      await session.startTransaction();
-      logger.info("Order placement started", { userId: req.user?._id });
-
-      // 2. CHANGE placeOrder() - REMOVE couponCode from destructuring
-      const { paymentMethod, isBuyNow = false } = req.body;
-      const userId = this.validateUser(req.user);
-
-      const preparationResult = await this.prepareOrderData({
-        userId,
-        orderData: req.body,
-        isBuyNow,
-        session,
-      });
-
-      // Phase 2: Pricing Calculation
-      const pricing = await this.calculatePricing({
-        cartItems: preparationResult.cartItems,
-        totalAmount: preparationResult.totalAmount,
-        userId,
-      });
-
-      const finalCartItems = pricing.cartItems || preparationResult.cartItems;
-
-      // Phase 3: Order Creation
-      const order = await this.createOrderTransaction(
-        {
-          userId,
-          cartItems: finalCartItems,
-          userData: preparationResult.userData,
-          pricing,
-          paymentMethod,
-          isBuyNow,
-        },
-        session
+      const missingVars = requiredEnvVars.filter(
+        (varName) => !process.env[varName]
       );
 
-      // Phase 4: Payment Processing
-      const paymentResult = await this.processPaymentWithRetry({
-        paymentMethod,
-        amount: pricing.finalTotal,
-        order,
-        userId,
-      });
+      if (missingVars.length > 0) {
+        console.warn("⚠️ Missing environment variables:", missingVars);
+      } else {
+        console.log("✅ All required environment variables are present");
+      }
+    }
 
-      await session.commitTransaction();
+    initializeRazorpay() {
+      // Try both environment variable naming conventions
+      const key_id = process.env.RAZORPAY_KEY || process.env.RAZORPAY_KEY_ID;
+      const key_secret =
+        process.env.RAZORPAY_SECRET || process.env.RAZORPAY_SECRET_KEY;
 
-      const duration = performance.now() - startTime;
-      this.logOrderSuccess(order, userId, duration);
-
-      /* ================================
-     SEND WHATSAPP (AISENSY)
-  ================================ */
-      try {
-        await sendOrderCreatedWhatsApp({
-          name: order.userName,
-          email: order.email,
-          phone: order.contactNumber,
-          orderId: order.orderId,
-          amount: order.totalPrice,
-          paymentType: order.paymentMethod,
-
-          // Shiprocket not yet → keep default
-          awbNumber: "-",
-          courierName: "-",
-          shippingStatus: "Order Confirmed",
-        });
-      } catch (err) {
-        console.error("❌ WhatsApp send failed:", err.message);
+      if (!key_id || !key_secret) {
+        logger.warn(
+          "Razorpay credentials not found. Razorpay payments will be disabled."
+        );
+        return null;
       }
 
-      /* ================================ */
-
-      return this.formatOrderResponse(order, paymentResult, pricing);
-    } catch (error) {
-      await this.handleOrderFailure(error, session, req.user?._id);
-      throw error;
-    } finally {
-      session.endSession();
-    }
-  }
-
-  /**
-   Parallel data preparation
-   */
-  async prepareOrderData({ userId, orderData, isBuyNow, session }) {
-    const [userData, itemsResult] = await Promise.all([
-      this.getUserWithAddresses(userId, orderData, isBuyNow),
-      this.getOrderItems(orderData, userId, isBuyNow, session),
-    ]);
-
-    return {
-      userData,
-      cartItems: itemsResult.cartItems,
-      totalAmount: itemsResult.totalAmount,
-      productsId: itemsResult.productsId,
-    };
-  }
-
-  /**
-   * 3. REPLACE ENTIRE calculatePricing() FUNCTION
-   * Simple pricing without coupons
-   */
-  async calculatePricing({ cartItems }) {
-    console.log("💰 Simple pricing calculation");
-
-    const updatedCartItems = [...cartItems];
-
-    // =========================
-    // SUBTOTAL
-    // =========================
-    const subtotal = updatedCartItems.reduce((sum, item) => {
-      const itemSubtotal =
-        item.subtotal ||
-        ((item.price || 0) * (item.quantity || 1));
-
-      return sum + itemSubtotal;
-    }, 0);
-
-    // =========================
-    // SHIPPING
-    // =========================
-    const shippingCharge =
-      subtotal >= 999 ? 0 : 50;
-
-    // =========================
-    // FINAL TOTAL
-    // =========================
-    const finalTotal = subtotal + shippingCharge;
-
-    console.log("✅ Pricing:", {
-      subtotal,
-      shippingCharge,
-      finalTotal,
-    });
-
-    return {
-      subtotal,
-      shipping: shippingCharge,
-      finalTotal,
-      couponDiscount: 0,
-      couponDetails: null,
-      cartItems: updatedCartItems,
-    };
-  }
-
-  // 4. DELETE THESE FULL FUNCTIONS - REMOVED COMPLETELY:
-  // async applyCouponWithValidation() - DELETED
-  // calculateDiscountAmount() - DELETED
-
-  /**
-   * Calculate total tax from cart items
-   */
-  calculateTax(cartItems) {
-    const totalTax = cartItems.reduce((sum, item) => {
-      const itemTax = item.tax || 0; // Tax percentage
-      const itemPrice = item.price || 0;
-      const itemQuantity = item.quantity || 1;
-
-      // Calculate tax on base price
-      const itemTaxAmount = (itemPrice * itemQuantity * itemTax) / 100;
-
-      console.log("🧮 Tax calculation for item:", {
-        productName: item.productName,
-        price: itemPrice,
-        quantity: itemQuantity,
-        taxPercent: itemTax,
-        taxAmount: itemTaxAmount,
-      });
-
-      return sum + itemTaxAmount;
-    }, 0);
-
-    console.log("💵 Total tax calculated:", totalTax);
-    return Number(totalTax.toFixed(2));
-  }
-
-  /**
-   * Calculate automatic discounts (First Order + Prepaid)
-   * Called BEFORE coupon application
-   */
-  async calculateAutomaticDiscounts({ userId, paymentMethod, subtotalBeforeTax }) {
-    const discounts = {
-      firstOrderDiscount: 0,
-      prepaidDiscount: 0,
-      totalAutomaticDiscount: 0,
-      isFirstOrder: false,
-      isPrepaid: false,
-    };
-
-    // Check if this is user's first order
-    const existingOrders = await orderDetailsModel.countDocuments({
-      userId,
-      orderStatus: { $nin: ["Cancelled", "Pending"] }, // Don't count cancelled/pending
-    });
-
-    const isFirstOrder = existingOrders === 0;
-    discounts.isFirstOrder = isFirstOrder;
-
-    // Check if payment is prepaid (not COD)
-    const isPrepaid = paymentMethod && paymentMethod !== "COD";
-    discounts.isPrepaid = isPrepaid;
-
-    const DISCOUNT_PERCENTAGE = 5; // 5% discount
-
-    // Apply first order discount (5%)
-    if (isFirstOrder) {
-      discounts.firstOrderDiscount = (subtotalBeforeTax * DISCOUNT_PERCENTAGE) / 100;
-      console.log("🎉 First order discount applied:", {
-        percentage: DISCOUNT_PERCENTAGE,
-        amount: discounts.firstOrderDiscount,
-      });
+      try {
+        return new Razorpay({
+          key_id: key_id,
+          key_secret: key_secret,
+        });
+      } catch (error) {
+        logger.error("Failed to initialize Razorpay", { error: error.message });
+        return null;
+      }
     }
 
-    // Apply prepaid discount (5%) - only if NOT first order
-    // Note: User gets EITHER first order OR prepaid discount, not both
-    if (isPrepaid && !isFirstOrder) {
-      discounts.prepaidDiscount = (subtotalBeforeTax * DISCOUNT_PERCENTAGE) / 100;
-      console.log("💳 Prepaid discount applied:", {
-        percentage: DISCOUNT_PERCENTAGE,
-        amount: discounts.prepaidDiscount,
+    /**
+     * Main order placement with optimized flow
+     */
+    async placeOrder(req) {
+      const startTime = performance.now();
+      const session = await mongoose.startSession();
+
+      console.log("🚀 Starting order placement process", {
+        userId: req.user?._id,
+        bodyKeys: Object.keys(req.body),
       });
+
+      try {
+        await session.startTransaction();
+        logger.info("Order placement started", { userId: req.user?._id });
+
+        // 2. CHANGE placeOrder() - REMOVE couponCode from destructuring
+        const { paymentMethod, isBuyNow = false } = req.body;
+        const userId = this.validateUser(req.user);
+
+        const preparationResult = await this.prepareOrderData({
+          userId,
+          orderData: req.body,
+          isBuyNow,
+          session,
+        });
+
+        // Phase 2: Pricing Calculation
+        const pricing = await this.calculatePricing({
+          cartItems: preparationResult.cartItems,
+          totalAmount: preparationResult.totalAmount,
+          userId,
+        });
+
+        const finalCartItems = pricing.cartItems || preparationResult.cartItems;
+
+        // Phase 3: Order Creation
+        const order = await this.createOrderTransaction(
+          {
+            userId,
+            cartItems: finalCartItems,
+            userData: preparationResult.userData,
+            pricing,
+            paymentMethod,
+            isBuyNow,
+          },
+          session
+        );
+
+        // Phase 4: Payment Processing
+        const paymentResult = await this.processPaymentWithRetry({
+          paymentMethod,
+          amount: pricing.finalTotal,
+          order,
+          userId,
+        });
+
+        await session.commitTransaction();
+
+        const duration = performance.now() - startTime;
+        this.logOrderSuccess(order, userId, duration);
+
+
+
+        /* ================================ */
+
+        return this.formatOrderResponse(order, paymentResult, pricing);
+      } catch (error) {
+        await this.handleOrderFailure(error, session, req.user?._id);
+        throw error;
+      } finally {
+        session.endSession();
+      }
     }
 
-    // Total automatic discount
-    discounts.totalAutomaticDiscount =
-      discounts.firstOrderDiscount + discounts.prepaidDiscount;
+    /**
+     Parallel data preparation
+    */
+    async prepareOrderData({ userId, orderData, isBuyNow, session }) {
+      const [userData, itemsResult] = await Promise.all([
+        this.getUserWithAddresses(userId, orderData, isBuyNow),
+        this.getOrderItems(orderData, userId, isBuyNow, session),
+      ]);
 
-    console.log("✅ Automatic discounts calculated:", {
-      isFirstOrder,
-      isPrepaid,
-      firstOrderDiscount: discounts.firstOrderDiscount.toFixed(2),
-      prepaidDiscount: discounts.prepaidDiscount.toFixed(2),
-      total: discounts.totalAutomaticDiscount.toFixed(2),
-    });
+      return {
+        userData,
+        cartItems: itemsResult.cartItems,
+        totalAmount: itemsResult.totalAmount,
+        productsId: itemsResult.productsId,
+      };
+    }
 
-    return discounts;
-  }
+    /**
+     * 3. REPLACE ENTIRE calculatePricing() FUNCTION
+     * Simple pricing without coupons
+     */
+    async calculatePricing({ cartItems }) {
+      console.log("💰 Simple pricing calculation");
 
-  // applyCouponWithValidation() - DELETED (line removed)
-  // calculateDiscountAmount() - DELETED (line removed)
+      const updatedCartItems = [...cartItems];
 
-  /**
-   * Optimized order creation with validation
-   */
-  async createOrderTransaction(orderData, session) {
-    const { userId, cartItems, userData, pricing, paymentMethod, isBuyNow } =
-      orderData;
+      // =========================
+      // SUBTOTAL
+      // =========================
+      const subtotal = updatedCartItems.reduce((sum, item) => {
+        const itemSubtotal =
+          item.subtotal ||
+          ((item.price || 0) * (item.quantity || 1));
 
-    // Validate stock availability before creating order
-    await this.validateStockAvailability(cartItems, session);
+        return sum + itemSubtotal;
+      }, 0);
 
-    const orderId = await generateOrderId();
-    const expiresAt = new Date(Date.now() + 30 * 60 * 1000);
+      // =========================
+      // SHIPPING
+      // =========================
+      const shippingCharge =
+        subtotal >= 999 ? 0 : 50;
 
-    const orderPayload = this.buildOrderPayload({
+      // =========================
+      // FINAL TOTAL
+      // =========================
+      const finalTotal = subtotal + shippingCharge;
+
+      console.log("✅ Pricing:", {
+        subtotal,
+        shippingCharge,
+        finalTotal,
+      });
+
+      return {
+        subtotal,
+        shipping: shippingCharge,
+        finalTotal,
+        couponDiscount: 0,
+        couponDetails: null,
+        cartItems: updatedCartItems,
+      };
+    }
+
+    // 4. DELETE THESE FULL FUNCTIONS - REMOVED COMPLETELY:
+    // async applyCouponWithValidation() - DELETED
+    // calculateDiscountAmount() - DELETED
+
+    /**
+     * Calculate total tax from cart items
+     */
+    calculateTax(cartItems) {
+      const totalTax = cartItems.reduce((sum, item) => {
+        const itemTax = item.tax || 0; // Tax percentage
+        const itemPrice = item.price || 0;
+        const itemQuantity = item.quantity || 1;
+
+        // Calculate tax on base price
+        const itemTaxAmount = (itemPrice * itemQuantity * itemTax) / 100;
+
+        console.log("🧮 Tax calculation for item:", {
+          productName: item.productName,
+          price: itemPrice,
+          quantity: itemQuantity,
+          taxPercent: itemTax,
+          taxAmount: itemTaxAmount,
+        });
+
+        return sum + itemTaxAmount;
+      }, 0);
+
+      console.log("💵 Total tax calculated:", totalTax);
+      return Number(totalTax.toFixed(2));
+    }
+
+    /**
+     * Calculate automatic discounts (First Order + Prepaid)
+     * Called BEFORE coupon application
+     */
+    async calculateAutomaticDiscounts({ userId, paymentMethod, subtotalBeforeTax }) {
+      const discounts = {
+        firstOrderDiscount: 0,
+        prepaidDiscount: 0,
+        totalAutomaticDiscount: 0,
+        isFirstOrder: false,
+        isPrepaid: false,
+      };
+
+      // Check if this is user's first order
+      const existingOrders = await orderDetailsModel.countDocuments({
+        userId,
+        orderStatus: { $nin: ["Cancelled", "Pending"] }, // Don't count cancelled/pending
+      });
+
+      const isFirstOrder = existingOrders === 0;
+      discounts.isFirstOrder = isFirstOrder;
+
+      // Check if payment is prepaid (not COD)
+      const isPrepaid = paymentMethod && paymentMethod !== "COD";
+      discounts.isPrepaid = isPrepaid;
+
+      const DISCOUNT_PERCENTAGE = 5; // 5% discount
+
+      // Apply first order discount (5%)
+      if (isFirstOrder) {
+        discounts.firstOrderDiscount = (subtotalBeforeTax * DISCOUNT_PERCENTAGE) / 100;
+        console.log("🎉 First order discount applied:", {
+          percentage: DISCOUNT_PERCENTAGE,
+          amount: discounts.firstOrderDiscount,
+        });
+      }
+
+      // Apply prepaid discount (5%) - only if NOT first order
+      // Note: User gets EITHER first order OR prepaid discount, not both
+      if (isPrepaid && !isFirstOrder) {
+        discounts.prepaidDiscount = (subtotalBeforeTax * DISCOUNT_PERCENTAGE) / 100;
+        console.log("💳 Prepaid discount applied:", {
+          percentage: DISCOUNT_PERCENTAGE,
+          amount: discounts.prepaidDiscount,
+        });
+      }
+
+      // Total automatic discount
+      discounts.totalAutomaticDiscount =
+        discounts.firstOrderDiscount + discounts.prepaidDiscount;
+
+      console.log("✅ Automatic discounts calculated:", {
+        isFirstOrder,
+        isPrepaid,
+        firstOrderDiscount: discounts.firstOrderDiscount.toFixed(2),
+        prepaidDiscount: discounts.prepaidDiscount.toFixed(2),
+        total: discounts.totalAutomaticDiscount.toFixed(2),
+      });
+
+      return discounts;
+    }
+
+    // applyCouponWithValidation() - DELETED (line removed)
+    // calculateDiscountAmount() - DELETED (line removed)
+
+    /**
+     * Optimized order creation with validation
+     */
+    async createOrderTransaction(orderData, session) {
+      const { userId, cartItems, userData, pricing, paymentMethod, isBuyNow } =
+        orderData;
+
+      // Validate stock availability before creating order
+      await this.validateStockAvailability(cartItems, session);
+
+      const orderId = await generateOrderId();
+      const expiresAt = new Date(Date.now() + 30 * 60 * 1000);
+
+      const orderPayload = this.buildOrderPayload({
+        orderId,
+        userId,
+        userData,
+        cartItems,
+        pricing,
+        paymentMethod,
+        isBuyNow,
+        expiresAt,
+      });
+
+      console.log("📦 Creating order:", {
+        orderId,
+        userId,
+        itemCount: cartItems.length,
+        totalAmount: pricing.finalTotal,
+      });
+
+      try {
+        console.log("🔄 Attempting to create order in database...");
+        const order = await orderDetailsModel.create([orderPayload], { session });
+        console.log("✅ Order created successfully:", order[0].orderId);
+        return order[0];
+      } catch (error) {
+        console.error("❌ Order creation failed with error:", {
+          name: error.name,
+          message: error.message,
+          code: error.code,
+          keyPattern: error.keyPattern,
+          keyValue: error.keyValue,
+        });
+
+        if (error.code === 11000) {
+          // Duplicate order ID, retry with new ID
+          console.log("🔄 Duplicate order ID detected, retrying with new ID...");
+          return await this.createOrderTransaction(orderData, session);
+        }
+
+        // Log validation errors in detail
+        if (error.name === "ValidationError") {
+          console.error("📋 Validation errors:", error.errors);
+        }
+
+        throw new ApiError(500, "Failed to create order", error.message);
+      }
+    }
+
+    normalizeAddress(address) {
+      if (!address) return null;
+
+      return {
+        _id: address._id,
+        fullName: address.fullName || "",
+        addressLine1: address.addressLine1 || "",
+        landMark: address.landMark || "",   // ✅ FIX
+        city: address.city || "",
+        state: address.state || "",
+        zipCode: address.zipCode || "",     // ✅ FIX
+        country: address.country || "India",
+        phone: address.phone || "",
+        addressType: address.addressType || "",
+        checkoutAddress: address.checkoutAddress || "",
+      };
+    }
+
+    /**
+     * UPDATED: Build order payload to include automatic discounts
+     */
+    buildOrderPayload({
       orderId,
       userId,
       userData,
@@ -344,492 +393,516 @@ class OrderService {
       paymentMethod,
       isBuyNow,
       expiresAt,
-    });
+    }) {
+      console.log("userData", userData);
+      const userName = userData.fullName || userData.userName || "Customer";
+      const contactNumber = userData.phone || userData.contactNumber || "Not Provided";
+      const email = userData.email || "no-email@example.com";
 
-    console.log("📦 Creating order:", {
-      orderId,
-      userId,
-      itemCount: cartItems.length,
-      totalAmount: pricing.finalTotal,
-    });
+      const validatedCartItems = cartItems.map((item) => {
+        // ✅ Use the normalizeProductType helper
+        const productType = this.normalizeProductType(item.productType);
 
-    try {
-      console.log("🔄 Attempting to create order in database...");
-      const order = await orderDetailsModel.create([orderPayload], { session });
-      console.log("✅ Order created successfully:", order[0].orderId);
-      return order[0];
-    } catch (error) {
-      console.error("❌ Order creation failed with error:", {
-        name: error.name,
-        message: error.message,
-        code: error.code,
-        keyPattern: error.keyPattern,
-        keyValue: error.keyValue,
+        const subtotal = item.subtotal || item.price * item.quantity || 0;
+
+        return {
+          ...item,
+          productType,
+          subtotal,
+        };
       });
 
-      if (error.code === 11000) {
-        // Duplicate order ID, retry with new ID
-        console.log("🔄 Duplicate order ID detected, retrying with new ID...");
-        return await this.createOrderTransaction(orderData, session);
-      }
+      const orderPayload = {
+        orderId,
+        userId,
+        email: email,
+        userName: userName,
+        orderStatus: "Pending",
+        contactNumber: contactNumber,
+        billingAddress: userData.billingAddress,
+        deliveryAddress: userData.deliveryAddress,
+        isBuyNow: isBuyNow || false,
+        expiresAt,
+        orderDetails: [
+          {
 
-      // Log validation errors in detail
-      if (error.name === "ValidationError") {
-        console.error("📋 Validation errors:", error.errors);
-      }
+  products: validatedCartItems.map((item) => ({
 
-      throw new ApiError(500, "Failed to create order", error.message);
-    }
-  }
+    productId: item.productId,
 
-  normalizeAddress(address) {
-    if (!address) return null;
+    variantId: item.variantId,
 
-    return {
-      _id: address._id,
-      fullName: address.fullName || "",
-      addressLine1: address.addressLine1 || "",
-      landMark: address.landMark || "",   // ✅ FIX
-      city: address.city || "",
-      state: address.state || "",
-      zipCode: address.zipCode || "",     // ✅ FIX
-      country: address.country || "India",
-      phone: address.phone || "",
-      addressType: address.addressType || "",
-      checkoutAddress: address.checkoutAddress || "",
-    };
-  }
+    productType: item.productType,
 
-  /**
-   * UPDATED: Build order payload to include automatic discounts
-   */
-  buildOrderPayload({
-    orderId,
-    userId,
-    userData,
-    cartItems,
-    pricing,
-    paymentMethod,
-    isBuyNow,
-    expiresAt,
-  }) {
-    console.log("userData", userData);
-    const userName = userData.fullName || userData.userName || "Customer";
-    const contactNumber = userData.phone || userData.contactNumber || "Not Provided";
-    const email = userData.email || "no-email@example.com";
+    quantity: item.quantity,
 
-    const validatedCartItems = cartItems.map((item) => {
-      // ✅ Use the normalizeProductType helper
-      const productType = this.normalizeProductType(item.productType);
+    price: item.price,
 
-      const subtotal = item.subtotal || item.price * item.quantity || 0;
+    subtotal: item.subtotal,
 
-      return {
-        ...item,
-        productType,
-        subtotal,
+    isFreeProduct:
+      item.isFreeProduct || false,
+
+    customizationCost:
+      item.customizationCost || 0,
+
+    // =========================
+    // CUSTOMIZATION
+    // =========================
+
+    customization:
+      item.customization || [],
+
+    selectedPattern:
+      item.selectedPattern || null,
+
+    selectedSize:
+      item.selectedSize || null,
+
+    playerName:
+      item.playerName || null,
+
+    playerNumber:
+      item.playerNumber || null,
+
+    // =========================
+    // PREVIEW IMAGES
+    // =========================
+
+    frontPreviewImage:
+      item.frontPreviewImage || null,
+
+    backPreviewImage:
+      item.backPreviewImage || null,
+
+    // =========================
+    // PRODUCT DESIGN DATA
+    // =========================
+
+    printZones:
+      item.printZones || {},
+
+    viewImages:
+      item.viewImages || {},
+
+    allowedPatterns:
+      item.allowedPatterns || [],
+
+    templates:
+      item.templates || [],
+
+    // =========================
+    // STATUS
+    // =========================
+
+    orderStatus: "Pending",
+
+    paymentStatus: "Pending",
+  })),
+
+            
+            // Simplified pricing details
+            couponCode: null, // No coupon code
+            couponDetails: null, // No coupon details
+            cartQuantity: validatedCartItems.reduce(
+    (sum, item) => sum + (item.quantity || 1),
+    0
+  ),
+            price: pricing.subtotalAfterCoupon || pricing.subtotal, // After coupon discount (or subtotal)
+            discount: pricing.couponDiscount || 0, // No coupon discount
+            tax: 0, // No tax calculation
+            shippingCharge: pricing.shipping,
+            finalAmount: pricing.finalTotal,
+          },
+        ],
+        paymentMethod,
+        paymentStatus: "Pending",
+        totalPrice: pricing.finalTotal,
+        metadata: {
+          version: "1.0",
+          createdAt: new Date(),
+          source: isBuyNow ? "buy_now" : "cart",
+          discountsApplied: {
+            coupon: 0, // No coupon discount
+          },
+        },
       };
-    });
 
-    const orderPayload = {
-      orderId,
-      userId,
-      email: email,
-      userName: userName,
-      orderStatus: "Pending",
-      contactNumber: contactNumber,
-      billingAddress: userData.billingAddress,
-      deliveryAddress: userData.deliveryAddress,
-      isBuyNow: isBuyNow || false,
-      expiresAt,
-      orderDetails: [
-        {
-          products: validatedCartItems.map((item) => ({
-            productId: item.productId,
-            variantId: item.variantId,
-            productType: item.productType,
-            quantity: item.quantity,
-            price: item.price,
-            isFreeProduct: item.isFreeProduct || false,
-            customizationCost: item.customizationCost || 0,
-            customization: item.customization || null,
-            subtotal: item.subtotal,
-            orderStatus: "Pending",
-            paymentStatus: "Pending",
-          })),
-          
-          // Simplified pricing details
-          couponCode: null, // No coupon code
-          couponDetails: null, // No coupon details
-          cartQuantity: validatedCartItems.reduce(
-  (sum, item) => sum + (item.quantity || 1),
-  0
-),
-          price: pricing.subtotalAfterCoupon || pricing.subtotal, // After coupon discount (or subtotal)
-          discount: pricing.couponDiscount || 0, // No coupon discount
-          tax: 0, // No tax calculation
-          shippingCharge: pricing.shipping,
-          finalAmount: pricing.finalTotal,
-        },
-      ],
-      paymentMethod,
-      paymentStatus: "Pending",
-      totalPrice: pricing.finalTotal,
-      metadata: {
-        version: "1.0",
-        createdAt: new Date(),
-        source: isBuyNow ? "buy_now" : "cart",
-        discountsApplied: {
-          coupon: 0, // No coupon discount
-        },
-      },
-    };
+      console.log("✅ Order payload validation passed");
+      return orderPayload;
+    }
 
-    console.log("✅ Order payload validation passed");
-    return orderPayload;
-  }
+    /**
+     * Enhanced payment processing with retry mechanism
+     */
+    async processPaymentWithRetry({ paymentMethod, amount, order, userId }) {
+      const maxRetries = 3;
+      let lastError;
 
-  /**
-   * Enhanced payment processing with retry mechanism
-   */
-  async processPaymentWithRetry({ paymentMethod, amount, order, userId }) {
-    const maxRetries = 3;
-    let lastError;
+      for (let attempt = 1; attempt <= maxRetries; attempt++) {
+        try {
+          console.log(`💳 Processing payment attempt ${attempt}:`, {
+            paymentMethod,
+            amount,
+            orderId: order.orderId,
+          });
 
-    for (let attempt = 1; attempt <= maxRetries; attempt++) {
-      try {
-        console.log(`💳 Processing payment attempt ${attempt}:`, {
-          paymentMethod,
-          amount,
-          orderId: order.orderId,
-        });
+          const result = await this.processPayment({
+            paymentMethod,
+            amount,
+            order,
+            userId,
+          });
 
-        const result = await this.processPayment({
-          paymentMethod,
-          amount,
-          order,
-          userId,
-        });
+          return result;
+        } catch (error) {
+          lastError = error;
+          console.error("❌ FULL PAYMENT ERROR:", error);
+  console.warn(`Payment attempt ${attempt} failed:`, error.message);
 
-        return result;
-      } catch (error) {
-        lastError = error;
-        console.warn(`Payment attempt ${attempt} failed:`, error.message);
-
-        if (attempt < maxRetries) {
-          const backoffTime = 1000 * attempt;
-          console.log(`⏳ Waiting ${backoffTime}ms before retry...`);
-          await this.sleep(backoffTime);
+          if (attempt < maxRetries) {
+            const backoffTime = 1000 * attempt;
+            console.log(`⏳ Waiting ${backoffTime}ms before retry...`);
+            await this.sleep(backoffTime);
+          }
         }
       }
-    }
 
-    throw new ApiError(
-      500,
-      "Payment processing failed after multiple attempts",
-      lastError?.message
-    );
-  }
-
-  /**
-   * Original payment processing (kept for compatibility)
-   */
-  async processPayment({ paymentMethod, amount, order, userId }) {
-    const paymentData = {
-      userId,
-      orderId: order._id,
-      amount,
-      subtotal: order.orderDetails[0].price,
-      discount: order.orderDetails[0].discount,
-      paymentMethod,
-      paymentStatus: "initiated",
-    };
-
-    switch (paymentMethod) {
-      case "RazorPay":
-        if (!this.razorpayInstance) {
-          throw new ApiError(400, "Razorpay is not configured");
-        }
-
-        order.expiresAt = new Date(Date.now() + 15 * 60 * 1000);
-        await order.save();
-
-        const razorpayOrder = await this.razorpayInstance.orders.create({
-          amount: Math.round(amount * 100),
-          currency: "INR",
-          receipt: `REC_${order.orderId}`,
-        });
-
-        paymentData.razorpayOrderId = razorpayOrder.id;
-        paymentData.pendingPaymentExpiry = new Date(
-          Date.now() + 30 * 60 * 1000
-        );
-        await paymentDetailsModel.create(paymentData);
-
-        return { razorpayOrder };
-
-      case "Stripe":
-        const stripeUrl = await createStripeCheckoutSession(
-          amount,
-          userId,
-          order.orderId,
-          order._id
-        );
-        paymentData.stripePayOrderId = order.orderId;
-        await paymentDetailsModel.create(paymentData);
-
-        return { stripeUrl };
-
-      case "COD":
-        order.orderStatus = "Ordered";
-        order.paymentStatus = "Pending";
-        order.expiresAt = null;
-        await order.save();
-
-        paymentData.paymentStatus = "pending";
-        paymentData.pendingPaymentExpiry = null;
-        await paymentDetailsModel.create(paymentData);
-
-        // Clear cart for COD
-        await cart.findOneAndDelete({ userId });
-
-        return {};
-
-      default:
-        throw new ApiError(400, "Unsupported payment method");
-    }
-  }
-
-  /**
-   * Enhanced stock validation
-   */
-async validateStockAvailability(cartItems, session) {
-  console.log(
-    "🔍 Validating stock availability",
-    cartItems.length
-  );
-
-  try {
-
-    // =========================
-    // TOTAL CART QUANTITY CHECK
-    // =========================
-    const totalCartQuantity = cartItems.reduce(
-      (sum, item) => sum + (item.quantity || 0),
-      0
-    );
-
-    console.log(
-      "🛒 Total cart quantity:",
-      totalCartQuantity
-    );
-
-    if (totalCartQuantity < 10) {
       throw new ApiError(
-        400,
-        "Minimum total order quantity is 10"
+        500,
+        "Payment processing failed after multiple attempts",
+        lastError?.message
       );
     }
 
-    await Promise.all(
-      cartItems.map(async (item) => {
+    /**
+     * Original payment processing (kept for compatibility)
+     */
+    async processPayment({ paymentMethod, amount, order, userId }) {
+      const paymentData = {
+        userId,
+        orderId: order._id,
+        amount,
+        subtotal: order.orderDetails[0].price,
+        discount: order.orderDetails[0].discount,
+        paymentMethod,
+        paymentStatus: "initiated",
+      };
 
-        console.log("📦 Checking item:", {
-          productId: item.productId,
-          quantity: item.quantity,
-        });
 
-        const product = await Product.findById(
-          item.productId
-        ).session(session);
+  paymentMethod = paymentMethod?.toLowerCase();
 
-        if (!product) {
-          throw new ApiError(
-            404,
-            `Product not found: ${item.productId}`
-          );
-        }
+  switch (paymentMethod) {
 
-        if (product.isActive === false) {
-          throw new ApiError(
-            400,
-            `${product.name} is inactive`
-          );
-        }
+    case "razorpay":
 
-        console.log(
-          `✅ Product validated: ${product.name}`
-        );
-      })
-    );
+      if (!this.razorpayInstance) {
+        throw new ApiError(400, "Razorpay is not configured");
+      }
 
-    console.log("✅ All products validated");
+      order.expiresAt = new Date(Date.now() + 15 * 60 * 1000);
 
-  } catch (error) {
-    console.error(
-      "❌ validateStockAvailability ERROR",
-      error
-    );
+      await order.save();
 
-    throw error;
+      const razorpayOrder = await this.razorpayInstance.orders.create({
+        amount: Math.round(amount * 100),
+        currency: "INR",
+        receipt: `REC_${order.orderId}`,
+      });
+
+      paymentData.razorpayOrderId = razorpayOrder.id;
+
+      paymentData.pendingPaymentExpiry = new Date(
+        Date.now() + 30 * 60 * 1000
+      );
+
+      await paymentDetailsModel.create(paymentData);
+
+      return { razorpayOrder };
+
+    case "stripe":
+
+      const stripeUrl = await createStripeCheckoutSession(
+        amount,
+        userId,
+        order.orderId,
+        order._id
+      );
+
+      paymentData.stripePayOrderId = order.orderId;
+
+      await paymentDetailsModel.create(paymentData);
+
+      return { stripeUrl };
+
+    case "cod":
+
+      order.orderStatus = "Ordered";
+
+      order.paymentStatus = "Pending";
+
+      order.expiresAt = null;
+
+      await order.save();
+
+      paymentData.paymentStatus = "pending";
+
+      paymentData.pendingPaymentExpiry = null;
+
+      await paymentDetailsModel.create(paymentData);
+
+      await cart.findOneAndDelete({ userId });
+
+      return {};
+
+    default:
+
+      throw new ApiError(
+        400,
+        `Unsupported payment method: ${paymentMethod}`
+      );
   }
-}
 
-  /**
-   * Enhanced error handling
-   */
-  async handleOrderFailure(error, session, userId) {
-    console.error("💥 Order placement failed:", error.message);
+
+    }
+
+    /**
+     * Enhanced stock validation
+     */
+  async validateStockAvailability(cartItems, session) {
+    console.log(
+      "🔍 Validating stock availability",
+      cartItems.length
+    );
 
     try {
-      await session.abortTransaction();
-      console.log("✅ Transaction aborted successfully");
-    } catch (abortError) {
-      console.error("❌ Failed to abort transaction:", abortError.message);
+
+      // =========================
+      // TOTAL CART QUANTITY CHECK
+      // =========================
+      const totalCartQuantity = cartItems.reduce(
+        (sum, item) => sum + (item.quantity || 0),
+        0
+      );
+
+      console.log(
+        "🛒 Total cart quantity:",
+        totalCartQuantity
+      );
+
+      if (totalCartQuantity < 10) {
+        throw new ApiError(
+          400,
+          "Minimum total order quantity is 10"
+        );
+      }
+
+      await Promise.all(
+        cartItems.map(async (item) => {
+
+          console.log("📦 Checking item:", {
+            productId: item.productId,
+            quantity: item.quantity,
+          });
+
+          const product = await Product.findById(
+            item.productId
+          ).session(session);
+
+
+          if (!product) {
+            throw new ApiError(
+              404,
+              `Product not found: ${item.productId}`
+            );
+          }
+
+          if (product.isActive === false) {
+            throw new ApiError(
+              400,
+              `${product.name} is inactive`
+            );
+          }
+
+          console.log(
+            `✅ Product validated: ${product.name}`
+          );
+        })
+      );
+
+      console.log("✅ All products validated");
+
+    } catch (error) {
+      console.error(
+        "❌ validateStockAvailability ERROR",
+        error
+      );
+
+      throw error;
+    }
+  }
+
+    /**
+     * Enhanced error handling
+     */
+    async handleOrderFailure(error, session, userId) {
+      console.error("💥 Order placement failed:", error.message);
+
+      try {
+        await session.abortTransaction();
+        console.log("✅ Transaction aborted successfully");
+      } catch (abortError) {
+        console.error("❌ Failed to abort transaction:", abortError.message);
+      }
+
+      logger.error("Order placement failed", {
+        userId,
+        error: error.message,
+        stack: error.stack,
+      });
+
+      // Notify monitoring system
+      await this.notifyOrderFailure(error, userId);
     }
 
-    logger.error("Order placement failed", {
-      userId,
-      error: error.message,
-      stack: error.stack,
-    });
-
-    // Notify monitoring system
-    await this.notifyOrderFailure(error, userId);
-  }
-
-  /**
-   * Success logging and metrics
-   */
-  logOrderSuccess(order, userId, duration) {
-    console.log("🎉 Order placement completed successfully", {
-      orderId: order.orderId,
-      userId,
-      duration: `${duration.toFixed(2)}ms`,
-    });
-
-    logger.info("Order placed successfully", {
-      orderId: order.orderId,
-      userId,
-      duration: `${duration.toFixed(2)}ms`,
-      itemCount: order.orderDetails[0]?.products?.length || 0,
-      totalAmount: order.totalPrice,
-    });
-  }
-
-  /**
-   * Standardized response format
-   */
-  formatOrderResponse(order, paymentResult, pricing) {
-    return {
-      success: true,
-      message: "Order Created Successfully",
-      data: {
+    /**
+     * Success logging and metrics
+     */
+    logOrderSuccess(order, userId, duration) {
+      console.log("🎉 Order placement completed successfully", {
         orderId: order.orderId,
-        userOrder: order,
-        ...paymentResult,
-        pricingSummary: pricing,
-        nextSteps: this.getNextSteps(order.paymentMethod),
-      },
-    };
-  }
+        userId,
+        duration: `${duration.toFixed(2)}ms`,
+      });
 
-  /**
-   * Optimized order items retrieval
-   */
-  async getOrderItems(orderData, userId, isBuyNow, session) {
-    if (isBuyNow) {
-      return await this.getBuyNowItems(orderData, session);
-    } else {
-      return await this.getCartItems(userId, session);
+      logger.info("Order placed successfully", {
+        orderId: order.orderId,
+        userId,
+        duration: `${duration.toFixed(2)}ms`,
+        itemCount: order.orderDetails[0]?.products?.length || 0,
+        totalAmount: order.totalPrice,
+      });
     }
-  }
 
-  /**
-   * Optimized buy now items with stock validation
-   */
-  async getBuyNowItems(orderData, session) {
-    const {
-      productId,
-      variantId,
-      quantity = 1,
-      productType = "nonVariation",
-    } = orderData;
-
-    console.log("🛍️ Processing buy now items:", {
-      productId,
-      variantId,
-      quantity,
-      productType,
-    });
-
-    const product = await Product.findById(productId).session(session);
-    if (!product) throw new ApiError(404, "Product not found");
-
-    // Map product type if needed
-    const mappedProductType =
-      productType === "variant"
-        ? "variation"
-        : productType === "nonVariant"
-        ? "nonVariation"
-        : productType;
-
-    const variant = this.findProductVariant(
-      product,
-      variantId,
-      mappedProductType
-    );
-    if (!variant) throw new ApiError(404, "Product variant not found");
-
-    await this.validateStock(
-      product,
-      variant,
-      quantity,
-      mappedProductType,
-      session
-    );
-
-    const basePrice = this.getVariantPrice(variant);
-    const tax = variant.price?.tax || 0;
-    const subtotal = basePrice * quantity;
-
-    console.log("✅ Buy now items processed successfully");
-
-    return {
-      cartItems: [
-        {
-          productId: product._id,
-          variantId: variant._id,
-          productType: mappedProductType,
-          quantity,
-          price: basePrice,
-          tax: tax,
-          subtotal,
-          productName: product.productName || product.name,
-          productImage: product.productImages?.[0] || product.productImage,
-          selectedVariant: variant,
-          productCategory: product.productCategory,
+    /**
+     * Standardized response format
+     */
+    formatOrderResponse(order, paymentResult, pricing) {
+      return {
+        success: true,
+        message: "Order Created Successfully",
+        data: {
+          orderId: order.orderId,
+          userOrder: order,
+          ...paymentResult,
+          pricingSummary: pricing,
+          nextSteps: this.getNextSteps(order.paymentMethod),
         },
-      ],
-      totalAmount: subtotal,
-      productsId: [productId],
-    };
-  }
+      };
+    }
 
-  /**
-   * Optimized cart items with aggregation pipeline
-   */
+    /**
+     * Optimized order items retrieval
+     */
+    async getOrderItems(orderData, userId, isBuyNow, session) {
+      if (isBuyNow) {
+        return await this.getBuyNowItems(orderData, session);
+      } else {
+        return await this.getCartItems(userId, session);
+      }
+    }
+
+    /**
+     * Optimized buy now items with stock validation
+     */
+    async getBuyNowItems(orderData, session) {
+      const {
+        productId,
+        variantId,
+        quantity = 1,
+        productType = "nonVariation",
+      } = orderData;
+
+      console.log("🛍️ Processing buy now items:", {
+        productId,
+        variantId,
+        quantity,
+        productType,
+      });
+
+      const product = await Product.findById(productId).session(session);
+      if (!product) throw new ApiError(404, "Product not found");
+
+      // Map product type if needed
+      const mappedProductType =
+        productType === "variant"
+          ? "variation"
+          : productType === "nonVariant"
+          ? "nonVariation"
+          : productType;
+
+      const variant = this.findProductVariant(
+        product,
+        variantId,
+        mappedProductType
+      );
+      if (!variant) throw new ApiError(404, "Product variant not found");
+
+      await this.validateStock(
+        product,
+        variant,
+        quantity,
+        mappedProductType,
+        session
+      );
+
+      const basePrice = this.getVariantPrice(variant);
+      const tax = variant.price?.tax || 0;
+      const subtotal = basePrice * quantity;
+
+      console.log("✅ Buy now items processed successfully");
+
+      return {
+        cartItems: [
+          {
+            productId: product._id,
+            variantId: variant._id,
+            productType: mappedProductType,
+            quantity,
+            price: basePrice,
+            tax: tax,
+            subtotal,
+            productName: product.productName || product.name,
+            productImage: product.productImages?.[0] || product.productImage,
+            selectedVariant: variant,
+            productCategory: product.productCategory,
+          },
+        ],
+        totalAmount: subtotal,
+        productsId: [productId],
+      };
+    }
+
+    /**
+     * Optimized cart items with aggregation pipeline
+     */
+
   async getCartItems(userId, session) {
+
     console.log("🛒 START: getCartItems()", {
       userId,
       hasSession: !!session,
     });
 
     try {
+
       // ==============================
       // FIND CART
       // ==============================
-      const userCart = await cart.findOne({ userId }).session(session);
+
+      const userCart = await cart
+        .findOne({ userId })
+        .session(session);
 
       console.log("✅ Cart query completed:", {
         cartExists: !!userCart,
@@ -843,14 +916,32 @@ async validateStockAvailability(cartItems, session) {
       // ==============================
       // PROCESS ITEMS
       // ==============================
+
       const cartItems = await Promise.all(
+
         userCart.items.map(async (item) => {
+
           // ==============================
           // PRODUCT
           // ==============================
-          const product = await Product.findById(
-            item.productId
-          ).session(session);
+
+          const product = await Product
+            .findById(item.productId)
+            .session(session);
+
+const customizationDoc =
+  item.customizationId
+    ? await Customization.findById(
+        item.customizationId
+      ).session(session)
+    : null;
+
+console.log(
+  "CUSTOMIZATION DOC:",
+  customizationDoc
+);
+
+
 
           if (!product) {
             throw new ApiError(
@@ -862,21 +953,25 @@ async validateStockAvailability(cartItems, session) {
           // ==============================
           // QUANTITY
           // ==============================
+
           const quantity =
             item.quantity ||
             item.qty ||
-            (Array.isArray(item.sizes)
-              ? item.sizes.reduce(
-                  (total, sizeObj) =>
-                    total + (sizeObj.quantity || 0),
-                  0
-                )
-              : 0) ||
+            (
+              Array.isArray(item.sizes)
+                ? item.sizes.reduce(
+                    (total, sizeObj) =>
+                      total + (sizeObj.quantity || 0),
+                    0
+                  )
+                : 0
+            ) ||
             1;
 
           // ==============================
           // PRICE
           // ==============================
+
           const price =
             product.finalPrice && product.finalPrice > 0
               ? product.finalPrice
@@ -885,11 +980,13 @@ async validateStockAvailability(cartItems, session) {
           // ==============================
           // SUBTOTAL
           // ==============================
+
           const subtotal = price * quantity;
 
           // ==============================
           // IMAGE
           // ==============================
+
           const productImage =
             product.images?.[0] ||
             product.viewImages?.front ||
@@ -898,10 +995,15 @@ async validateStockAvailability(cartItems, session) {
           // ==============================
           // RETURN ITEM
           // ==============================
+
           return {
+
+            // BASIC
+
             productId: product._id,
 
-            customizationId: item.customizationId || null,
+            customizationId:
+              item.customizationId || null,
 
             quantity,
 
@@ -919,13 +1021,60 @@ async validateStockAvailability(cartItems, session) {
 
             productImage,
 
-            productImages: product.images || [],
+            productImages:
+              product.images || [],
 
             productType: "nonVariation",
 
-            productCategory: product.categoryId,
+            productCategory:
+              product.categoryId,
 
             stockCount: 9999,
+
+          // =========================
+  // CUSTOMIZATION
+  // =========================
+
+  customization:
+    customizationDoc?.customization || [],
+
+  selectedPattern:
+    customizationDoc?.selectedPattern || null,
+
+  selectedSize:
+    customizationDoc?.selectedSize || null,
+
+  playerName:
+    customizationDoc?.playerName || null,
+
+  playerNumber:
+    customizationDoc?.playerNumber || null,
+
+  // =========================
+  // PREVIEW IMAGES
+  // =========================
+
+  frontPreviewImage:
+    customizationDoc?.frontPreviewImage || null,
+
+  backPreviewImage:
+    customizationDoc?.backPreviewImage || null,
+    
+            // =========================
+            // PRODUCT DESIGN DATA
+            // =========================
+
+            printZones:
+              product.printZones || {},
+
+            viewImages:
+              product.viewImages || {},
+
+            allowedPatterns:
+              product.allowedPatterns || [],
+
+            templates:
+              product.templates || [],
           };
         })
       );
@@ -933,6 +1082,7 @@ async validateStockAvailability(cartItems, session) {
       // ==============================
       // TOTAL
       // ==============================
+
       const totalAmount = cartItems.reduce(
         (sum, item) => sum + item.subtotal,
         0
@@ -941,6 +1091,7 @@ async validateStockAvailability(cartItems, session) {
       // ==============================
       // PRODUCT IDS
       // ==============================
+
       const productsId = cartItems.map(
         (item) => item.productId
       );
@@ -955,7 +1106,9 @@ async validateStockAvailability(cartItems, session) {
         totalAmount,
         productsId,
       };
+
     } catch (error) {
+
       console.error("💥 ERROR in getCartItems()", {
         error: error.message,
         stack: error.stack,
@@ -965,448 +1118,448 @@ async validateStockAvailability(cartItems, session) {
     }
   }
 
-  /**
-   * Enhanced variant finding for new product structure
-   */
-  findProductVariant(product, variantId, productType) {
-    return null;
-  }
-
-  /**
-   * Get variant price
-   */
-  getVariantPrice(variant) {
-    if (!variant) return 0;
-
-    // Handle both old and new price structures
-    const price = variant.price || variant;
-    return parseFloat(
-      price?.salePrice || price?.regularPrice || price?.realPrice || 0
-    );
-  }
-
-  /**
-   * Calculate shipping charge based on category & price
-   */
-  /**
-   * Calculate shipping charge based on category & price
-   */
-  calculateShippingCharge(cartItems, subtotalAfterCoupon) {
-    // Configuration - change these values as needed
-    const SHIPPING_CHARGE = 50; // Default shipping charge
-    const FREE_SHIPPING_THRESHOLD = 999; // Free shipping above this amount
-    
-    console.log("📦 Calculating shipping:", {
-      subtotalAfterCoupon,
-      freeShippingThreshold: FREE_SHIPPING_THRESHOLD,
-      defaultShipping: SHIPPING_CHARGE,
-    });
-
-    // Apply free shipping if subtotal is above threshold
-    if (subtotalAfterCoupon >= FREE_SHIPPING_THRESHOLD) {
-      console.log("✅ Free shipping applied (above threshold)");
-      return 0;
+    /**
+     * Enhanced variant finding for new product structure
+     */
+    findProductVariant(product, variantId, productType) {
+      return null;
     }
 
-    console.log(`📦 Applying ₹${SHIPPING_CHARGE} shipping charge`);
-    return SHIPPING_CHARGE;
-  }
+    /**
+     * Get variant price
+     */
+    getVariantPrice(variant) {
+      if (!variant) return 0;
 
-  /**
-   * Validate stock for a single product
-   */
-  async validateStock(
-    product,
-    variant,
-    quantity,
-    productType,
-    session
-  ) {
-    return true;
-  }
-
-  /**
-   * Enhanced Razorpay verification with transaction safety
-   */
-  async verifyRazorpay(req) {
-    const session = await mongoose.startSession();
-
-    try {
-      await session.startTransaction();
-      logger.info("Razorpay verification started", { userId: req.user._id });
-
-      const { orderId } = req.params;
-      const { response } = req.body;
-      const userId = req.user._id;
-
-      console.log("🔍 Starting Razorpay verification", { orderId, userId });
-
-      // Input validation
-      if (
-        !response?.razorpay_order_id ||
-        !response?.razorpay_payment_id ||
-        !response?.razorpay_signature
-      ) {
-        throw new ApiError(400, "Missing required payment fields");
-      }
-
-      const { razorpay_order_id, razorpay_payment_id, razorpay_signature } =
-        response;
-
-      // Check if Razorpay is configured
-      if (!this.razorpayInstance) {
-        throw new ApiError(400, "Razorpay is not configured");
-      }
-
-      // Get Razorpay secret key - try different environment variable names
-      const razorpaySecret =
-        process.env.RAZORPAY_SECRET_KEY || process.env.RAZORPAY_SECRET;
-
-      if (!razorpaySecret) {
-        console.error(
-          "❌ Razorpay secret key not found in environment variables"
-        );
-        throw new ApiError(500, "Razorpay configuration error");
-      }
-
-      console.log(
-        "✅ Razorpay secret key found, length:",
-        razorpaySecret.length
+      // Handle both old and new price structures
+      const price = variant.price || variant;
+      return parseFloat(
+        price?.salePrice || price?.regularPrice || price?.realPrice || 0
       );
+    }
 
-      // Find payment record first
-      const paymentRecord = await paymentDetailsModel
-        .findOne({ razorpayOrderId: razorpay_order_id })
-        .session(session);
-
-      if (!paymentRecord) {
-        throw new ApiError(404, "Payment record not found");
-      }
-
-      // Check if already processed
-      if (paymentRecord.paymentStatus === "paid") {
-        throw new ApiError(400, "Payment has already been processed");
-      }
-
-      // Check expiry
-      const now = new Date();
-      if (
-        paymentRecord.pendingPaymentExpiry &&
-        paymentRecord.pendingPaymentExpiry < now
-      ) {
-        await paymentDetailsModel.findByIdAndUpdate(
-          paymentRecord._id,
-          { paymentStatus: "failed" },
-          { session }
-        );
-        throw new ApiError(400, "Payment session has expired");
-      }
-
-      // Signature verification
-      console.log("🔐 Verifying payment signature...");
-      const generatedSignature = crypto
-        .createHmac("sha256", razorpaySecret)
-        .update(`${razorpay_order_id}|${razorpay_payment_id}`)
-        .digest("hex");
-
-      console.log("📋 Signature comparison:", {
-        generated: generatedSignature.substring(0, 10) + "...",
-        received: razorpay_signature.substring(0, 10) + "...",
+    /**
+     * Calculate shipping charge based on category & price
+     */
+    /**
+     * Calculate shipping charge based on category & price
+     */
+    calculateShippingCharge(cartItems, subtotalAfterCoupon) {
+      // Configuration - change these values as needed
+      const SHIPPING_CHARGE = 50; // Default shipping charge
+      const FREE_SHIPPING_THRESHOLD = 999; // Free shipping above this amount
+      
+      console.log("📦 Calculating shipping:", {
+        subtotalAfterCoupon,
+        freeShippingThreshold: FREE_SHIPPING_THRESHOLD,
+        defaultShipping: SHIPPING_CHARGE,
       });
 
-      if (generatedSignature !== razorpay_signature) {
-        await paymentDetailsModel.findByIdAndUpdate(
-          paymentRecord._id,
-          { paymentStatus: "failed" },
-          { session }
-        );
-        throw new ApiError(400, "Invalid payment signature");
+      // Apply free shipping if subtotal is above threshold
+      if (subtotalAfterCoupon >= FREE_SHIPPING_THRESHOLD) {
+        console.log("✅ Free shipping applied (above threshold)");
+        return 0;
       }
 
-      console.log("✅ Signature verified successfully");
+      console.log(`📦 Applying ₹${SHIPPING_CHARGE} shipping charge`);
+      return SHIPPING_CHARGE;
+    }
 
-      // Verify with Razorpay API
-      console.log("🔍 Verifying with Razorpay API...");
-      const { items = [] } = await this.razorpayInstance.orders.fetchPayments(
-        razorpay_order_id
-      );
-      const paymentItem = items[0];
+    /**
+     * Validate stock for a single product
+     */
+    async validateStock(
+      product,
+      variant,
+      quantity,
+      productType,
+      session
+    ) {
+      return true;
+    }
 
-      if (!paymentItem || paymentItem.status !== "captured") {
-        await paymentDetailsModel.findByIdAndUpdate(
-          paymentRecord._id,
-          { paymentStatus: "failed" },
-          { session }
+    /**
+     * Enhanced Razorpay verification with transaction safety
+     */
+    async verifyRazorpay(req) {
+      const session = await mongoose.startSession();
+
+      try {
+        await session.startTransaction();
+        logger.info("Razorpay verification started", { userId: req.user._id });
+
+        const { orderId } = req.params;
+        const { response } = req.body;
+        const userId = req.user._id;
+
+        console.log("🔍 Starting Razorpay verification", { orderId, userId });
+
+        // Input validation
+        if (
+          !response?.razorpay_order_id ||
+          !response?.razorpay_payment_id ||
+          !response?.razorpay_signature
+        ) {
+          throw new ApiError(400, "Missing required payment fields");
+        }
+
+        const { razorpay_order_id, razorpay_payment_id, razorpay_signature } =
+          response;
+
+        // Check if Razorpay is configured
+        if (!this.razorpayInstance) {
+          throw new ApiError(400, "Razorpay is not configured");
+        }
+
+        // Get Razorpay secret key - try different environment variable names
+        const razorpaySecret =
+          process.env.RAZORPAY_SECRET_KEY || process.env.RAZORPAY_SECRET;
+
+        if (!razorpaySecret) {
+          console.error(
+            "❌ Razorpay secret key not found in environment variables"
+          );
+          throw new ApiError(500, "Razorpay configuration error");
+        }
+
+        console.log(
+          "✅ Razorpay secret key found, length:",
+          razorpaySecret.length
         );
-        throw new ApiError(400, "Payment not captured");
-      }
 
-      // Amount verification
-      const razorpayAmount = paymentItem.amount / 100;
-      const expectedAmount = paymentRecord.amount;
+        // Find payment record first
+        const paymentRecord = await paymentDetailsModel
+          .findOne({ razorpayOrderId: razorpay_order_id })
+          .session(session);
 
-      console.log("💰 Amount verification:", {
-        razorpayAmount,
-        expectedAmount,
-        difference: Math.abs(razorpayAmount - expectedAmount),
-      });
+        if (!paymentRecord) {
+          throw new ApiError(404, "Payment record not found");
+        }
 
-      if (Math.abs(razorpayAmount - expectedAmount) > 0.01) {
-        await paymentDetailsModel.findByIdAndUpdate(
-          paymentRecord._id,
-          { paymentStatus: "failed" },
-          { session }
+        // Check if already processed
+        if (paymentRecord.paymentStatus === "paid") {
+          throw new ApiError(400, "Payment has already been processed");
+        }
+
+        // Check expiry
+        const now = new Date();
+        if (
+          paymentRecord.pendingPaymentExpiry &&
+          paymentRecord.pendingPaymentExpiry < now
+        ) {
+          await paymentDetailsModel.findByIdAndUpdate(
+            paymentRecord._id,
+            { paymentStatus: "failed" },
+            { session }
+          );
+          throw new ApiError(400, "Payment session has expired");
+        }
+
+        // Signature verification
+        console.log("🔐 Verifying payment signature...");
+        const generatedSignature = crypto
+          .createHmac("sha256", razorpaySecret)
+          .update(`${razorpay_order_id}|${razorpay_payment_id}`)
+          .digest("hex");
+
+        console.log("📋 Signature comparison:", {
+          generated: generatedSignature.substring(0, 10) + "...",
+          received: razorpay_signature.substring(0, 10) + "...",
+        });
+
+        if (generatedSignature !== razorpay_signature) {
+          await paymentDetailsModel.findByIdAndUpdate(
+            paymentRecord._id,
+            { paymentStatus: "failed" },
+            { session }
+          );
+          throw new ApiError(400, "Invalid payment signature");
+        }
+
+        console.log("✅ Signature verified successfully");
+
+        // Verify with Razorpay API
+        console.log("🔍 Verifying with Razorpay API...");
+        const { items = [] } = await this.razorpayInstance.orders.fetchPayments(
+          razorpay_order_id
         );
-        throw new ApiError(400, "Payment amount mismatch");
-      }
+        const paymentItem = items[0];
 
-      // Update payment record
-      const updatedPaymentRecord = await paymentDetailsModel.findByIdAndUpdate(
-        paymentRecord._id,
-        {
-          razorpayPaymentId: razorpay_payment_id,
-          paymentStatus: "paid",
-          verifiedAt: new Date(),
-          pendingPaymentExpiry: null,
-          securityChecks: {
-            signatureVerified: true,
-            amountVerified: true,
-            expiryVerified: true,
-            captureVerified: true,
+        if (!paymentItem || paymentItem.status !== "captured") {
+          await paymentDetailsModel.findByIdAndUpdate(
+            paymentRecord._id,
+            { paymentStatus: "failed" },
+            { session }
+          );
+          throw new ApiError(400, "Payment not captured");
+        }
+
+        // Amount verification
+        const razorpayAmount = paymentItem.amount / 100;
+        const expectedAmount = paymentRecord.amount;
+
+        console.log("💰 Amount verification:", {
+          razorpayAmount,
+          expectedAmount,
+          difference: Math.abs(razorpayAmount - expectedAmount),
+        });
+
+        if (Math.abs(razorpayAmount - expectedAmount) > 0.01) {
+          await paymentDetailsModel.findByIdAndUpdate(
+            paymentRecord._id,
+            { paymentStatus: "failed" },
+            { session }
+          );
+          throw new ApiError(400, "Payment amount mismatch");
+        }
+
+        // Update payment record
+        const updatedPaymentRecord = await paymentDetailsModel.findByIdAndUpdate(
+          paymentRecord._id,
+          {
+            razorpayPaymentId: razorpay_payment_id,
+            paymentStatus: "paid",
+            verifiedAt: new Date(),
+            pendingPaymentExpiry: null,
+            securityChecks: {
+              signatureVerified: true,
+              amountVerified: true,
+              expiryVerified: true,
+              captureVerified: true,
+            },
           },
-        },
-        { new: true, session }
-      );
+          { new: true, session }
+        );
 
-      // Update order
-      const order = await orderDetailsModel.findByIdAndUpdate(
-        paymentRecord.orderId,
-        {
-          orderStatus: "Ordered",
-          paymentStatus: "Completed",
-          expiresAt: null,
-          orderConfirmedAt: new Date(),
-        },
-        { new: true, session }
-      );
+        // Update order
+        const order = await orderDetailsModel.findByIdAndUpdate(
+          paymentRecord.orderId,
+          {
+            orderStatus: "Ordered",
+            paymentStatus: "Completed",
+            expiresAt: null,
+            orderConfirmedAt: new Date(),
+          },
+          { new: true, session }
+        );
 
-      if (!order) {
-        throw new ApiError(404, "Order not found");
+        if (!order) {
+          throw new ApiError(404, "Order not found");
+        }
+
+        // Update stock securely
+        await this.updateStockSecure(order, session);
+
+        // Clear cart
+        await cart.findOneAndDelete({ userId }).session(session);
+
+        await session.commitTransaction();
+
+        console.log("✅ Razorpay verification completed successfully");
+        logger.info("Razorpay verification successful", {
+          orderId: order.orderId,
+        });
+
+        return {
+          success: true,
+          message: "Payment verified successfully",
+          data: {
+            paymentRecord: updatedPaymentRecord,
+            order,
+            amount: razorpayAmount,
+          },
+        };
+      } catch (error) {
+        await session.abortTransaction();
+        console.error("💥 Razorpay verification failed:", error.message);
+        logger.error("Razorpay verification failed", { error: error.message });
+
+        if (error.message.includes("expired")) {
+          throw new ApiError(400, "Payment session expired. Please try again.");
+        } else if (error.message.includes("amount mismatch")) {
+          throw new ApiError(400, "Payment amount verification failed.");
+        } else if (error.message.includes("already processed")) {
+          throw new ApiError(400, "Payment already processed.");
+        } else if (error.message.includes("configuration error")) {
+          throw new ApiError(500, "Payment system configuration error.");
+        } else {
+          throw new ApiError(500, "Payment verification failed", error.message);
+        }
+      } finally {
+        session.endSession();
       }
+    }
 
-      // Update stock securely
-      await this.updateStockSecure(order, session);
+    /**
+     * NEW: Helper method to normalize product types consistently
+     */
+    normalizeProductType(productType) {
+      console.log([productType,"thid id is the pdicut type i have"]);
+      
+      if (!productType) return "nonVariation";
+      
+      const normalized = productType.toLowerCase();
+      
+      // Map all variations of variant types to standard enum values
+      if (normalized === "variant" || normalized === "variation") {
+        return "variation";
+      }
+      
+      if (normalized === "nonvariant" || normalized === "nonvariation") {
+        return "nonVariation";
+      }
+      
+      return productType;
+    }
 
-      // Clear cart
-      await cart.findOneAndDelete({ userId }).session(session);
+    /**
+     * Secure stock update for new product structure
+     */
+    async updateStockSecure(order, session) {
+      console.log(
+        "📦 updateStockSecure skipped"
+      );
 
-      await session.commitTransaction();
+      return true;
+    }
 
-      console.log("✅ Razorpay verification completed successfully");
-      logger.info("Razorpay verification successful", {
-        orderId: order.orderId,
+    /**
+     * Get user with addresses - ensure all required fields are present
+     */
+    async getUserWithAddresses(userId, orderData, isBuyNow) {
+      console.log("🔍 [getUserWithAddresses] Starting method execution");
+
+      // Select all necessary fields including phone and fullName
+      const user = await User.findById(userId)
+        .select("email fullName phone address billingAddressId deliveryAddressId")
+        .lean();
+
+      console.log("👤 [getUserWithAddresses] User data:", {
+        userId: user?._id,
+        email: user?.email,
+        fullName: user?.fullName,
+        phone: user?.phone,
+        hasAddress: !!user?.address,
+        addressCount: user?.address?.length || 0,
       });
 
-      return {
-        success: true,
-        message: "Payment verified successfully",
-        data: {
-          paymentRecord: updatedPaymentRecord,
-          order,
-          amount: razorpayAmount,
-        },
-      };
-    } catch (error) {
-      await session.abortTransaction();
-      console.error("💥 Razorpay verification failed:", error.message);
-      logger.error("Razorpay verification failed", { error: error.message });
-
-      if (error.message.includes("expired")) {
-        throw new ApiError(400, "Payment session expired. Please try again.");
-      } else if (error.message.includes("amount mismatch")) {
-        throw new ApiError(400, "Payment amount verification failed.");
-      } else if (error.message.includes("already processed")) {
-        throw new ApiError(400, "Payment already processed.");
-      } else if (error.message.includes("configuration error")) {
-        throw new ApiError(500, "Payment system configuration error.");
-      } else {
-        throw new ApiError(500, "Payment verification failed", error.message);
+      if (!user) {
+        console.error("❌ [getUserWithAddresses] User not found for ID:", userId);
+        throw new ApiError(404, "User not found");
       }
-    } finally {
-      session.endSession();
-    }
-  }
 
-  /**
-   * NEW: Helper method to normalize product types consistently
-   */
-  normalizeProductType(productType) {
-    console.log([productType,"thid id is the pdicut type i have"]);
-    
-    if (!productType) return "nonVariation";
-    
-    const normalized = productType.toLowerCase();
-    
-    // Map all variations of variant types to standard enum values
-    if (normalized === "variant" || normalized === "variation") {
-      return "variation";
-    }
-    
-    if (normalized === "nonvariant" || normalized === "nonvariation") {
-      return "nonVariation";
-    }
-    
-    return productType;
-  }
+      // Ensure we have fallback values for required fields
+      const userData = {
+        ...user,
+        email: user.email || "no-email@example.com",
+        fullName: user.fullName || "Customer",
+        phone: user.phone || "Not Provided",
+      };
 
-  /**
-   * Secure stock update for new product structure
-   */
-  async updateStockSecure(order, session) {
-    console.log(
-      "📦 updateStockSecure skipped"
-    );
+      const billingAddressId = isBuyNow
+        ? orderData.billingAddressId
+        : user.billingAddressId ||
+          user.address?.find((addr) => addr.checkoutAddress === "billingAddress" || "deliveryAddress")
+            ?._id;
 
-    return true;
-  }
+      const deliveryAddressId = isBuyNow
+        ? orderData.deliveryAddressId
+        : user.deliveryAddressId ||
+          user.address?.find((addr) => addr.checkoutAddress === "deliveryAddress" || "billingAddress")
+            ?._id;
 
-  /**
-   * Get user with addresses - ensure all required fields are present
-   */
-  async getUserWithAddresses(userId, orderData, isBuyNow) {
-    console.log("🔍 [getUserWithAddresses] Starting method execution");
-
-    // Select all necessary fields including phone and fullName
-    const user = await User.findById(userId)
-      .select("email fullName phone address billingAddressId deliveryAddressId")
-      .lean();
-
-    console.log("👤 [getUserWithAddresses] User data:", {
-      userId: user?._id,
-      email: user?.email,
-      fullName: user?.fullName,
-      phone: user?.phone,
-      hasAddress: !!user?.address,
-      addressCount: user?.address?.length || 0,
-    });
-
-    if (!user) {
-      console.error("❌ [getUserWithAddresses] User not found for ID:", userId);
-      throw new ApiError(404, "User not found");
-    }
-
-    // Ensure we have fallback values for required fields
-    const userData = {
-      ...user,
-      email: user.email || "no-email@example.com",
-      fullName: user.fullName || "Customer",
-      phone: user.phone || "Not Provided",
-    };
-
-    const billingAddressId = isBuyNow
-      ? orderData.billingAddressId
-      : user.billingAddressId ||
-        user.address?.find((addr) => addr.checkoutAddress === "billingAddress" || "deliveryAddress")
-          ?._id;
-
-    const deliveryAddressId = isBuyNow
-      ? orderData.deliveryAddressId
-      : user.deliveryAddressId ||
-        user.address?.find((addr) => addr.checkoutAddress === "deliveryAddress" || "billingAddress")
-          ?._id;
-
-    console.log("📍 [getUserWithAddresses] Address IDs:", {
-      isBuyNow,
-      billingAddressId,
-      deliveryAddressId,
-      userBillingAddressId: user.billingAddressId,
-      userDeliveryAddressId: user.deliveryAddressId,
-    });
-
-    // Log all available addresses for debugging
-    console.log(
-      "🏠 [getUserWithAddresses] All user addresses:",
-      user.address?.map((addr) => ({
-        _id: addr._id,
-        addressType: addr.addressType,
-        fullName: addr.fullName,
-      })) || "No addresses found"
-    );
-
-    const billingAddress = user.address?.find(
-      (addr) => addr._id.toString() === billingAddressId?.toString()
-    );
-
-    const deliveryAddress = user.address?.find(
-      (addr) => addr._id.toString() === deliveryAddressId?.toString()
-    );
-
-    console.log("✅ [getUserWithAddresses] Address lookup results:", {
-      billingAddressFound: !!billingAddress,
-      deliveryAddressFound: !!deliveryAddress,
-      billingAddressId: billingAddressId,
-      deliveryAddressId: deliveryAddressId,
-      billingAddressDetails: billingAddress
-        ? {
-            _id: billingAddress._id,
-            addressType: billingAddress.addressType,
-            fullName: billingAddress.fullName,
-          }
-        : null,
-      deliveryAddressDetails: deliveryAddress
-        ? {
-            _id: deliveryAddress._id,
-            addressType: deliveryAddress.addressType,
-            fullName: deliveryAddress.fullName,
-          }
-        : null,
-    });
-
-    if (!billingAddress || !deliveryAddress) {
-      console.error("❌ [getUserWithAddresses] Addresses not found:", {
-        missingBilling: !billingAddress,
-        missingDelivery: !deliveryAddress,
+      console.log("📍 [getUserWithAddresses] Address IDs:", {
+        isBuyNow,
         billingAddressId,
         deliveryAddressId,
-        availableAddressIds:
-          user.address?.map((addr) => addr._id.toString()) || [],
+        userBillingAddressId: user.billingAddressId,
+        userDeliveryAddressId: user.deliveryAddressId,
       });
-      throw new ApiError(404, "Addresses not found");
+
+      // Log all available addresses for debugging
+      console.log(
+        "🏠 [getUserWithAddresses] All user addresses:",
+        user.address?.map((addr) => ({
+          _id: addr._id,
+          addressType: addr.addressType,
+          fullName: addr.fullName,
+        })) || "No addresses found"
+      );
+
+      const billingAddress = user.address?.find(
+        (addr) => addr._id.toString() === billingAddressId?.toString()
+      );
+
+      const deliveryAddress = user.address?.find(
+        (addr) => addr._id.toString() === deliveryAddressId?.toString()
+      );
+
+      console.log("✅ [getUserWithAddresses] Address lookup results:", {
+        billingAddressFound: !!billingAddress,
+        deliveryAddressFound: !!deliveryAddress,
+        billingAddressId: billingAddressId,
+        deliveryAddressId: deliveryAddressId,
+        billingAddressDetails: billingAddress
+          ? {
+              _id: billingAddress._id,
+              addressType: billingAddress.addressType,
+              fullName: billingAddress.fullName,
+            }
+          : null,
+        deliveryAddressDetails: deliveryAddress
+          ? {
+              _id: deliveryAddress._id,
+              addressType: deliveryAddress.addressType,
+              fullName: deliveryAddress.fullName,
+            }
+          : null,
+      });
+
+      if (!billingAddress || !deliveryAddress) {
+        console.error("❌ [getUserWithAddresses] Addresses not found:", {
+          missingBilling: !billingAddress,
+          missingDelivery: !deliveryAddress,
+          billingAddressId,
+          deliveryAddressId,
+          availableAddressIds:
+            user.address?.map((addr) => addr._id.toString()) || [],
+        });
+        throw new ApiError(404, "Addresses not found");
+      }
+
+      console.log("🎯 [getUserWithAddresses] Successfully retrieved addresses");
+
+      return {
+        ...userData,
+        billingAddress: this.normalizeAddress(billingAddress),
+        deliveryAddress: this.normalizeAddress(deliveryAddress),
+      };
     }
 
-    console.log("🎯 [getUserWithAddresses] Successfully retrieved addresses");
+    // Utility methods
+    sleep(ms) {
+      return new Promise((resolve) => setTimeout(resolve, ms));
+    }
 
-    return {
-      ...userData,
-      billingAddress: this.normalizeAddress(billingAddress),
-      deliveryAddress: this.normalizeAddress(deliveryAddress),
-    };
+    getNextSteps(paymentMethod) {
+      const steps = {
+        RazorPay: "Complete payment via Razorpay",
+        Stripe: "Complete payment via Stripe",
+        PayPal: "Complete payment via PayPal",
+        COD: "Order confirmed. Payment on delivery",
+      };
+      return steps[paymentMethod] || "Complete your order";
+    }
+
+    // Helper methods
+    validateUser(user) {
+      if (!user?._id) throw new ApiError(401, "Unauthorized");
+      return user._id;
+    }
+
+    async notifyOrderFailure(error, userId) {
+      console.log("📢 Notifying order failure for user:", userId);
+    }
   }
 
-  // Utility methods
-  sleep(ms) {
-    return new Promise((resolve) => setTimeout(resolve, ms));
-  }
-
-  getNextSteps(paymentMethod) {
-    const steps = {
-      RazorPay: "Complete payment via Razorpay",
-      Stripe: "Complete payment via Stripe",
-      PayPal: "Complete payment via PayPal",
-      COD: "Order confirmed. Payment on delivery",
-    };
-    return steps[paymentMethod] || "Complete your order";
-  }
-
-  // Helper methods
-  validateUser(user) {
-    if (!user?._id) throw new ApiError(401, "Unauthorized");
-    return user._id;
-  }
-
-  async notifyOrderFailure(error, userId) {
-    console.log("📢 Notifying order failure for user:", userId);
-  }
-}
-
-module.exports = new OrderService();
+  module.exports = new OrderService();
