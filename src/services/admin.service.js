@@ -6,7 +6,7 @@ const { BannerDetailsModel } = require("../models/banner.model");
 const { uploadToCloud } = require("../utils/uploadFileToS3");
 const { CouponModel } = require("../models/coupons.model");
 const { uploads } = require("../middlwares/multer");
-const CategoryModel  = require("../models/category.model");
+const CategoryModel = require("../models/category.model");
 const { subCategory } = require("../models/subCategory.model");
 const { User } = require("../models/users.model");
 const { Brand } = require("../models/brand.model");
@@ -43,6 +43,9 @@ const DesignZone = require("../models/designZone.model");
 const Template = require("../models/template.model");
 const Product = require("../models/Product.model");
 const calculateFinalPrice = require("../utils/calculateFinalPrice.js");
+
+
+const customization = require("../models/customization.model");
 
 const createBanner = async (req, res) => {
   const { title, subtitle, offer } = req.body;
@@ -218,8 +221,8 @@ const validateCouponPayload = (body) => {
   /* FREE PRODUCT Validation */
   if (offerType === "FREE_PRODUCT") {
     // Parse freeProduct if it's a string
-    const parsedFreeProduct = typeof freeProduct === 'string' 
-      ? JSON.parse(freeProduct) 
+    const parsedFreeProduct = typeof freeProduct === 'string'
+      ? JSON.parse(freeProduct)
       : freeProduct;
 
     if (
@@ -301,8 +304,8 @@ const createCoupen = async (req) => {
     couponData.maxDiscountAmount = body.maxDiscountAmount || 0;
   } else if (body.offerType === "FREE_PRODUCT") {
     // Parse freeProduct if it's a string
-    couponData.freeProduct = typeof body.freeProduct === 'string' 
-      ? JSON.parse(body.freeProduct) 
+    couponData.freeProduct = typeof body.freeProduct === 'string'
+      ? JSON.parse(body.freeProduct)
       : body.freeProduct;
   }
 
@@ -415,8 +418,8 @@ const editCoupon = async (req) => {
     updateData.freeProduct = undefined;
   } else if (body.offerType === "FREE_PRODUCT") {
     // Parse freeProduct if it's a string
-    updateData.freeProduct = typeof body.freeProduct === 'string' 
-      ? JSON.parse(body.freeProduct) 
+    updateData.freeProduct = typeof body.freeProduct === 'string'
+      ? JSON.parse(body.freeProduct)
       : body.freeProduct;
     // Clear discount fields if switching from DISCOUNT to FREE_PRODUCT
     updateData.discountValue = undefined;
@@ -595,7 +598,7 @@ const deleteCategory = async (req) => {
 
 const createDigitalZone = async (req) => {
   const data = req.body;
-  
+
   const duplicate = await DesignZone.findOne({ zoneKey: data.zoneKey });
 
   if (duplicate) {
@@ -754,81 +757,81 @@ const getTemplate = async (req) => {
 // };
 
 
-  const createProducts = async (req, res) => {
-    const data = req.body;
+const createProducts = async (req, res) => {
+  const data = req.body;
 
-    // ── File uploads ──────────────────────────────────────────
-    let glbUrl = null;
-    if (req.files?.glbFile?.[0]) {
-      glbUrl = await uploadToCloud(req.files.glbFile[0], "products/glb");
-    }
+  // ── File uploads ──────────────────────────────────────────
+  let glbUrl = null;
+  if (req.files?.glbFile?.[0]) {
+    glbUrl = await uploadToCloud(req.files.glbFile[0], "products/glb");
+  }
 
-    let frontImage = null;
-    let backImage  = null;
-    if (req.files?.frontImage?.[0]) {
-      frontImage = await uploadToCloud(req.files.frontImage[0], "products/images");
-    }
-    if (req.files?.backImage?.[0]) {
-      backImage = await uploadToCloud(req.files.backImage[0], "products/images");
-    }
+  let frontImage = null;
+  let backImage = null;
+  if (req.files?.frontImage?.[0]) {
+    frontImage = await uploadToCloud(req.files.frontImage[0], "products/images");
+  }
+  if (req.files?.backImage?.[0]) {
+    backImage = await uploadToCloud(req.files.backImage[0], "products/images");
+  }
 
-    if (!frontImage) throw new ApiError(400, "Front image is required");
-    if (!backImage)  backImage = frontImage;
+  if (!frontImage) throw new ApiError(400, "Front image is required");
+  if (!backImage) backImage = frontImage;
 
-    // ── Parse array / JSON fields from multipart ──────────────
-    const templates = Array.isArray(data.templates)
-      ? data.templates
-      : data.templates ? [data.templates] : [];
+  // ── Parse array / JSON fields from multipart ──────────────
+  const templates = Array.isArray(data.templates)
+    ? data.templates
+    : data.templates ? [data.templates] : [];
 
-    const allowedPatterns = Array.isArray(data["allowedPatterns[]"] || data.allowedPatterns)
-      ? (data["allowedPatterns[]"] || data.allowedPatterns)
-      : data.allowedPatterns ? [data.allowedPatterns] : [];
+  const allowedPatterns = Array.isArray(data["allowedPatterns[]"] || data.allowedPatterns)
+    ? (data["allowedPatterns[]"] || data.allowedPatterns)
+    : data.allowedPatterns ? [data.allowedPatterns] : [];
 
-    // ✅ customFields comes in as a JSON string — parse it
-    let customFields = [];
-    if (data.customFields) {
-      try { customFields = JSON.parse(data.customFields); } catch (e) { customFields = []; }
-    }
+  // ✅ customFields comes in as a JSON string — parse it
+  let customFields = [];
+  if (data.customFields) {
+    try { customFields = JSON.parse(data.customFields); } catch (e) { customFields = []; }
+  }
 
-    // ✅ printZones same
-    let printZones = {};
-    if (data.printZones) {
-      try { printZones = JSON.parse(data.printZones); } catch (e) { printZones = {}; }
-    }
+  // ✅ printZones same
+  let printZones = {};
+  if (data.printZones) {
+    try { printZones = JSON.parse(data.printZones); } catch (e) { printZones = {}; }
+  }
 
-    // ── Pricing ───────────────────────────────────────────────
-    const basePrice     = Number(data.basePrice)     || 0;
-    const discountValue = Number(data.discountValue) || 0;
-    const discountType  = data.discountType || "percentage";
-    const finalPrice    = calculateFinalPrice(basePrice, discountType, discountValue);
+  // ── Pricing ───────────────────────────────────────────────
+  const basePrice = Number(data.basePrice) || 0;
+  const discountValue = Number(data.discountValue) || 0;
+  const discountType = data.discountType || "percentage";
+  const finalPrice = calculateFinalPrice(basePrice, discountType, discountValue);
 
-    // ── Create — no ...data spread ────────────────────────────
-    const createdProduct = await Product.create({
-      name:           data.name,
-      categoryId:     data.categoryId,
-      subCategoryId:  data.subCategoryId || null,
-      glbUrl,
-      viewImages:     { front: frontImage, back: backImage },
-      templates,
-      allowedPatterns,
-      customFields,
-      printZones,
-      basePrice,
-      discountType,
-      discountValue,
-      finalPrice,
-      isActive: data.isActive === "false" ? false : true,
-      segment: data.segment,
-  sport: data.sport,
-  apparel: data.apparel,
-    });
+  // ── Create — no ...data spread ────────────────────────────
+  const createdProduct = await Product.create({
+    name: data.name,
+    categoryId: data.categoryId,
+    subCategoryId: data.subCategoryId || null,
+    glbUrl,
+    viewImages: { front: frontImage, back: backImage },
+    templates,
+    allowedPatterns,
+    customFields,
+    printZones,
+    basePrice,
+    discountType,
+    discountValue,
+    finalPrice,
+    isActive: data.isActive === "false" ? false : true,
+    segment: data.segment,
+    sport: data.sport,
+    apparel: data.apparel,
+  });
 
-    return{
-      success: true,
-      message: "Product created successfully",
-      data: createdProduct,
-    }
-  };
+  return {
+    success: true,
+    message: "Product created successfully",
+    data: createdProduct,
+  }
+};
 
 
 // const getAllProducts = async () => {
@@ -1078,16 +1081,16 @@ const getAllProducts = async (req) => {
 
 
 const getOneProducts = async (req, res) => {
-    const { _id } = req.params;
-    const product = await Product.findById(_id).populate("allowedPatterns").populate("categoryId", "name");
-    if (!product) {
-      throw new ApiError(404, "Product not found");
-    }
-    return {
-      success: true,
-      message: "Product fetched successfully",
-      data: product
-    };
+  const { _id } = req.params;
+  const product = await Product.findById(_id).populate("allowedPatterns").populate("categoryId", "name");
+  if (!product) {
+    throw new ApiError(404, "Product not found");
+  }
+  return {
+    success: true,
+    message: "Product fetched successfully",
+    data: product
+  };
 }
 
 const toggleProductStatus = async (req, res) => {
@@ -1111,15 +1114,15 @@ const toggleProductStatus = async (req, res) => {
 
 
 const deleteProducts = async (req, res) => {
-    const { _id } = req.params;
-    const product = await Product.findByIdAndDelete(_id);
-    if (!product) {
-      throw new ApiError(404, "Product not found");
-    }
-    return {
-      success: true,
-      message: "Product deleted successfully"
-    };
+  const { _id } = req.params;
+  const product = await Product.findByIdAndDelete(_id);
+  if (!product) {
+    throw new ApiError(404, "Product not found");
+  }
+  return {
+    success: true,
+    message: "Product deleted successfully"
+  };
 }
 
 
@@ -1164,12 +1167,12 @@ const editProducts = async (req, res) => {
 
   let allowedPatterns = [];
 
-if (data.allowedPatterns) {
-  allowedPatterns =
-    Array.isArray(data.allowedPatterns)
-      ? data.allowedPatterns
-      : [data.allowedPatterns];
-}
+  if (data.allowedPatterns) {
+    allowedPatterns =
+      Array.isArray(data.allowedPatterns)
+        ? data.allowedPatterns
+        : [data.allowedPatterns];
+  }
 
   // fallback
   if (frontImage && !backImage) {
@@ -2529,7 +2532,7 @@ const editOrders = async (req, res) => {
       },
       {
         arrayFilters: [
-          { 
+          {
             "elem.returnStatus": { $nin: ["Request", "In Process", "Approved"] }
           }
         ],
@@ -2588,11 +2591,11 @@ const editReturnStatus = async (req) => {
   // Find product (match by productId and variantId if provided)
   const productIndex = products.findIndex((p) => {
     const productMatch = p.productId.toString() === productId.toString();
-    
+
     if (variantId) {
       return productMatch && p.variantId?.toString() === variantId.toString();
     }
-    
+
     return productMatch;
   });
 
@@ -2605,7 +2608,7 @@ const editReturnStatus = async (req) => {
   // Validate current status
   if (product.orderStatus !== "Return Request") {
     throw new ApiError(
-      httpStatus.BAD_REQUEST, 
+      httpStatus.BAD_REQUEST,
       "Product is not in return request status"
     );
   }
@@ -4974,6 +4977,117 @@ const deleteHolidayTimeSlot = async (req, res) => {
     data: deletedTimeSlot,
   };
 };
+
+const getUsersWithCustomizations = async (req, res) => {
+  try {
+    const page = Number(req.query.page) || 1;
+    const limit = Number(req.query.limit) || 10;
+
+    const skip = (page - 1) * limit;
+
+    const countPipeline = [
+      {
+        $lookup: {
+          from: "products",
+          localField: "productId",
+          foreignField: "_id",
+          as: "productDetails",
+        },
+      },
+      {
+        $lookup: {
+          from: "users",
+          localField: "userId",
+          foreignField: "_id",
+          as: "userDetails",
+        },
+      },
+      {
+        $unwind: "$productDetails",
+      },
+      {
+        $unwind: "$userDetails",
+      },
+      {
+        $count: "total",
+      },
+    ];
+
+    const totalResult = await customization.aggregate(countPipeline);
+
+    const totalRecords = totalResult[0]?.total || 0;
+
+    const data = await customization.aggregate([
+      {
+        $lookup: {
+          from: "products",
+          localField: "productId",
+          foreignField: "_id",
+          as: "productDetails",
+        },
+      },
+      {
+        $lookup: {
+          from: "users",
+          localField: "userId",
+          foreignField: "_id",
+          as: "userDetails",
+        },
+      },
+      {
+        $unwind: "$productDetails",
+      },
+      {
+        $unwind: "$userDetails",
+      },
+      {
+        $project: {
+          _id: 0,
+          userId: 1,
+          UserName: "$userDetails.name",
+          customization: 1,
+          ProductName: "$productDetails.name",
+          ProductImage: "$productDetails.viewImages",
+          PrintZoneFront: "$productDetails.printZones.front",
+          PrintZoneBack: "$productDetails.printZones.back",
+          createdAt: 1,
+        },
+      },
+      {
+        $sort: {
+          createdAt: -1,
+        },
+      },
+      {
+        $skip: skip,
+      },
+      {
+        $limit: limit,
+      },
+    ]);
+
+    return {
+      success: true,
+      message: "Data fetched successfully",
+      pagination: {
+        totalRecords,
+        currentPage: page,
+        totalPages: Math.ceil(totalRecords / limit),
+        limit,
+      },
+      data,
+    };
+  } catch (error) {
+    throw new ApiError(
+      httpStatus.INTERNAL_SERVER_ERROR,
+      "An error occurred while fetching users with customizations",
+      error.message
+    );
+  }
+};
+
+
+
 module.exports = {
   createdeliverypolicy,
   getdeliverypolicy,
@@ -5094,4 +5208,6 @@ module.exports = {
   editProducts,
   getOneProducts,
   deleteProducts,
+
+  getUsersWithCustomizations
 };

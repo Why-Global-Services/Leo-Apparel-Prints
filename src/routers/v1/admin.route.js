@@ -442,4 +442,7 @@ AdminRouter.route("/deleteTopbar/:id").delete(
   adminController.deleteTopbarController,
 );
 
+// view Costomization
+AdminRouter.route("/viewcustomization").get(adminController.getUsersWithCustomizations);
+AdminRouter.route("/viewcustomization/:userId").get(adminController.getUsersWithCustomizations);
 module.exports = AdminRouter;

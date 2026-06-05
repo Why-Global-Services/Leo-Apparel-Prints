@@ -6,6 +6,9 @@ const {
   getAllUserQueries,
 } = require("../services/admin Services/userQueries/userQueries.JS");
 const adminService = require("../services/admin.service");
+
+
+
 const productSerives = require("../services/admin Services/products/products.service");
 const catchAsync = require("../utils/catchAsync");
 const web = require("../services/admin Services/webSettings.service");
@@ -736,6 +739,13 @@ const deleteTopbarController = catchAsync(async (req, res) => {
   res.status(200).send(data);
 });
 
+
+const getUsersWithCustomizations = catchAsync(async (req, res) => {
+  const data = await adminService.getUsersWithCustomizations(req);
+  res.status(200).send(data);
+});
+
+
 module.exports = {
   GetAllUserQueries,
   CreateDeliveryPolicy,
@@ -875,5 +885,7 @@ module.exports = {
   createPattern,
   getPatterns,
   deletePattern,
-  getPatternsByIds
+  getPatternsByIds,
+
+getUsersWithCustomizations
 };
