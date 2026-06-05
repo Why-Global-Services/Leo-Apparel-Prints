@@ -366,22 +366,17 @@
 
 
 
-
-
 'use client';
 
 /**
- * Canvas2DOverlay — v4
+ * Canvas2DOverlay — v5
  * ─────────────────────────────────────────────────────────────
- * FIXES:
- * 1. clubLogo only draws if 'clubLogo' zone exists in currentView's printZones
- * 2. sponsorLogo only draws if 'sponsor' zone exists in currentView's printZones
- * 3. playerName only draws if 'playerName' zone exists in currentView's printZones
- * 4. number only draws if 'number' zone exists in currentView's printZones
- * 5. Correct image rect using getBoundingClientRect on both img + container
- *
- * Rule: If admin didn't place a zone for this view → don't draw it.
- * This means front zones ONLY appear on front, back zones ONLY on back.
+ * CHANGES from v4:
+ * 1. Hardened ref checks: asserts jerseyImageRef points to <img>, not a wrapper.
+ * 2. Console diagnostics in dev mode to expose ref/zone mismatches instantly.
+ * 3. Visual debug overlay (dev only): red border = imgRect, colored fills = zones.
+ * 4. getActualImageRect now also guards against containerRef being wrong element.
+ * 5. All existing zone-guard logic preserved from v4.
  */
 
 import { useEffect, useRef, useCallback } from 'react';
@@ -428,14 +423,24 @@ function loadLogo(src) {
 
 // ─── Get actual rendered image rect inside canvas container ──────────────────
 // Matches PrintZoneEditor's getImageRectInContainer() exactly.
-function getActualImageRect(imgEl, canvasEl) {
-  if (!imgEl || !canvasEl) return null;
+// containerEl must be the direct parent of the <canvas> (same origin).
+function getActualImageRect(imgEl, containerEl) {
+  if (!imgEl || !containerEl) return null;
+
   const nw = imgEl.naturalWidth;
   const nh = imgEl.naturalHeight;
   if (!nw || !nh) return null;
 
-  const imgElRect  = imgEl.getBoundingClientRect();
-  const canvasRect = canvasEl.getBoundingClientRect();
+  const imgElRect      = imgEl.getBoundingClientRect();
+  const containerRect  = containerEl.getBoundingClientRect();
+
+  // Guard: if container has no size, refs are almost certainly wrong
+  if (containerRect.width < 1 || containerRect.height < 1) {
+    if (process.env.NODE_ENV !== 'production') {
+      console.warn('[Canvas2DOverlay] containerRef has zero size — wrong element?', containerEl);
+    }
+    return null;
+  }
 
   const elW = imgElRect.width;
   const elH = imgElRect.height;
@@ -457,8 +462,8 @@ function getActualImageRect(imgEl, canvasEl) {
   }
 
   return {
-    x: (imgElRect.left - canvasRect.left) + innerOffsetX,
-    y: (imgElRect.top  - canvasRect.top)  + innerOffsetY,
+    x: (imgElRect.left - containerRect.left) + innerOffsetX,
+    y: (imgElRect.top  - containerRect.top)  + innerOffsetY,
     w: renderedW,
     h: renderedH,
   };
@@ -474,6 +479,84 @@ function zoneToRect(zone, imgRect) {
   };
 }
 
+// ─── Dev debug overlay ────────────────────────────────────────────────────────
+const ZONE_DEBUG_COLORS = {
+  playerName: 'rgba(53,162,235,0.35)',
+  number:     'rgba(255,159,64,0.35)',
+  clubLogo:   'rgba(75,192,120,0.35)',
+  sponsor:    'rgba(200,80,200,0.35)',
+};
+
+function drawDebugOverlay(ctx, imgRect, viewZones) {
+  if (process.env.NODE_ENV === 'production') return;
+
+  ctx.save();
+
+  // Red border = the computed jersey image rect
+  ctx.strokeStyle = 'rgba(220,50,50,0.9)';
+  ctx.lineWidth   = 2;
+  ctx.strokeRect(imgRect.x, imgRect.y, imgRect.w, imgRect.h);
+
+  // Each zone as semi-transparent fill + label
+  viewZones.forEach((zone) => {
+    const r     = zoneToRect(zone, imgRect);
+    const color = ZONE_DEBUG_COLORS[zone.id] ?? 'rgba(150,150,150,0.3)';
+
+    ctx.fillStyle = color;
+    ctx.fillRect(r.x, r.y, r.w, r.h);
+
+    ctx.strokeStyle = color.replace(/[\d.]+\)$/, '0.9)');
+    ctx.lineWidth   = 1.5;
+    ctx.strokeRect(r.x, r.y, r.w, r.h);
+
+    ctx.fillStyle   = 'rgba(0,0,0,0.8)';
+    ctx.font        = 'bold 11px monospace';
+    ctx.textAlign   = 'left';
+    ctx.textBaseline = 'top';
+    ctx.fillText(zone.id, r.x + 4, r.y + 4);
+  });
+
+  ctx.restore();
+}
+
+// ─── Dev diagnostics ──────────────────────────────────────────────────────────
+function logDiagnostics(imgEl, containerEl, imgRect, viewZones, currentView) {
+  if (process.env.NODE_ENV === 'production') return;
+
+  const imgElRect     = imgEl.getBoundingClientRect();
+  const containerRect = containerEl.getBoundingClientRect();
+
+  console.groupCollapsed('[Canvas2DOverlay] diagnostics — view:', currentView);
+
+  // Ref sanity checks
+  if (imgEl.tagName !== 'IMG') {
+    console.error('❌ jerseyImageRef must point to <img>, got:', imgEl.tagName);
+  } else {
+    console.log('✅ jerseyImageRef → <img>');
+  }
+
+  if (containerRect.width < 1 || containerRect.height < 1) {
+    console.error('❌ containerRef has zero size — wrong element?', containerEl);
+  } else {
+    console.log('✅ containerRef size:', { w: containerRect.width, h: containerRect.height });
+  }
+
+  console.log('imgEl box:',     { w: imgElRect.width,     h: imgElRect.height });
+  console.log('natural size:',  { w: imgEl.naturalWidth,  h: imgEl.naturalHeight });
+  console.log('computed imgRect:', imgRect);
+  console.log('viewZones raw:', viewZones);
+
+  // Heuristic: zone values should be in [0, 100]
+  viewZones.forEach((z) => {
+    const bad = [z.x, z.y, z.w, z.h].some((v) => v < 0 || v > 100);
+    if (bad) {
+      console.warn(`⚠️  Zone "${z.id}" has values outside [0,100] — are these pixels instead of %?`, z);
+    }
+  });
+
+  console.groupEnd();
+}
+
 // ─── Component ────────────────────────────────────────────────────────────────
 export default function Canvas2DOverlay({
   containerRef,
@@ -485,6 +568,8 @@ export default function Canvas2DOverlay({
   textEffect,
   clubLogo,
   sponsorLogo,
+  // Set to true in dev to show the zone debug overlay
+  debugZones = false,
 }) {
   const canvasRef = useRef(null);
 
@@ -492,9 +577,11 @@ export default function Canvas2DOverlay({
     const canvas    = canvasRef.current;
     const container = containerRef?.current;
     const imgEl     = jerseyImageRef?.current;
-    if (!canvas || !container) return;
+    if (!canvas || !container || !imgEl) return;
 
     const { width: cw, height: ch } = container.getBoundingClientRect();
+    if (cw < 1 || ch < 1) return;
+
     canvas.width  = cw;
     canvas.height = ch;
 
@@ -506,9 +593,13 @@ export default function Canvas2DOverlay({
     if (!imgRect || imgRect.w < 1) return;
 
     // ── CRITICAL: only use zones for the CURRENT VIEW ────────────────────
-    // If a zone doesn't exist in this view's printZones → don't draw it
     const viewZones = printZones?.[currentView] || [];
     const getZone   = (id) => viewZones.find(z => z.id === id) || null;
+
+    // Dev diagnostics — logs ref checks + zone sanity to console
+    if (process.env.NODE_ENV !== 'production') {
+      logDiagnostics(imgEl, container, imgRect, viewZones, currentView);
+    }
 
     // ── Text effect helper ───────────────────────────────────────────────
     const applyEffect = (color, effect) => {
@@ -531,7 +622,6 @@ export default function Canvas2DOverlay({
 
     // ── Draw logo in zone ────────────────────────────────────────────────
     const drawLogoInZone = async (src, zone, alpha = 0.95) => {
-      // ✅ KEY FIX: zone must exist in THIS view — no zone = don't draw
       if (!src || !zone) return;
 
       const logoImg = await loadLogo(src);
@@ -540,13 +630,11 @@ export default function Canvas2DOverlay({
       const rect   = zoneToRect(zone, imgRect);
       const aspect = logoImg.naturalWidth / logoImg.naturalHeight;
 
-      // Fit logo inside zone maintaining aspect ratio
       let lw = rect.w;
       let lh = rect.h;
       if (lw / lh > aspect) { lw = lh * aspect; }
       else                   { lh = lw / aspect; }
 
-      // Center within zone
       const lx = rect.x + (rect.w - lw) / 2;
       const ly = rect.y + (rect.h - lh) / 2;
 
@@ -555,17 +643,15 @@ export default function Canvas2DOverlay({
       ctx.globalAlpha = 1;
     };
 
-    // ── 1. CLUB LOGO — only if 'clubLogo' zone exists in this view ───────
-    // front view → clubLogo zone → draw; back view → no clubLogo zone → skip
+    // ── 1. CLUB LOGO ─────────────────────────────────────────────────────
     await drawLogoInZone(clubLogo, getZone('clubLogo'), 0.95);
 
-    // ── 2. SPONSOR LOGO — only if 'sponsor' zone exists in this view ─────
+    // ── 2. SPONSOR LOGO ──────────────────────────────────────────────────
     await drawLogoInZone(sponsorLogo, getZone('sponsor'), 0.92);
 
-    // ── 3. PLAYER NAME — only if 'playerName' zone exists in this view ───
+    // ── 3. PLAYER NAME ───────────────────────────────────────────────────
     const trimmedName = (playerName || '').trim();
     const nameZone    = getZone('playerName');
-    // ✅ Only draw if: user typed something + zone exists in this view
     if (showName && trimmedName && nameStyle !== 'none' && nameZone) {
       const fo   = getFontObj(nameFont);
       const rect = zoneToRect(nameZone, imgRect);
@@ -607,10 +693,9 @@ export default function Canvas2DOverlay({
       }
     }
 
-    // ── 4. PLAYER NUMBER — only if 'number' zone exists in this view ─────
+    // ── 4. PLAYER NUMBER ─────────────────────────────────────────────────
     const trimmedNumber = (playerNumber || '').trim();
     const numberZone    = getZone('number');
-    // ✅ Only draw if: user typed something + zone exists in this view
     if (showNumber && trimmedNumber && numberZone) {
       const fo   = getFontObj(numberFont);
       const rect = zoneToRect(numberZone, imgRect);
@@ -627,11 +712,16 @@ export default function Canvas2DOverlay({
       ctx.fillText(trimmedNumber, cx, cy);
     }
 
+    // ── DEBUG OVERLAY (dev only) ──────────────────────────────────────────
+    if (debugZones) {
+      drawDebugOverlay(ctx, imgRect, viewZones);
+    }
+
   }, [
     containerRef, jerseyImageRef, currentView, printZones,
     playerName, showName, nameFont, nameColor, nameStyle,
     playerNumber, showNumber, numberFont, numberColor, textEffect,
-    clubLogo, sponsorLogo,
+    clubLogo, sponsorLogo, debugZones,
   ]);
 
   useEffect(() => { draw(); }, [draw]);
@@ -666,4 +756,4 @@ export default function Canvas2DOverlay({
       }}
     />
   );
-}
+} 

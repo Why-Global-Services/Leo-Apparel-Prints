@@ -10,6 +10,7 @@ import { getCheckout, placeOrder } from "@/features/checkout/checkoutThunks";
 import { fetchAddresses, addAddress, updateAddress } from "@/features/user/userThunks";
 import AddAddressModal from "../account/components/AddAddressModal";
 import { toast } from "react-hot-toast";
+import axios from "axios";
 
 const C = {
   blue: "#003E9B",
@@ -325,7 +326,13 @@ export default function CheckoutPage() {
 
   console.log("ORDER RESULT:", result);
 
- const razorpayOrder = result?.razorpayOrder;
+const razorpayOrder =
+  result?.data?.razorpayOrder ||
+  result?.razorpayOrder;
+
+  const userOrder = result?.data?.userOrder || result?.userOrder; console.log("USER ORDER:", userOrder);
+
+  console.log("USER ORDER:", userOrder);
 
  if (!razorpayOrder) {
   alert("Razorpay order not found");
@@ -346,56 +353,48 @@ const options = {
 
   order_id: razorpayOrder.id,
 
-  handler: async function (response) {
+ handler: async function (response) {
 
-    try {
+  console.log("PAYMENT SUCCESS:", response);
 
-      const verifyRes = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/v1/user/verifyPayment/${result.userOrder._id}`,
-        {
-          method: "POST",
+  try {
 
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-          },
+    const token = localStorage.getItem("token");
 
-          body: JSON.stringify({
-            response,
-          }),
-        }
-      );
+    const verifyRes = await axios.post(
 
-      const verifyData = await verifyRes.json();
+      `${process.env.NEXT_PUBLIC_API_URL}/v1/user/verifyPayment/${userOrder._id}`,
 
-      if (verifyData.success) {
+      {
+        response,
+      },
 
-        router.push(
-          `/payment-status?status=success&orderId=${result.userOrder.orderId}`
-        );
-
-      } else {
-
-        router.push(
-          `/payment-status?status=failed&orderId=${result.userOrder.orderId}`
-        );
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
       }
 
-    } catch (err) {
+    );
 
-      console.error(err);
+    console.log("VERIFY RESPONSE:", verifyRes.data);
 
-      router.push(
-        `/payment-status?status=error`
-      );
-    }
-  },
+   toast.success("Payment Successful!");
+
+  } catch (err) { 
+
+    console.error("VERIFY ERROR:", err.response?.data || err);
+
+    toast.error("Payment verification failed");
+
+  }
+},
 
   modal: {
     ondismiss: function () {
 
       router.push(
-        `/payment-status?status=cancelled&orderId=${result.userOrder.orderId}`
+        `/payment-status?status=cancelled&orderId=${(result.data?.userOrder || result.userOrder).orderId}`
       );
     },
   },
@@ -411,9 +410,22 @@ const options = {
   },
 };
 
+
 const razor = new window.Razorpay(options);
 
+razor.on("payment.failed", function (response) {
+
+  console.log("❌ PAYMENT FAILED:", response);
+
+  console.log("❌ ERROR:", response.error);
+
+  alert(response.error.description || "Payment Failed");
+});
+
+console.log("OPENING RAZORPAY");
+
 razor.open();
+
 } catch (error) {
   console.error("PLACE ORDER ERROR:", error);
 
