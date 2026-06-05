@@ -37,6 +37,7 @@ const IMAGE_MAX_MB = 2;
 const GLB_MAX_BYTES = GLB_MAX_MB * 1024 * 1024;
 const IMAGE_MAX_BYTES = IMAGE_MAX_MB * 1024 * 1024;
 
+
 export default function ProductPage() {
   // Fixed dark mode - no theme switching
   const isDark = true;
@@ -72,6 +73,9 @@ export default function ProductPage() {
     templates: [],
     allowedPatterns: [],
     isActive: true,
+     segment: "",
+  sport: "",
+  apparel: "",
     discountType: "percentage",
     discountValue: "",
     customFields: [],
@@ -340,6 +344,9 @@ export default function ProductPage() {
       formData.allowedPatterns.forEach(id => fd.append("allowedPatterns[]", id));
       fd.append('customFields', JSON.stringify(formData.customFields || []));
       fd.append('printZones', JSON.stringify(formData.printZones || {}));
+      fd.append("segment", formData.segment);
+fd.append("sport", formData.sport);
+fd.append("apparel", formData.apparel);
 
       if (glbFile) fd.append("glbFile", glbFile);
       if (frontImage) fd.append("frontImage", frontImage);
@@ -368,7 +375,7 @@ export default function ProductPage() {
       setShowModal(false);
     } catch (error) {
       console.error("Error saving product:", error);
-      showAlert(error.response?.data?.message || "Failed to save product");
+      showAlert(error|| "Failed to save product");
     } finally {
       setUploading(false);
     }
@@ -496,6 +503,25 @@ export default function ProductPage() {
       ? Math.max(0, base - (base * disc / 100)).toFixed(2)
       : Math.max(0, base - disc).toFixed(2);
   };
+
+  const SEGMENTS = [
+  "Custom Sportswear",
+  "Uniforms",
+];
+
+const SPORTS = [
+  "Cricket",
+  "Tennis",
+  "Football",
+  "Basketball",
+  "Badminton",
+];
+
+const APPAREL = [
+  "Jersey / T-Shirt",
+  "Shorts",
+  "Track Pants",
+];
 
   return (
     <div style={{ padding: '24px', background: bgColor, minHeight: '100vh' }}>
@@ -640,6 +666,74 @@ export default function ProductPage() {
                   <label style={labelStyle}>Product Name <span style={{ color: '#EF4444' }}>*</span></label>
                   <input type="text" value={formData.name} onChange={e => setFormData({ ...formData, name: e.target.value })} placeholder="product name" style={inputStyle} />
                 </div>
+                <div>
+  <label style={labelStyle}>Segment</label>
+
+  <select
+    value={formData.segment}
+    onChange={(e) =>
+      setFormData({
+        ...formData,
+        segment: e.target.value,
+      })
+    }
+    style={inputStyle}
+  >
+    <option value="">Select Segment</option>
+
+    {SEGMENTS.map((item) => (
+      <option key={item} value={item}>
+        {item}
+      </option>
+    ))}
+  </select>
+</div>
+
+<div>
+  <label style={labelStyle}>Sport</label>
+
+  <select
+    value={formData.sport}
+    onChange={(e) =>
+      setFormData({
+        ...formData,
+        sport: e.target.value,
+      })
+    }
+    style={inputStyle}
+  >
+    <option value="">Select Sport</option>
+
+    {SPORTS.map((item) => (
+      <option key={item} value={item}>
+        {item}
+      </option>
+    ))}
+  </select>
+</div>
+
+<div>
+  <label style={labelStyle}>Apparel</label>
+
+  <select
+    value={formData.apparel}
+    onChange={(e) =>
+      setFormData({
+        ...formData,
+        apparel: e.target.value,
+      })
+    }
+    style={inputStyle}
+  >
+    <option value="">Select Apparel</option>
+
+    {APPAREL.map((item) => (
+      <option key={item} value={item}>
+        {item}
+      </option>
+    ))}
+  </select>
+</div>
                 <div>
                   <label style={labelStyle}>Category <span style={{ color: '#EF4444' }}>*</span></label>
                   <select value={formData.categoryId} onChange={handleCategoryChange} style={inputStyle}>

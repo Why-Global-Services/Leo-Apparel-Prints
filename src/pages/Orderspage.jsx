@@ -1,5 +1,5 @@
 // OrdersPage.jsx - Fixed Version (Exact Same UI, No Redux)
-import { useState } from "react";
+import { useState,useEffect } from "react";
 import {
     IoEye,
     IoCreate,
@@ -16,6 +16,8 @@ import {
     IoCube,
     IoRemoveCircle
 } from "react-icons/io5";
+import { orderService } from "../services/order.service";
+import OrderViewModal from "./OrderViewModal";
 
 const STATUS_TYPE = {
     Completed: { label: 'Completed', color: '#10B981', bg: '#D1FAE5', icon: <IoCheckmarkCircle size={12} /> },
@@ -38,15 +40,12 @@ export default function Orderspage() {
     const [activeTab, setActiveTab] = useState('all');
     const [searchTerm, setSearchTerm] = useState("");
     const [currentPage, setCurrentPage] = useState(1);
+const [selectedOrder, setSelectedOrder] = useState(null);
+const [orders, setOrders] = useState([]);
+
+
     const itemsPerPage = 10;
 
-    const [orders, setOrders] = useState([
-        { id: "#ORD-001", product: "Premium IPL Jersey", customer: "John Doe", email: "john@example.com", date: "2024-01-15", status: "Pending", price: 899, quantity: 2, total: 1798 },
-        { id: "#ORD-002", product: "Training Kit", customer: "Jane Smith", email: "jane@example.com", date: "2024-01-14", status: "Processing", price: 1299, quantity: 1, total: 1299 },
-        { id: "#ORD-003", product: "Sports Jersey", customer: "Mike Johnson", email: "mike@example.com", date: "2024-01-13", status: "Shipped", price: 749, quantity: 3, total: 2247 },
-        { id: "#ORD-004", product: "Winter Jacket", customer: "Sarah Williams", email: "sarah@example.com", date: "2024-01-12", status: "Completed", price: 2499, quantity: 1, total: 2499 },
-        { id: "#ORD-005", product: "Running Shoes", customer: "Tom Brown", email: "tom@example.com", date: "2024-01-11", status: "Cancelled", price: 3999, quantity: 1, total: 3999 }
-    ]);
 
     // Define the CSS variables that were missing
     const primaryColor = '#F5B800';
@@ -55,9 +54,13 @@ export default function Orderspage() {
 
     const [isDark, setIsDark] = useState(false); // Default to light theme
 
-    const handleViewOrder = (order) => {
-        alert(`Viewing order ${order.id}`);
-    };
+
+const handleViewOrder = (order) => {
+
+  setSelectedOrder(order);
+};
+
+
 
     const handleEditOrder = (order) => {
         alert(`Editing order ${order.id}`);
@@ -104,6 +107,101 @@ export default function Orderspage() {
         overflowX: 'auto',
         boxShadow: isDark ? 'none' : '0 1px 3px rgba(0, 0, 0, 0.05)'
     };
+
+const fetchOrders = async () => {
+
+  try {
+
+    const response =
+      await orderService.getOrders();
+
+    console.log(
+      "ORDERS API:",
+      response.data
+    );
+
+    const apiOrders =
+      response?.data?.data || [];
+
+    const formattedOrders =
+      apiOrders.map((order) => {
+
+        const firstProduct =
+          order?.orderDetails?.products?.[0];
+
+        return {
+
+          id: order.orderId,
+
+          backendId: order._id,
+
+          product:
+            firstProduct?.productName || "N/A",
+
+          customer:
+            order?.userDetails?.name || "Guest",
+
+          email:
+            order?.userDetails?.email || "N/A",
+
+          date:
+            new Date(order.createdAt)
+              .toLocaleDateString(),
+
+          status:
+            firstProduct?.orderStatus ||
+            order.orderStatus,
+
+          price:
+            firstProduct?.price || 0,
+
+          quantity:
+            firstProduct?.quantity || 0,
+
+          total:
+            order.totalPrice || 0,
+
+          paymentStatus:
+            order.paymentStatus,
+
+          paymentMethod:
+            order.paymentMethod,
+
+          customization:
+            firstProduct?.customization || [],
+
+          frontImage:
+            firstProduct?.frontImage || "",
+
+          backImage:
+            firstProduct?.backImage || "",
+
+          printZones:
+            firstProduct?.printZones || {},
+
+          pattern:
+            firstProduct?.selectedPattern,
+
+          fullData: order,
+        };
+      });
+
+    setOrders(formattedOrders);
+
+  } catch (error) {
+
+    console.error(
+      "FETCH ORDERS ERROR:",
+      error
+    );
+  }
+};
+
+useEffect(() => {
+  fetchOrders();
+}, []);
+
+
 
     return (
         <div style={{ padding: '24px', background: bgColor, minHeight: '100vh', transition: 'all 0.3s ease' }}>
@@ -252,6 +350,19 @@ export default function Orderspage() {
                     </div>
                 </div>
             )}
+
+{
+  selectedOrder && (
+    <OrderViewModal
+      order={selectedOrder}
+      onClose={() =>
+        setSelectedOrder(null)
+      }
+    />
+  )
+}
+
+
         </div>
     );
 }
