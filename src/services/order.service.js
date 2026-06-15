@@ -36,5 +36,10 @@ export const orderService = {
       `/admin/updatePaymentStatus/${orderId}`,
       data
     ),
+
+    editOrder:(orderId,data)=>axiosInstance.put(`/editOrders/${orderId}`,data)
+
 };
+
+
 
