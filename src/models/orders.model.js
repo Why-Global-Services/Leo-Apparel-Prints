@@ -200,6 +200,10 @@ const orderDetailsSchema = new mongoose.Schema(
       type: String,
       default: null,
     },
+    deliveryDays:{
+      type: Number,
+        default: 0,
+    },
     deliveryAddress: {
       type: AddressSchema,
       required: true,

@@ -554,6 +554,10 @@ const placePayment = async (req, res) => {
 };
 
 const placeOrder = async (req) => {
+
+
+  console.log("🔥 MY PLACEORDER FUNCTION EXECUTED");
+  console.log("🔥 MY PLACEORDER FUNCTION EXECUTED");
   const userId = req.user?._id;
 
   if (!userId) throw new ApiError(401, "Unauthorized: No user ID");
@@ -565,6 +569,8 @@ const placeOrder = async (req) => {
   }
 
   const { paymentMethod } = req.body;
+  const {deliveryDays} = req.body;
+  console.log("delivery days",deliveryDays)
   const addressId = userCart.address_id;
 
   if (!addressId) throw new ApiError(400, "No address selected");
@@ -610,7 +616,7 @@ const placeOrder = async (req) => {
   }
 
   const orderId = await generateOrderId.generateOrderId();
-
+ 
   const userOrder = await orderDetailsModel.create({
     ...req.body,
     orderId,
@@ -624,7 +630,10 @@ const placeOrder = async (req) => {
       totalPrice: totalAmount,
     },
     paymentMethod,
+    deliveryDays
   });
+
+  console.log("order",userOrder)
 
   let razorpayOrder = null;
 
@@ -789,7 +798,7 @@ const editOrders = async (req) => {
     updateFields,
     { new: true }
   );
-
+console.log(updateOrder)
   return {
     success: true,
     message: "Order status updated successfully",
