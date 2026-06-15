@@ -9,6 +9,7 @@ export const getCheckoutAPI = async () => {
 
 // Place order
 export const placeOrderAPI = async (data) => {
+  console.log("Placing order with data:", data);
   const response = await axiosClient.post("/v1/user/placeOrder", data);
   return response.data;
 };

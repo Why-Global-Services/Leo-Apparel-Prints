@@ -11,6 +11,7 @@ import { fetchAddresses, addAddress, updateAddress } from "@/features/user/userT
 import AddAddressModal from "../account/components/AddAddressModal";
 import { toast } from "react-hot-toast";
 import axios from "axios";
+import axiosClient from "../../lib/axios"
 
 const C = {
   blue: "#003E9B",
@@ -179,6 +180,7 @@ export default function CheckoutPage() {
   const [useSameAsBilling, setUseSameAsBilling] = useState(true);
   const [showDeliveryList, setShowDeliveryList] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState("RazorPay");
+  const [deliveryDays, setDeliveryDays] = useState(10);
 
   // Get data from Redux
   const user = useSelector((state) => state.auth?.user);
@@ -187,7 +189,7 @@ export default function CheckoutPage() {
 
   // Get cart items from checkout data or direct from cart
   const cartItems = checkoutData?.cartItems || [];
-  const summary = checkoutData?.pricing|| { subtotal: 0, shipping: 0, total: 0,savings: 0 };
+  const summary = checkoutData?.pricing || { subtotal: 0, shipping: 0, total: 0, savings: 0 };
 
 
   const safeAddresses = Array.isArray(addressesRedux) && addressesRedux.length > 0 ? addressesRedux : (Array.isArray(user?.address) ? user.address : []);
@@ -219,15 +221,19 @@ export default function CheckoutPage() {
 
   useEffect(() => {
 
-  const script = document.createElement("script");
+    const script = document.createElement("script");
 
-  script.src = "https://checkout.razorpay.com/v1/checkout.js";
+    script.src = "https://checkout.razorpay.com/v1/checkout.js";
 
-  script.async = true;
+    script.async = true;
 
-  document.body.appendChild(script);
+    document.body.appendChild(script);
 
-}, []);
+    return () => {
+      document.body.removeChild(script);
+    };
+
+  }, []);
 
   useEffect(() => {
     if (primaryBilling && !selectedBilling) {
@@ -317,120 +323,126 @@ export default function CheckoutPage() {
       deliveryAddress: useSameAsBilling ? selectedBilling : selectedDelivery,
       paymentMethod,
       totalAmount: summary.total,
+      deliveryDays: Number(deliveryDays) || 0,
     };
 
-  try {
-  console.log("ORDER DATA:", orderData);
-
-  const result = await dispatch(placeOrder(orderData)).unwrap();
-
-  console.log("ORDER RESULT:", result);
-
-const razorpayOrder =
-  result?.data?.razorpayOrder ||
-  result?.razorpayOrder;
-
-  const userOrder = result?.data?.userOrder || result?.userOrder; console.log("USER ORDER:", userOrder);
-
-  console.log("USER ORDER:", userOrder);
-
- if (!razorpayOrder) {
-  alert("Razorpay order not found");
-  return;
-}
-
-const options = {
-
-  key: process.env.NEXT_PUBLIC_RAZORPAY_KEY,
-
-  amount: razorpayOrder.amount,
-
-  currency: razorpayOrder.currency,
-
-  name: "Leo Cult",
-
-  description: "Custom Sports Wear",
-
-  order_id: razorpayOrder.id,
-
- handler: async function (response) {
-
-  console.log("PAYMENT SUCCESS:", response);
-
-  try {
-
-    const token = localStorage.getItem("token");
-
-    const verifyRes = await axios.post(
-
-      `${process.env.NEXT_PUBLIC_API_URL}/v1/user/verifyPayment/${userOrder._id}`,
-
-      {
-        response,
-      },
-
-      {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+    try {
+      if (!window.Razorpay) {
+        toast.error("Payment gateway is still loading. Please try again.");
+        return;
       }
 
-    );
+      console.log("ORDER DATA:", orderData);
 
-    console.log("VERIFY RESPONSE:", verifyRes.data);
+      const result = await dispatch(placeOrder(orderData)).unwrap();
 
-   toast.success("Payment Successful!");
+      console.log("ORDER RESULT:", result);
 
-  } catch (err) { 
+      const razorpayOrder =
+        result?.data?.razorpayOrder ||
+        result?.razorpayOrder;
 
-    console.error("VERIFY ERROR:", err.response?.data || err);
+      const userOrder = result?.data?.userOrder || result?.userOrder; console.log("USER ORDER:", userOrder);
 
-    toast.error("Payment verification failed");
+      console.log("USER ORDER:", userOrder);
 
-  }
-},
+      if (!razorpayOrder) {
+        alert("Razorpay order not found");
+        return;
+      }
 
-  modal: {
-    ondismiss: function () {
+      const options = {
 
-      router.push(
-        `/payment-status?status=cancelled&orderId=${(result.data?.userOrder || result.userOrder).orderId}`
-      );
-    },
-  },
+        key: process.env.NEXT_PUBLIC_RAZORPAY_KEY,
 
-  prefill: {
-    name: user?.name || "Customer",
-    email: user?.email || "",
-    contact: user?.phoneNumber || "",
-  },
+        amount: razorpayOrder.amount,
 
-  theme: {
-    color: "#003E9B",
-  },
-};
+        currency: razorpayOrder.currency,
+
+        name: "Leo Cult",
+
+        description: "Custom Sports Wear",
+
+        order_id: razorpayOrder.id,
+
+        handler: async function (response) {
+
+          console.log("PAYMENT SUCCESS:", response);
+
+          try {
+
+            const token = localStorage.getItem("token");
+
+            const verifyRes = await axios.post(
+
+              `${process.env.NEXT_PUBLIC_API_URL}/v1/user/verifyPayment/${userOrder._id}`,
+
+              {
+                response,
+              },
+
+              {
+                headers: {
+                  Authorization: `Bearer ${token}`,
+                },
+              }
+
+            );
+
+            console.log("VERIFY RESPONSE:", verifyRes.data);
+            await axiosClient.put(`/v1/user/editOrders/${userOrder.orderId}`,{status:"Ordered"})
+            toast.success("Payment Successful!");
+
+          } catch (err) {
+
+            console.error("VERIFY ERROR:", err.response?.data || err);
+
+            toast.error("Payment verification failed");
+
+          }
+        },
+
+        modal: {
+          ondismiss: function () {
+
+            router.push(
+              `/payment-status?status=cancelled&orderId=${(result.data?.userOrder || result.userOrder).orderId}`
+            );
+          },
+        },
+
+        prefill: {
+          name: user?.name || "Customer",
+          email: user?.email || "",
+          contact: user?.phoneNumber || "",
+        },
+
+        theme: {
+          color: "#003E9B",
+        },
+      };
 
 
-const razor = new window.Razorpay(options);
+      const razor = new window.Razorpay(options);
 
-razor.on("payment.failed", function (response) {
+      razor.on("payment.failed", function (response) {
 
-  console.log("❌ PAYMENT FAILED:", response);
+        console.log("❌ PAYMENT FAILED:", response);
 
-  console.log("❌ ERROR:", response.error);
+        console.log("❌ ERROR:", response.error);
 
-  alert(response.error.description || "Payment Failed");
-});
+        alert(response.error.description || "Payment Failed");
+      });
 
-console.log("OPENING RAZORPAY");
+      console.log("OPENING RAZORPAY");
 
-razor.open();
+      razor.open();
 
-} catch (error) {
-  console.error("PLACE ORDER ERROR:", error);
+    } catch (error) {
+      console.error("PLACE ORDER ERROR:", error);
 
-  alert(error?.message || "Failed to place order");
-}
+      alert(error?.message || "Failed to place order");
+    }
   };
 
   if (!mounted || (loading && !checkoutData)) {
@@ -472,6 +484,79 @@ razor.open();
         <div style={{ display: "grid", gridTemplateColumns: "1fr 360px", gap: 24, alignItems: "start" }}>
           {/* LEFT COLUMN */}
           <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
+            <div
+              style={{
+                background: C.white,
+                borderRadius: 14,
+                border: `1px solid ${C.cardBorder}`,
+                padding: 20,
+                boxShadow: "0 1px 4px rgba(0,0,0,0.04)",
+              }}
+            >
+              <label
+                style={{
+                  display: "block",
+                  fontSize: 14,
+                  fontWeight: 600,
+                  color: C.textDark,
+                  marginBottom: 8,
+                }}
+              >
+                Estimated Delivery Time
+              </label>
+
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  border: `1px solid ${C.cardBorder}`,
+                  borderRadius: 10,
+                  overflow: "hidden",
+                  background: "#fff",
+                }}
+              >
+                <input
+                  type="number"
+                  required
+                  min="1"
+                  placeholder="Enter days"
+                  value={deliveryDays}
+                  onChange={(e) => setDeliveryDays(e.target.value)}
+                  style={{
+                    flex: 1,
+                    border: "none",
+                    outline: "none",
+                    padding: "12px 14px",
+                    fontSize: 14,
+                    color: C.textDark,
+                    background: "transparent",
+                  }}
+                />
+
+                <div
+                  style={{
+                    padding: "12px 16px",
+                    background: "#f8fafc",
+                    borderLeft: `1px solid ${C.cardBorder}`,
+                    fontSize: 13,
+                    fontWeight: 600,
+                    color: C.textLight,
+                  }}
+                >
+                  Days
+                </div>
+              </div>
+
+              <p
+                style={{
+                  marginTop: 8,
+                  fontSize: 12,
+                  color: C.textLight,
+                }}
+              >
+                Enter the estimated number of days required for delivery.
+              </p>
+            </div>
             {/* BILLING ADDRESS */}
             <div style={{ background: C.white, borderRadius: 14, border: `1px solid ${C.cardBorder}`, boxShadow: "0 1px 4px rgba(0,0,0,0.04)", overflow: "hidden" }}>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "16px 20px", borderBottom: `1px solid ${C.cardBorder}` }}>
@@ -581,88 +666,88 @@ razor.open();
               </div>
               <div style={{ padding: 20 }}>
                 {/* Cart items */}
-               {/* Cart items */}
-<div style={{ maxHeight: 320, overflowY: "auto", marginBottom: 16 }}>
-  {cartItems.length > 0 ? (
-    cartItems.map((item, i) => (
-      <div
-        key={i}
-        style={{
-          display: "flex",
-          alignItems: "center",
-          gap: 12,
-          padding: "10px 0",
-          borderBottom: `1px dashed ${C.cardBorder}`,
-        }}
-      >
-        {/* Product Image */}
-        <img
-          src={
-            item.productImages?.[0] ||
-            item.productData?.viewImages?.front ||
-            "/placeholder.png"
-          }
-          alt={item.productName}
-          style={{
-            width: 65,
-            height: 65,
-            borderRadius: 10,
-            objectFit: "cover",
-            border: "1px solid #e5e7eb",
-          }}
-        />
+                {/* Cart items */}
+                <div style={{ maxHeight: 320, overflowY: "auto", marginBottom: 16 }}>
+                  {cartItems.length > 0 ? (
+                    cartItems.map((item, i) => (
+                      <div
+                        key={i}
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          gap: 12,
+                          padding: "10px 0",
+                          borderBottom: `1px dashed ${C.cardBorder}`,
+                        }}
+                      >
+                        {/* Product Image */}
+                        <img
+                          src={
+                            item.productImages?.[0] ||
+                            item.productData?.viewImages?.front ||
+                            "/placeholder.png"
+                          }
+                          alt={item.productName}
+                          style={{
+                            width: 65,
+                            height: 65,
+                            borderRadius: 10,
+                            objectFit: "cover",
+                            border: "1px solid #e5e7eb",
+                          }}
+                        />
 
-        {/* Product Details */}
-        <div style={{ flex: 1 }}>
-          <p
-            style={{
-              fontSize: 14,
-              fontWeight: 600,
-              color: C.textDark,
-              margin: "0 0 4px",
-            }}
-          >
-            {item.productName}
-          </p>
+                        {/* Product Details */}
+                        <div style={{ flex: 1 }}>
+                          <p
+                            style={{
+                              fontSize: 14,
+                              fontWeight: 600,
+                              color: C.textDark,
+                              margin: "0 0 4px",
+                            }}
+                          >
+                            {item.productName}
+                          </p>
 
-          <p
-            style={{
-              fontSize: 12,
-              color: C.textMuted,
-              margin: 0,
-            }}
-          >
-            Quantity: {item.quantity}
-          </p>
-        </div>
+                          <p
+                            style={{
+                              fontSize: 12,
+                              color: C.textMuted,
+                              margin: 0,
+                            }}
+                          >
+                            Quantity: {item.quantity}
+                          </p>
+                        </div>
 
-        {/* Price */}
-        <div>
-          <span
-            style={{
-              fontSize: 14,
-              fontWeight: 700,
-              color: C.textDark,
-            }}
-          >
-            ₹{item.subtotal.toFixed(2)}
-          </span>
-        </div>
-      </div>
-    ))
-  ) : (
-    <p
-      style={{
-        textAlign: "center",
-        color: C.textMuted,
-        fontSize: 13,
-        padding: "16px 0",
-      }}
-    >
-      No items in cart
-    </p>
-  )}
-</div>
+                        {/* Price */}
+                        <div>
+                          <span
+                            style={{
+                              fontSize: 14,
+                              fontWeight: 700,
+                              color: C.textDark,
+                            }}
+                          >
+                            ₹{item.subtotal.toFixed(2)}
+                          </span>
+                        </div>
+                      </div>
+                    ))
+                  ) : (
+                    <p
+                      style={{
+                        textAlign: "center",
+                        color: C.textMuted,
+                        fontSize: 13,
+                        padding: "16px 0",
+                      }}
+                    >
+                      No items in cart
+                    </p>
+                  )}
+                </div>
 
                 {/* Price breakdown */}
                 <div style={{ borderTop: `1px solid ${C.cardBorder}`, paddingTop: 14 }}>
@@ -676,7 +761,7 @@ razor.open();
                       {summary.shipping === 0 ? "Free" : `₹${summary.shipping?.toLocaleString() || 0}`}
                     </span>
                   </div>
-         
+
                 </div>
 
                 {/* Total */}
@@ -685,9 +770,9 @@ razor.open();
                   <span style={{ fontSize: 22, fontWeight: 800, color: C.blue }}>₹{summary.total?.toLocaleString() || 0}</span>
                 </div>
 
-         
+
                 {/* Place Order button */}
-                <GradientButton onClick={handlePlaceOrder} disabled={!selectedBilling || cartItems.length === 0} fullWidth style={{ padding: "14px 20px", fontSize: 15, borderRadius: 12 ,marginTop: 20}}>
+                <GradientButton onClick={handlePlaceOrder} disabled={!selectedBilling || cartItems.length === 0} fullWidth style={{ padding: "14px 20px", fontSize: 15, borderRadius: 12, marginTop: 20 }}>
                   Place Order <ChevronRight size={16} />
                 </GradientButton>
 

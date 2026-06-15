@@ -18,6 +18,7 @@ export const placeOrder = createAsyncThunk(
   "checkout/placeOrder",
   async (data, { rejectWithValue }) => {
     try {
+      console.log("After Checkout",data)
       const res = await placeOrderAPI(data);
       return res.data;
     } catch (err) {
