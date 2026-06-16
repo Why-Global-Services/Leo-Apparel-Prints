@@ -5,8 +5,9 @@ import { AnimatePresence, motion } from "framer-motion";
 import Link from "next/link";
 import Image from "next/image";
 import { ChevronDown, Menu, X, User, ShoppingCart } from "lucide-react";
-import { useSelector } from "react-redux";
+import { useSelector, useDispatch } from "react-redux";
 import AuthModal from "@/app/components/auth/AuthModal";
+import { fetchCart } from "@/features/cart/cartThunks";
 
 // ─── Data ───────────────────────────────────────────────────────────────────
 
@@ -429,6 +430,7 @@ function Tooltip({
 // ─── Main Navbar ─────────────────────────────────────────────────────────────
 
 export default function Navbar() {
+  const dispatch = useDispatch();
   const [activeMenu, setActiveMenu] = useState(null);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
@@ -445,7 +447,8 @@ export default function Navbar() {
 
 useEffect(() => {
   setMounted(true);
-}, []);
+  dispatch(fetchCart());
+}, [dispatch]);
 
 const cartItemCount = cartItems.reduce(
   (total, item) =>

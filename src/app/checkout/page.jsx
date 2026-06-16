@@ -460,7 +460,7 @@ export default function CheckoutPage() {
     <div style={{ minHeight: "100vh", background: C.pageBg, paddingTop: 32, paddingBottom: 48 }}>
       <div style={{ maxWidth: 1200, margin: "0 auto", padding: "0 16px" }}>
         {/* Page header */}
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 24, background: C.white, borderRadius: 14, padding: "20px 24px", boxShadow: "0 1px 4px rgba(0,0,0,0.04)" }}>
+        <div  style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 24, background: C.white, borderRadius: 14, padding: "20px 24px", boxShadow: "0 1px 4px rgba(0,0,0,0.04)" }}>
           <div>
             <h2 style={{ fontSize: 22, fontWeight: 700, margin: "0 0 4px", color: C.blue }}>Checkout</h2>
             <p style={{ fontSize: 13, color: C.textLight, margin: 0 }}>Complete your order</p>
@@ -481,7 +481,7 @@ export default function CheckoutPage() {
         </div>
 
         {/* Main grid */}
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 360px", gap: 24, alignItems: "start" }}>
+        <div className="grid grid-cols-1 lg:grid-cols-[1fr_360px] gap-6 items-start">
           {/* LEFT COLUMN */}
           <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
             <div

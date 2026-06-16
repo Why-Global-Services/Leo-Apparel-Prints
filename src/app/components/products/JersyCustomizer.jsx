@@ -778,21 +778,21 @@
 // )}
 
 //         <Section title="Base Colour" open={baseOpen} onToggle={() => setBaseOpen(v => !v)} badge={JERSEY_COLORS.find(c => c.code === jerseyColor)?.name || jerseyColor}>
-//           <ColorGrid colors={JERSEY_COLORS} selected={jerseyColor} onSelect={handleJerseyColorChange} pickerId="base-cp" />
+//           <ColorGrid colors={JERSEY_COLORS} selected={jerseyColor} onSelect={handleJerseyColorChange} pickerId="base-cp" isMobile={isMobile} />
 //         </Section>
 
 //         {/* Show sleeve and collar color options ONLY for JERSEYS in 3D view mode */}
 //         {productType === 'jersey' && viewMode === 'glb' && (
 //           <>
 //             <Section title="Sleeve Colour" open={sleeveOpen} onToggle={() => setSleeveOpen(v => !v)} badge={SLEEVE_COLORS.find(c => c.code === sleeveColor)?.name || sleeveColor}>
-//               <ColorGrid colors={SLEEVE_COLORS} selected={sleeveColor} onSelect={handleSleeveColorChange} pickerId="sleeve-cp" />
+//               <ColorGrid colors={SLEEVE_COLORS} selected={sleeveColor} onSelect={handleSleeveColorChange} pickerId="sleeve-cp" isMobile={isMobile} />
 //               <button onClick={() => handleSleeveColorChange(jerseyColor)} style={{ fontSize: 10, fontWeight: 700, color: '#003E9B', background: 'rgba(0,62,155,0.08)', border: '1px solid rgba(0,62,155,0.25)', borderRadius: 8, padding: '9px', cursor: 'pointer', width: '100%' }}>
 //                 ↔ Match Base Colour
 //               </button>
 //             </Section>
             
 //             <Section title="Collar Colour" open={collarOpen} onToggle={() => setCollarOpen(v => !v)} badge={JERSEY_COLORS.find(c => c.code === collarColor)?.name || collarColor}>
-//               <ColorGrid colors={JERSEY_COLORS} selected={collarColor} onSelect={handleCollarColorChange} pickerId="collar-cp" />
+//               <ColorGrid colors={JERSEY_COLORS} selected={collarColor} onSelect={handleCollarColorChange} pickerId="collar-cp" isMobile={isMobile} />
 //               <button onClick={() => handleCollarColorChange(jerseyColor)} style={{ fontSize: 10, fontWeight: 700, color: '#003E9B', background: 'rgba(0,62,155,0.08)', border: '1px solid rgba(0,62,155,0.25)', borderRadius: 8, padding: '9px', cursor: 'pointer', width: '100%' }}>
 //                 ↔ Match Base Colour
 //               </button>
@@ -1171,7 +1171,7 @@ import {
 } from 'lucide-react';
 import GLBViewer from '../common/GLBViewer';
 import { useDispatch, useSelector } from 'react-redux';
-import { addToCart } from '@/features/cart/cartThunks';
+import { addToCart, fetchCart } from '@/features/cart/cartThunks';
 import { useRouter } from 'next/navigation';
 import toast from 'react-hot-toast';
 import { useSearchParams } from "next/navigation";
@@ -1245,6 +1245,150 @@ const isLight = (hex) => {
 };
 
 const getFontObj = (id) => FONT_STYLES.find(f => f.id === id) || FONT_STYLES[0];
+
+
+const handleLogoUpload = (setter, fileRef) => (e) => {
+  const file = e.target.files?.[0];
+  if (!file) return;
+  if (!file.type.startsWith('image/')) { toast.error('Please upload an image'); return; }
+  if (file.size > 8*1024*1024) { toast.error('Max file size 8 MB'); return; }
+  if (fileRef) fileRef.current = file;
+  if (typeof setter === 'function') {
+    setter(prev => { if(prev?.startsWith('blob:')) URL.revokeObjectURL(prev); return URL.createObjectURL(file); });
+  }
+  e.target.value = '';
+};
+
+const removeLogo = (setter, fileRef, currentUrl) => {
+  if (currentUrl?.startsWith('blob:')) URL.revokeObjectURL(currentUrl);
+  setter(null); if(fileRef) fileRef.current=null;
+};
+
+  // ── UI ATOMS ──────────────────────────────────────────────────────────────
+  const Section = ({ title, badge, open, onToggle, children }) => (
+    <div style={{ background:'#fff',borderRadius:12,marginBottom:10,overflow:'hidden',border:`1px solid ${open?'rgba(0,62,155,0.2)':'#E8ECF0'}`,boxShadow:open?'0 2px 14px rgba(0,62,155,0.07)':'none' }}>
+      <button onClick={onToggle} style={{ width:'100%',display:'flex',alignItems:'center',justifyContent:'space-between',padding:'13px 16px',border:'none',cursor:'pointer',background:open?'rgba(0,62,155,0.04)':'#FAFAFA' }}>
+        <div style={{ display:'flex',alignItems:'center',gap:8 }}>
+          <span style={{ fontSize:11,fontWeight:700,color:open?'#003E9B':'#334155' }}>{title}</span>
+          {badge&&<span style={{ fontSize:9,padding:'2px 8px',borderRadius:12,background:'rgba(0,62,155,0.10)',color:'#003E9B',fontWeight:700 }}>{badge}</span>}
+        </div>
+        <ChevronDown size={14} color={open?'#003E9B':'#94A3B8'} style={{ transform:open?'rotate(180deg)':'none',transition:'transform 0.2s' }} />
+      </button>
+      {open&&<div style={{ padding:'14px 16px',display:'flex',flexDirection:'column',gap:13 }}>{children}</div>}
+    </div>
+  );
+
+  const ColorGrid = ({ colors, selected, onSelect, pickerId, isMobile }) => (
+    <div>
+      <div style={{ display:'grid',gridTemplateColumns:`repeat(${isMobile?6:8},1fr)`,gap:7,marginBottom:10 }}>
+        {colors.map(c => {
+          const code=typeof c==='string'?c:c.code, name=typeof c==='string'?c:c.name, sel=selected===code;
+          return (
+            <button key={code} title={name} onClick={()=>onSelect(code)} style={{ width:'100%',aspectRatio:'1',borderRadius:8,cursor:'pointer',border:`2.5px solid ${sel?'#003E9B':'#E2E8F0'}`,backgroundColor:code,position:'relative',transform:sel?'scale(1.12)':'scale(1)',transition:'all 0.15s',boxShadow:sel?'0 0 0 3px rgba(0,62,155,0.22)':'none' }}>
+              {sel&&<Check size={9} strokeWidth={3.5} color={isLight(code)?'#000':'#fff'} style={{ position:'absolute',top:'50%',left:'50%',transform:'translate(-50%,-50%)' }} />}
+            </button>
+          );
+        })}
+      </div>
+      <div style={{ display:'flex',alignItems:'center',gap:8 }}>
+        <div style={{ position:'relative',width:34,height:34,borderRadius:8,border:'2px solid #E2E8F0',overflow:'hidden',background:selected }}>
+          <input type="color" id={pickerId} value={selected} onChange={e=>onSelect(e.target.value)} style={{ opacity:0,position:'absolute',inset:0,width:'100%',height:'100%',cursor:'pointer',border:'none' }} />
+        </div>
+        <label htmlFor={pickerId} style={{ fontSize:10,color:'#94A3B8',cursor:'pointer' }}>Custom picker</label>
+      </div>
+    </div>
+  );
+
+  const TextColorGrid = ({ colors, selected, onSelect, pickerId }) => (
+    <div>
+      <div style={{ display:'grid',gridTemplateColumns:'repeat(9,1fr)',gap:6,marginBottom:10 }}>
+        {colors.map((c,i) => {
+          const sel=selected===c;
+          return (
+            <button key={i} onClick={()=>onSelect(c)} style={{ width:'100%',aspectRatio:'1',borderRadius:7,cursor:'pointer',border:`2px solid ${sel?'#003E9B':'#E2E8F0'}`,backgroundColor:c,position:'relative',transform:sel?'scale(1.12)':'scale(1)',transition:'all 0.15s' }}>
+              {sel&&<Check size={8} strokeWidth={3.5} color={isLight(c)?'#000':'#fff'} style={{ position:'absolute',top:'50%',left:'50%',transform:'translate(-50%,-50%)' }} />}
+            </button>
+          );
+        })}
+      </div>
+      <div style={{ display:'flex',alignItems:'center',gap:8 }}>
+        <div style={{ position:'relative',width:30,height:30,borderRadius:7,border:'2px solid #E2E8F0',overflow:'hidden',background:selected }}>
+          <input type="color" id={pickerId} value={selected} onChange={e=>onSelect(e.target.value)} style={{ opacity:0,position:'absolute',inset:0,width:'100%',height:'100%',cursor:'pointer',border:'none' }} />
+        </div>
+        <label htmlFor={pickerId} style={{ fontSize:10,color:'#94A3B8',cursor:'pointer' }}>Custom picker</label>
+      </div>
+    </div>
+  );
+
+  const UploadSlot = ({ label, hint, state, setter, fileRef, uid }) => (
+    <div>
+      <div style={{ fontSize:10,fontWeight:700,color:'#64748B',marginBottom:6 }}>{label}</div>
+      {state ? (
+        <div style={{ display:'flex',alignItems:'center',justifyContent:'space-between',padding:'10px 12px',background:'#F8FAFC',borderRadius:10,border:'1px solid #E2E8F0' }}>
+          <img src={state} alt={label} style={{ maxHeight:56,maxWidth:110,objectFit:'contain' }} />
+          <button onClick={()=>removeLogo(setter,fileRef,state)} style={{ background:'#FEF2F2',border:'1px solid #FECACA',color:'#EF4444',borderRadius:7,padding:'5px 10px',cursor:'pointer',fontSize:10,fontWeight:700,display:'flex',alignItems:'center',gap:4 }}>
+            <Trash2 size={12} /> Remove
+          </button>
+        </div>
+      ) : (
+        <button onClick={()=>document.getElementById(uid)?.click()} style={{ width:'100%',padding:'16px',border:'2px dashed #CBD5E1',borderRadius:10,cursor:'pointer',background:'#F8FAFC',display:'flex',alignItems:'center',justifyContent:'center',gap:8,fontSize:11,fontWeight:700,color:'#475569' }}>
+          <Upload size={15} /> Upload Image
+        </button>
+      )}
+      {hint&&<p style={{ fontSize:9,color:'#64748B',marginTop:5 }}>{hint}</p>}
+      <input id={uid} type="file" accept="image/*" style={{ display:'none' }} onChange={handleLogoUpload(setter,fileRef)} />
+    </div>
+  );
+
+  const Toggle = ({ label, value, onChange }) => (
+    <div style={{ display:'flex',alignItems:'center',justifyContent:'space-between' }}>
+      <span style={{ fontSize:11,fontWeight:700,color:'#334155' }}>{label}</span>
+      <button onClick={()=>onChange(!value)} style={{ width:42,height:22,borderRadius:99,cursor:'pointer',position:'relative',border:'none',background:value?'#003E9B':'#CBD5E1',transition:'background 0.22s' }}>
+        <span style={{ position:'absolute',top:2,left:value?20:2,width:18,height:18,borderRadius:'50%',background:'#fff',transition:'left 0.22s',boxShadow:'0 1px 4px rgba(0,0,0,0.25)' }} />
+      </button>
+    </div>
+  );
+
+  const NameStyleSelect = ({ selected, onSelect, sampleText, sampleFontId }) => {
+    const fo=getFontObj(sampleFontId), displayText=(sampleText||'NAME').slice(0,8);
+    return (
+      <div style={{ display:'grid',gridTemplateColumns:'repeat(3,1fr)',gap:8 }}>
+        {NAME_STYLES.map(ns => {
+          const isSel=selected===ns.id, col=isSel?'#003E9B':'#334155';
+          return (
+            <button key={ns.id} onClick={()=>onSelect(ns.id)} style={{ padding:'10px 6px 8px',borderRadius:10,cursor:'pointer',border:`2px solid ${isSel?'#003E9B':'#E2E8F0'}`,background:isSel?'rgba(0,62,155,0.07)':'#F8FAFC',display:'flex',flexDirection:'column',alignItems:'center',gap:6,minHeight:80 }}>
+              <svg viewBox="0 0 84 38" width="84" height="38" style={{ overflow:'visible' }}>
+                {ns.id==='none'&&(<><circle cx="42" cy="19" r="14" fill="none" stroke={isSel?'#003E9B':'#CBD5E1'} strokeWidth="2"/><line x1="30" y1="29" x2="54" y2="9" stroke={isSel?'#003E9B':'#CBD5E1'} strokeWidth="2.5" strokeLinecap="round"/></>)}
+                {ns.id==='straight'&&(<text x="42" y="24" textAnchor="middle" fontFamily={`${fo.canvasFont}, sans-serif`} fontWeight={fo.fontWeight} fontSize="15" fill={col}>{displayText}</text>)}
+                {ns.id==='curved'&&(<><path id={`arc-prev-${ns.id}`} d="M 6,32 Q 42,4 78,32" fill="none"/><text fontFamily={`${fo.canvasFont}, sans-serif`} fontWeight={fo.fontWeight} fontSize="13" fill={col}><textPath href={`#arc-prev-${ns.id}`} startOffset="50%" textAnchor="middle">{displayText}</textPath></text></>)}
+              </svg>
+              <span style={{ fontSize:9,fontWeight:700,color:isSel?'#003E9B':'#64748B' }}>{ns.label}</span>
+            </button>
+          );
+        })}
+      </div>
+    );
+  };
+
+  const FontStyleCards = ({ selected, onSelect }) => (
+    <div style={{ display:'grid',gridTemplateColumns:'repeat(3,1fr)',gap:8 }}>
+      {FONT_STYLES.map(font => (
+        <button key={font.id} onClick={()=>onSelect(font.id)} style={{ padding:'10px 6px 8px',borderRadius:10,cursor:'pointer',border:`2px solid ${selected===font.id?'#003E9B':'#E2E8F0'}`,background:selected===font.id?'rgba(0,62,155,0.07)':'#F8FAFC',display:'flex',flexDirection:'column',alignItems:'center',gap:6,minHeight:72 }}>
+          <span style={{ fontFamily:font.fontFamily,fontWeight:font.fontWeight,fontSize:13,color:selected===font.id?'#003E9B':'#1E293B',letterSpacing:0.5,lineHeight:1.2 }}>PLAYER</span>
+          <span style={{ fontSize:8,fontWeight:700,color:selected===font.id?'#003E9B':'#94A3B8',letterSpacing:0.8 }}>{font.label}</span>
+        </button>
+      ))}
+    </div>
+  );
+
+  const TextEffectSelect = ({ selected, onSelect }) => (
+    <div style={{ display:'flex',gap:8 }}>
+      {['none','outline','shadow'].map(ef=>(
+        <button key={ef} onClick={()=>onSelect(ef)} style={{ flex:1,padding:'8px 4px',borderRadius:9,fontSize:10,fontWeight:700,background:selected===ef?'#003E9B':'#F3F4F6',color:selected===ef?'#fff':'#374151',border:`1.5px solid ${selected===ef?'#003E9B':'#E2E8F0'}`,cursor:'pointer',textTransform:'capitalize' }}>{ef}</button>
+      ))}
+    </div>
+  );
+
 
 export default function JerseyCustomizer({ product }) {
   const router   = useRouter();
@@ -1422,22 +1566,6 @@ export default function JerseyCustomizer({ product }) {
     document.addEventListener('fullscreenchange',fn); return()=>document.removeEventListener('fullscreenchange',fn);
   },[]);
 
-  const handleLogoUpload = useCallback((setter, fileRef) => (e) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    if (!file.type.startsWith('image/')) { toast.error('Please upload an image'); return; }
-    if (file.size > 8*1024*1024) { toast.error('Max file size 8 MB'); return; }
-    if (fileRef) fileRef.current = file;
-    if (typeof setter === 'function') {
-      setter(prev => { if(prev?.startsWith('blob:')) URL.revokeObjectURL(prev); return URL.createObjectURL(file); });
-    }
-    e.target.value = '';
-  }, []);
-
-  const removeLogo = (setter, fileRef, currentUrl) => {
-    if (currentUrl?.startsWith('blob:')) URL.revokeObjectURL(currentUrl);
-    setter(null); if(fileRef) fileRef.current=null;
-  };
 
   const handleSaveDesign = async () => {
     if (!product) { toast.error('Product not loaded'); return; }
@@ -1467,6 +1595,7 @@ export default function JerseyCustomizer({ product }) {
       const finalId = res?.data?._id;
       if (!finalId) throw new Error('No customization ID returned');
       await dispatch(addToCart({ customizationId:finalId, sizes })).unwrap();
+      await dispatch(fetchCart());
       toast.success(`${product?.name} added to cart!`);
     } catch(error) {
       toast.error(typeof error==='string'?error:error?.message||'Failed to add to cart');
@@ -1491,131 +1620,6 @@ export default function JerseyCustomizer({ product }) {
     try { if(!document.fullscreenElement) await el.requestFullscreen(); else await document.exitFullscreen(); }
     catch(err) { console.error(err); }
   };
-
-  // ── UI ATOMS ──────────────────────────────────────────────────────────────
-  const Section = ({ title, badge, open, onToggle, children }) => (
-    <div style={{ background:'#fff',borderRadius:12,marginBottom:10,overflow:'hidden',border:`1px solid ${open?'rgba(0,62,155,0.2)':'#E8ECF0'}`,boxShadow:open?'0 2px 14px rgba(0,62,155,0.07)':'none' }}>
-      <button onClick={onToggle} style={{ width:'100%',display:'flex',alignItems:'center',justifyContent:'space-between',padding:'13px 16px',border:'none',cursor:'pointer',background:open?'rgba(0,62,155,0.04)':'#FAFAFA' }}>
-        <div style={{ display:'flex',alignItems:'center',gap:8 }}>
-          <span style={{ fontSize:11,fontWeight:700,color:open?'#003E9B':'#334155' }}>{title}</span>
-          {badge&&<span style={{ fontSize:9,padding:'2px 8px',borderRadius:12,background:'rgba(0,62,155,0.10)',color:'#003E9B',fontWeight:700 }}>{badge}</span>}
-        </div>
-        <ChevronDown size={14} color={open?'#003E9B':'#94A3B8'} style={{ transform:open?'rotate(180deg)':'none',transition:'transform 0.2s' }} />
-      </button>
-      {open&&<div style={{ padding:'14px 16px',display:'flex',flexDirection:'column',gap:13 }}>{children}</div>}
-    </div>
-  );
-
-  const ColorGrid = ({ colors, selected, onSelect, pickerId }) => (
-    <div>
-      <div style={{ display:'grid',gridTemplateColumns:`repeat(${isMobile?6:8},1fr)`,gap:7,marginBottom:10 }}>
-        {colors.map(c => {
-          const code=typeof c==='string'?c:c.code, name=typeof c==='string'?c:c.name, sel=selected===code;
-          return (
-            <button key={code} title={name} onClick={()=>onSelect(code)} style={{ width:'100%',aspectRatio:'1',borderRadius:8,cursor:'pointer',border:`2.5px solid ${sel?'#003E9B':'#E2E8F0'}`,backgroundColor:code,position:'relative',transform:sel?'scale(1.12)':'scale(1)',transition:'all 0.15s',boxShadow:sel?'0 0 0 3px rgba(0,62,155,0.22)':'none' }}>
-              {sel&&<Check size={9} strokeWidth={3.5} color={isLight(code)?'#000':'#fff'} style={{ position:'absolute',top:'50%',left:'50%',transform:'translate(-50%,-50%)' }} />}
-            </button>
-          );
-        })}
-      </div>
-      <div style={{ display:'flex',alignItems:'center',gap:8 }}>
-        <div style={{ position:'relative',width:34,height:34,borderRadius:8,border:'2px solid #E2E8F0',overflow:'hidden',background:selected }}>
-          <input type="color" id={pickerId} value={selected} onChange={e=>onSelect(e.target.value)} style={{ opacity:0,position:'absolute',inset:0,width:'100%',height:'100%',cursor:'pointer',border:'none' }} />
-        </div>
-        <label htmlFor={pickerId} style={{ fontSize:10,color:'#94A3B8',cursor:'pointer' }}>Custom picker</label>
-      </div>
-    </div>
-  );
-
-  const TextColorGrid = ({ colors, selected, onSelect, pickerId }) => (
-    <div>
-      <div style={{ display:'grid',gridTemplateColumns:'repeat(9,1fr)',gap:6,marginBottom:10 }}>
-        {colors.map((c,i) => {
-          const sel=selected===c;
-          return (
-            <button key={i} onClick={()=>onSelect(c)} style={{ width:'100%',aspectRatio:'1',borderRadius:7,cursor:'pointer',border:`2px solid ${sel?'#003E9B':'#E2E8F0'}`,backgroundColor:c,position:'relative',transform:sel?'scale(1.12)':'scale(1)',transition:'all 0.15s' }}>
-              {sel&&<Check size={8} strokeWidth={3.5} color={isLight(c)?'#000':'#fff'} style={{ position:'absolute',top:'50%',left:'50%',transform:'translate(-50%,-50%)' }} />}
-            </button>
-          );
-        })}
-      </div>
-      <div style={{ display:'flex',alignItems:'center',gap:8 }}>
-        <div style={{ position:'relative',width:30,height:30,borderRadius:7,border:'2px solid #E2E8F0',overflow:'hidden',background:selected }}>
-          <input type="color" id={pickerId} value={selected} onChange={e=>onSelect(e.target.value)} style={{ opacity:0,position:'absolute',inset:0,width:'100%',height:'100%',cursor:'pointer',border:'none' }} />
-        </div>
-        <label htmlFor={pickerId} style={{ fontSize:10,color:'#94A3B8',cursor:'pointer' }}>Custom picker</label>
-      </div>
-    </div>
-  );
-
-  const UploadSlot = ({ label, hint, state, setter, fileRef, uid }) => (
-    <div>
-      <div style={{ fontSize:10,fontWeight:700,color:'#64748B',marginBottom:6 }}>{label}</div>
-      {state ? (
-        <div style={{ display:'flex',alignItems:'center',justifyContent:'space-between',padding:'10px 12px',background:'#F8FAFC',borderRadius:10,border:'1px solid #E2E8F0' }}>
-          <img src={state} alt={label} style={{ maxHeight:56,maxWidth:110,objectFit:'contain' }} />
-          <button onClick={()=>removeLogo(setter,fileRef,state)} style={{ background:'#FEF2F2',border:'1px solid #FECACA',color:'#EF4444',borderRadius:7,padding:'5px 10px',cursor:'pointer',fontSize:10,fontWeight:700,display:'flex',alignItems:'center',gap:4 }}>
-            <Trash2 size={12} /> Remove
-          </button>
-        </div>
-      ) : (
-        <button onClick={()=>document.getElementById(uid)?.click()} style={{ width:'100%',padding:'16px',border:'2px dashed #CBD5E1',borderRadius:10,cursor:'pointer',background:'#F8FAFC',display:'flex',alignItems:'center',justifyContent:'center',gap:8,fontSize:11,fontWeight:700,color:'#475569' }}>
-          <Upload size={15} /> Upload Image
-        </button>
-      )}
-      {hint&&<p style={{ fontSize:9,color:'#64748B',marginTop:5 }}>{hint}</p>}
-      <input id={uid} type="file" accept="image/*" style={{ display:'none' }} onChange={handleLogoUpload(setter,fileRef)} />
-    </div>
-  );
-
-  const Toggle = ({ label, value, onChange }) => (
-    <div style={{ display:'flex',alignItems:'center',justifyContent:'space-between' }}>
-      <span style={{ fontSize:11,fontWeight:700,color:'#334155' }}>{label}</span>
-      <button onClick={()=>onChange(!value)} style={{ width:42,height:22,borderRadius:99,cursor:'pointer',position:'relative',border:'none',background:value?'#003E9B':'#CBD5E1',transition:'background 0.22s' }}>
-        <span style={{ position:'absolute',top:2,left:value?20:2,width:18,height:18,borderRadius:'50%',background:'#fff',transition:'left 0.22s',boxShadow:'0 1px 4px rgba(0,0,0,0.25)' }} />
-      </button>
-    </div>
-  );
-
-  const NameStyleSelect = ({ selected, onSelect, sampleText, sampleFontId }) => {
-    const fo=getFontObj(sampleFontId), displayText=(sampleText||'NAME').slice(0,8);
-    return (
-      <div style={{ display:'grid',gridTemplateColumns:'repeat(3,1fr)',gap:8 }}>
-        {NAME_STYLES.map(ns => {
-          const isSel=selected===ns.id, col=isSel?'#003E9B':'#334155';
-          return (
-            <button key={ns.id} onClick={()=>onSelect(ns.id)} style={{ padding:'10px 6px 8px',borderRadius:10,cursor:'pointer',border:`2px solid ${isSel?'#003E9B':'#E2E8F0'}`,background:isSel?'rgba(0,62,155,0.07)':'#F8FAFC',display:'flex',flexDirection:'column',alignItems:'center',gap:6,minHeight:80 }}>
-              <svg viewBox="0 0 84 38" width="84" height="38" style={{ overflow:'visible' }}>
-                {ns.id==='none'&&(<><circle cx="42" cy="19" r="14" fill="none" stroke={isSel?'#003E9B':'#CBD5E1'} strokeWidth="2"/><line x1="30" y1="29" x2="54" y2="9" stroke={isSel?'#003E9B':'#CBD5E1'} strokeWidth="2.5" strokeLinecap="round"/></>)}
-                {ns.id==='straight'&&(<text x="42" y="24" textAnchor="middle" fontFamily={`${fo.canvasFont}, sans-serif`} fontWeight={fo.fontWeight} fontSize="15" fill={col}>{displayText}</text>)}
-                {ns.id==='curved'&&(<><path id={`arc-prev-${ns.id}`} d="M 6,32 Q 42,4 78,32" fill="none"/><text fontFamily={`${fo.canvasFont}, sans-serif`} fontWeight={fo.fontWeight} fontSize="13" fill={col}><textPath href={`#arc-prev-${ns.id}`} startOffset="50%" textAnchor="middle">{displayText}</textPath></text></>)}
-              </svg>
-              <span style={{ fontSize:9,fontWeight:700,color:isSel?'#003E9B':'#64748B' }}>{ns.label}</span>
-            </button>
-          );
-        })}
-      </div>
-    );
-  };
-
-  const FontStyleCards = ({ selected, onSelect }) => (
-    <div style={{ display:'grid',gridTemplateColumns:'repeat(3,1fr)',gap:8 }}>
-      {FONT_STYLES.map(font => (
-        <button key={font.id} onClick={()=>onSelect(font.id)} style={{ padding:'10px 6px 8px',borderRadius:10,cursor:'pointer',border:`2px solid ${selected===font.id?'#003E9B':'#E2E8F0'}`,background:selected===font.id?'rgba(0,62,155,0.07)':'#F8FAFC',display:'flex',flexDirection:'column',alignItems:'center',gap:6,minHeight:72 }}>
-          <span style={{ fontFamily:font.fontFamily,fontWeight:font.fontWeight,fontSize:13,color:selected===font.id?'#003E9B':'#1E293B',letterSpacing:0.5,lineHeight:1.2 }}>PLAYER</span>
-          <span style={{ fontSize:8,fontWeight:700,color:selected===font.id?'#003E9B':'#94A3B8',letterSpacing:0.8 }}>{font.label}</span>
-        </button>
-      ))}
-    </div>
-  );
-
-  const TextEffectSelect = ({ selected, onSelect }) => (
-    <div style={{ display:'flex',gap:8 }}>
-      {['none','outline','shadow'].map(ef=>(
-        <button key={ef} onClick={()=>onSelect(ef)} style={{ flex:1,padding:'8px 4px',borderRadius:9,fontSize:10,fontWeight:700,background:selected===ef?'#003E9B':'#F3F4F6',color:selected===ef?'#fff':'#374151',border:`1.5px solid ${selected===ef?'#003E9B':'#E2E8F0'}`,cursor:'pointer',textTransform:'capitalize' }}>{ef}</button>
-      ))}
-    </div>
-  );
 
   // ── TAB CONTENT ──────────────────────────────────────────────────────────
   const renderTabContent = () => {
@@ -1650,17 +1654,17 @@ export default function JerseyCustomizer({ product }) {
         )}
 
         <Section title="Base Colour" open={baseOpen} onToggle={()=>setBaseOpen(v=>!v)} badge={JERSEY_COLORS.find(c=>c.code===jerseyColor)?.name||jerseyColor}>
-          <ColorGrid colors={JERSEY_COLORS} selected={jerseyColor} onSelect={handleJerseyColorChange} pickerId="base-cp" />
+          <ColorGrid colors={JERSEY_COLORS} selected={jerseyColor} onSelect={handleJerseyColorChange} pickerId="base-cp" isMobile={isMobile} />
         </Section>
 
         {productType==='jersey'&&viewMode==='glb'&&(
           <>
             <Section title="Sleeve Colour" open={sleeveOpen} onToggle={()=>setSleeveOpen(v=>!v)} badge={SLEEVE_COLORS.find(c=>c.code===sleeveColor)?.name||sleeveColor}>
-              <ColorGrid colors={SLEEVE_COLORS} selected={sleeveColor} onSelect={handleSleeveColorChange} pickerId="sleeve-cp" />
+              <ColorGrid colors={SLEEVE_COLORS} selected={sleeveColor} onSelect={handleSleeveColorChange} pickerId="sleeve-cp" isMobile={isMobile} />
               <button onClick={()=>handleSleeveColorChange(jerseyColor)} style={{ fontSize:10,fontWeight:700,color:'#003E9B',background:'rgba(0,62,155,0.08)',border:'1px solid rgba(0,62,155,0.25)',borderRadius:8,padding:'9px',cursor:'pointer',width:'100%' }}>↔ Match Base Colour</button>
             </Section>
             <Section title="Collar Colour" open={collarOpen} onToggle={()=>setCollarOpen(v=>!v)} badge={JERSEY_COLORS.find(c=>c.code===collarColor)?.name||collarColor}>
-              <ColorGrid colors={JERSEY_COLORS} selected={collarColor} onSelect={handleCollarColorChange} pickerId="collar-cp" />
+              <ColorGrid colors={JERSEY_COLORS} selected={collarColor} onSelect={handleCollarColorChange} pickerId="collar-cp" isMobile={isMobile} />
               <button onClick={()=>handleCollarColorChange(jerseyColor)} style={{ fontSize:10,fontWeight:700,color:'#003E9B',background:'rgba(0,62,155,0.08)',border:'1px solid rgba(0,62,155,0.25)',borderRadius:8,padding:'9px',cursor:'pointer',width:'100%' }}>↔ Match Base Colour</button>
             </Section>
           </>
