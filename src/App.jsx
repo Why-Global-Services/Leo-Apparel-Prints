@@ -41,8 +41,7 @@ function App() {
           <Route path="pattern" element={<Createpattern />} />
           <Route path="customize" element={<Customizationlist />} />
           <Route path="orderspage" element={<Orderspage />} />
-          <Route path="dashboardpage" element={<Dashboardpage />} />
-          <Route path="dashboard" element={<Sidebar />} />  ← Changed from Sidebar
+          <Route path="dashboard" element={<Dashboardpage />} />
           <Route path="users" element={<div style={{ padding: '24px', color: 'white' }}>Users Page</div>} />
           <Route path="orders" element={<div style={{ padding: '24px', color: 'white' }}>Orders Page</div>} />
           <Route path="settings" element={<div style={{ padding: '24px', color: 'white' }}>Settings Page</div>} />

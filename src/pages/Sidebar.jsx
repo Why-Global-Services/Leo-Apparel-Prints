@@ -21,7 +21,7 @@ export default function Sidebar({ collapsed, setCollapsed }) {
   const { user } = useSelector((state) => state.auth);
 
   const menuItems = [
-    { path: "/dashboardpage", name: "Dashboard", icon: <IoGridOutline size={20} /> },
+    { path: "/dashboard", name: "Dashboard", icon: <IoGridOutline size={20} /> },
     { path: "/category", name: "Category", icon: <IoGridOutline size={20} /> },
     { path: "/designzone", name: "Design Zone", icon: <IoPeopleOutline size={20} /> },
     { path: "/templatezone", name: "Template Zone", icon: <IoBagOutline size={20} /> },
