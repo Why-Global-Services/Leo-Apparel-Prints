@@ -85,7 +85,7 @@
         logger.info("Order placement started", { userId: req.user?._id });
 
         // 2. CHANGE placeOrder() - REMOVE couponCode from destructuring
-        const { paymentMethod, isBuyNow = false } = req.body;
+        const { paymentMethod, isBuyNow = false ,deliveryDays} = req.body;
         const userId = this.validateUser(req.user);
 
         const preparationResult = await this.prepareOrderData({
@@ -113,6 +113,7 @@
             pricing,
             paymentMethod,
             isBuyNow,
+            deliveryDays
           },
           session
         );
@@ -307,7 +308,7 @@
      * Optimized order creation with validation
      */
     async createOrderTransaction(orderData, session) {
-      const { userId, cartItems, userData, pricing, paymentMethod, isBuyNow } =
+      const { userId, cartItems, userData, pricing, paymentMethod, isBuyNow,deliveryDays } =
         orderData;
 
       // Validate stock availability before creating order
@@ -324,6 +325,7 @@
         pricing,
         paymentMethod,
         isBuyNow,
+        deliveryDays,
         expiresAt,
       });
 
@@ -393,6 +395,7 @@
       paymentMethod,
       isBuyNow,
       expiresAt,
+      deliveryDays
     }) {
       console.log("userData", userData);
       const userName = userData.fullName || userData.userName || "Customer";
@@ -423,6 +426,7 @@
         deliveryAddress: userData.deliveryAddress,
         isBuyNow: isBuyNow || false,
         expiresAt,
+        deliveryDays,
         orderDetails: [
           {
 

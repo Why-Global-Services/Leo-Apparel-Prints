@@ -275,6 +275,7 @@ const getOneOrder = catchAsync(async (req, res) => {
 });
 
 const changeOrder = catchAsync(async (req, res) => {
+  console.log("Order Status:",req.body)
   const data = await userService.editOrders(req);
   res.status(200).send(data);
 });

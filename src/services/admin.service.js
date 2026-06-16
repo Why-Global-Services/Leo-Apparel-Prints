@@ -2403,6 +2403,7 @@ const getOrder= async (req, res) => {
         billingAddress: 1,
 
         deliveryAddress: 1,
+        deliveryDays:1,
 
         createdAt: 1,
 
@@ -2616,71 +2617,111 @@ const getOrder= async (req, res) => {
 
 const editOrders = async (req, res) => {
   const { _id } = req.params;
-  const { orderStatus, paymentStatus } = req.body;
 
-  if (!_id) {
-    throw new ApiError(httpStatus.BAD_REQUEST, "No Order ID provided");
+  const {
+    orderStatus,
+    paymentStatus,
+    deliveryAddress,
+    billingAddress,
+    deliveryDays,
+    products
+  } = req.body;
+
+  const order = await orderDetailsModel.findById(_id);
+
+  if (!order) {
+    throw new ApiError(httpStatus.NOT_FOUND, "Order not found");
   }
 
-  const findOrder = await orderDetailsModel.findById(_id);
-  if (!findOrder) {
-    throw new ApiError(httpStatus.NOT_FOUND, "No order found");
+  // Update order level fields
+  if (orderStatus) {
+    order.orderStatus = orderStatus;
   }
 
-  // ✅ Update order-level status
-  const updateFields = {};
-  if (orderStatus) updateFields.orderStatus = orderStatus;
-  if (paymentStatus) updateFields.paymentStatus = paymentStatus;
-
-  // Update order timestamps based on status
-  if (orderStatus === "Ordered" && !findOrder.orderConfirmedAt) {
-    updateFields.orderConfirmedAt = new Date();
-    updateFields.expiresAt = null; // Remove TTL expiry once confirmed
-  }
-
-  const updateOrder = await orderDetailsModel.findByIdAndUpdate(
-    _id,
-    { $set: updateFields },
-    { new: true }
-  );
-
-  // ✅ Update product-level statuses ONLY for non-return products
-  if (orderStatus && !["Return Request", "Returned", "Partial"].includes(orderStatus)) {
-    await orderDetailsModel.findByIdAndUpdate(
-      _id,
-      {
-        $set: {
-          "orderDetails.$[].products.$[elem].orderStatus": orderStatus
-        }
-      },
-      {
-        arrayFilters: [
-          {
-            "elem.returnStatus": { $nin: ["Request", "In Process", "Approved"] }
-          }
-        ],
-        new: true
-      }
-    );
-  }
-
-  // ✅ Update payment status for all products if changed
   if (paymentStatus) {
-    await orderDetailsModel.findByIdAndUpdate(
-      _id,
-      {
-        $set: {
-          "orderDetails.$[].products.$[].paymentStatus": paymentStatus
-        }
-      },
-      { new: true }
-    );
+    order.paymentStatus = paymentStatus;
   }
+
+  if (deliveryAddress) {
+    order.deliveryAddress = deliveryAddress;
+  }
+
+  if (billingAddress) {
+    order.billingAddress = billingAddress;
+  }
+
+  if (deliveryDays) {
+    order.deliveryDays = deliveryDays;
+  }
+
+  // Update product level fields
+  if (products && Array.isArray(products)) {
+
+    order.orderDetails.forEach((detail) => {
+
+      detail.products.forEach((product) => {
+
+        const updatedProduct = products.find(
+          p => p.productId.toString() === product.productId.toString()
+        );
+
+        if (!updatedProduct) return;
+
+        if (updatedProduct.quantity !== undefined)
+          product.quantity = updatedProduct.quantity;
+
+        if (updatedProduct.price !== undefined)
+          product.price = updatedProduct.price;
+
+        if (updatedProduct.subtotal !== undefined)
+          product.subtotal = updatedProduct.subtotal;
+
+        if (updatedProduct.orderStatus)
+          product.orderStatus = updatedProduct.orderStatus;
+
+        if (updatedProduct.paymentStatus)
+          product.paymentStatus = updatedProduct.paymentStatus;
+
+        if (updatedProduct.playerName)
+          product.playerName = updatedProduct.playerName;
+
+        if (updatedProduct.playerNumber)
+          product.playerNumber = updatedProduct.playerNumber;
+
+        if (updatedProduct.selectedSize)
+          product.selectedSize = updatedProduct.selectedSize;
+
+        if (updatedProduct.selectedPattern)
+          product.selectedPattern = updatedProduct.selectedPattern;
+
+        if (updatedProduct.returnReason)
+          product.returnReason = updatedProduct.returnReason;
+
+        if (updatedProduct.returnImage)
+          product.returnImage = updatedProduct.returnImage;
+
+        if (updatedProduct.customization)
+          product.customization = updatedProduct.customization;
+
+        if (updatedProduct.frontPreviewImage)
+          product.frontPreviewImage =
+            updatedProduct.frontPreviewImage;
+
+        if (updatedProduct.backPreviewImage)
+          product.backPreviewImage =
+            updatedProduct.backPreviewImage;
+      });
+    });
+  }
+
+  await order.save();
+
+  const updatedOrder = await orderDetailsModel.findById(_id);
 
   return {
     success: true,
     message: "Order updated successfully",
-    data: updateOrder,
+    data: updatedOrder,
   };
 };
 
