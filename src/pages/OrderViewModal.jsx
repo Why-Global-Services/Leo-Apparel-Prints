@@ -572,8 +572,8 @@ export default function OrderViewModal({ order, onClose }) {
             </div>
 
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "20px", padding: "16px 24px 20px" }}>
-              <CanvasView label="Front" baseImg={order.frontImage} patternImg={patternFront} overlays={frontOverlays} />
-              <CanvasView label="Back"  baseImg={order.backImage}  patternImg={patternBack}  overlays={[]} />
+              <CanvasView label="Front" baseImg={patternFront || order.frontImage}  overlays={frontOverlays} />
+              <CanvasView label="Back"  baseImg={patternBack || order.backImage}   overlays={[]} />
             </div>
 
             {layerChips.length > 0 && (

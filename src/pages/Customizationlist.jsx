@@ -178,126 +178,126 @@ function PreviewModal({ item, onClose }) {
 
                                 ctx.restore();
                             }
-                        
-                    } else {
-                        ctx.fillText(
-                            nameField.value,
-                            x + w / 2,
-                            y + h / 2
-                        );
+
+                        } else {
+                            ctx.fillText(
+                                nameField.value,
+                                x + w / 2,
+                                y + h / 2
+                            );
+                        }
+
+                        ctx.restore();
                     }
+                } else if (zoneId === "number") {
+                    const numField = fields.find(
+                        (f) => f.fieldName?.toLowerCase() === "playernumber"
+                    );
+                    if (numField?.value) {
+                        const color = getField(fields, "numberColor") || "#FFFFFF";
+                        const fontName = getField(fields, "numberFont") || "Arial";
+                        const fontSize = Math.max(14, Math.round(h * 0.85));
 
-                    ctx.restore();
-                }
-            } else if (zoneId === "number") {
-                const numField = fields.find(
-                    (f) => f.fieldName?.toLowerCase() === "playernumber"
-                );
-                if (numField?.value) {
-                    const color = getField(fields, "numberColor") || "#FFFFFF";
-                    const fontName = getField(fields, "numberFont") || "Arial";
-                    const fontSize = Math.max(14, Math.round(h * 0.85));
-
-                    ctx.save();
-                    ctx.font = `bold ${fontSize}px ${fontName}, Arial`;
-                    ctx.fillStyle = color;
-                    ctx.textAlign = "center";
-                    ctx.textBaseline = "middle";
-                    ctx.fillText(numField.value, x + w / 2, y + h / 2);
-                    ctx.restore();
+                        ctx.save();
+                        ctx.font = `bold ${fontSize}px ${fontName}, Arial`;
+                        ctx.fillStyle = color;
+                        ctx.textAlign = "center";
+                        ctx.textBaseline = "middle";
+                        ctx.fillText(numField.value, x + w / 2, y + h / 2);
+                        ctx.restore();
+                    }
                 }
             }
         }
-    }
 
-    setRendering(false);
-};
+        setRendering(false);
+    };
 
-return (
-    <div style={styles.overlay} onClick={onClose}>
-        <div
-            style={styles.modal}
-            onClick={(e) => e.stopPropagation()}
-        >
-            {/* Header */}
-            <div style={styles.modalHeader}>
-                <div>
-                    <h2 style={styles.modalTitle}>Customization Preview</h2>
-                    <p style={styles.modalSub}>
-                        {item?.UserName} · {item?.ProductName}
-                    </p>
+    return (
+        <div style={styles.overlay} onClick={onClose}>
+            <div
+                style={styles.modal}
+                onClick={(e) => e.stopPropagation()}
+            >
+                {/* Header */}
+                <div style={styles.modalHeader}>
+                    <div>
+                        <h2 style={styles.modalTitle}>Customization Preview</h2>
+                        <p style={styles.modalSub}>
+                            {item?.UserName} · {item?.ProductName}
+                        </p>
+                    </div>
+                    <button style={styles.closeBtn} onClick={onClose}>✕</button>
                 </div>
-                <button style={styles.closeBtn} onClick={onClose}>✕</button>
-            </div>
 
-            {/* View Toggle */}
-            <div style={styles.toggleRow}>
-                {["front", "back"].map((v) => (
-                    <button
-                        key={v}
-                        onClick={() => setView(v)}
-                        style={{
-                            ...styles.toggleBtn,
-                            ...(view === v ? styles.toggleActive : {}),
-                        }}
-                    >
-                        {v.charAt(0).toUpperCase() + v.slice(1)}
-                    </button>
-                ))}
-                {rendering && (
-                    <span style={{ fontSize: 12, color: "#94a3b8", marginLeft: 12 }}>
-                        Rendering…
-                    </span>
-                )}
-            </div>
-
-            {/* Canvas */}
-            <div style={styles.canvasWrap}>
-                <canvas
-                    ref={canvasRef}
-                    style={styles.canvas}
-                />
-            </div>
-
-            {/* Field Summary */}
-            <div style={styles.fieldGrid}>
-                {(item?.customization || [])
-                    .filter(
-                        (f) =>
-                            !["patternfront", "patternback", "patternid"].includes(
-                                f.fieldName?.toLowerCase()
-                            )
-                    )
-                    .map((f, i) => (
-                        <div key={i} style={styles.fieldChip}>
-                            <span style={styles.chipLabel}>{f.fieldName}</span>
-                            {f.value?.startsWith("http") ? (
-                                <img
-                                    src={f.value}
-                                    alt={f.fieldName}
-                                    style={{ width: 32, height: 32, objectFit: "cover", borderRadius: 4 }}
-                                />
-                            ) : f.value?.startsWith("#") ? (
-                                <span
-                                    style={{
-                                        display: "inline-block",
-                                        width: 18,
-                                        height: 18,
-                                        borderRadius: 4,
-                                        background: f.value,
-                                        border: "1px solid #e2e8f0",
-                                        verticalAlign: "middle",
-                                    }}
-                                />
-                            ) : (
-                                <span style={styles.chipValue}>{f.value}</span>
-                            )}
-                        </div>
+                {/* View Toggle */}
+                <div style={styles.toggleRow}>
+                    {["front", "back"].map((v) => (
+                        <button
+                            key={v}
+                            onClick={() => setView(v)}
+                            style={{
+                                ...styles.toggleBtn,
+                                ...(view === v ? styles.toggleActive : {}),
+                            }}
+                        >
+                            {v.charAt(0).toUpperCase() + v.slice(1)}
+                        </button>
                     ))}
+                    {rendering && (
+                        <span style={{ fontSize: 12, color: "#94a3b8", marginLeft: 12 }}>
+                            Rendering…
+                        </span>
+                    )}
+                </div>
+
+                {/* Canvas */}
+                <div style={styles.canvasWrap}>
+                    <canvas
+                        ref={canvasRef}
+                        style={styles.canvas}
+                    />
+                </div>
+
+                {/* Field Summary */}
+                <div style={styles.fieldGrid}>
+                    {(item?.customization || [])
+                        .filter(
+                            (f) =>
+                                !["patternfront", "patternback", "patternid"].includes(
+                                    f.fieldName?.toLowerCase()
+                                )
+                        )
+                        .map((f, i) => (
+                            <div key={i} style={styles.fieldChip}>
+                                <span style={styles.chipLabel}>{f.fieldName}</span>
+                                {f.value?.startsWith("http") ? (
+                                    <img
+                                        src={f.value}
+                                        alt={f.fieldName}
+                                        style={{ width: 32, height: 32, objectFit: "cover", borderRadius: 4 }}
+                                    />
+                                ) : f.value?.startsWith("#") ? (
+                                    <span
+                                        style={{
+                                            display: "inline-block",
+                                            width: 18,
+                                            height: 18,
+                                            borderRadius: 4,
+                                            background: f.value,
+                                            border: "1px solid #e2e8f0",
+                                            verticalAlign: "middle",
+                                        }}
+                                    />
+                                ) : (
+                                    <span style={styles.chipValue}>{f.value}</span>
+                                )}
+                            </div>
+                        ))}
+                </div>
             </div>
         </div>
-    </div>
-);
+    );
 }
 
 // ─── Main List Component ─────────────────────────────────────────────────────
@@ -317,16 +317,47 @@ export default function CustomizationList() {
 
     const fetchData = async (p = 1) => {
         setLoading(true);
+
         try {
             const res = await axiosInstance.get("/viewcustomization", {
-                params: { page: p, limit: 10 },
+                params: {
+                    page: p,
+                    limit: 10,
+                },
             });
-            if (res.data.success) {
-                setRows(getResponseItems(res.data));
-                setPagination(res.data.pagination || {});
+
+            if (res.data) {
+                const data = getResponseItems(res.data);
+                console.log("Customization data",data)
+                // Show only products with customization
+                const customizedOnly = data.filter((item) => {
+                    const fields = item.customization || [];
+
+                    const actualCustomizations = fields.filter(
+                        (field) =>
+                            ![
+                                "patternfront",
+                                "patternback",
+                                "patternid",
+                            ].includes(
+                                field.fieldName?.toLowerCase()
+                            ) &&
+                            field.value &&
+                            field.value !== ""
+                    );
+
+                    return actualCustomizations.length > 0;
+                });
+
+                setRows(customizedOnly);
+
+                setPagination({
+                    ...res.data.pagination,
+                    totalRecords: customizedOnly.length,
+                });
             }
-        } catch (e) {
-            console.error(e);
+        } catch (error) {
+            console.error(error);
         } finally {
             setLoading(false);
         }
@@ -338,6 +369,7 @@ export default function CustomizationList() {
 
     const filtered = rows.filter((r) => {
         const s = search.toLowerCase();
+
         return (
             r.UserName?.toLowerCase().includes(s) ||
             r.ProductName?.toLowerCase().includes(s)
@@ -382,7 +414,7 @@ export default function CustomizationList() {
                 <div>
                     <h1 style={styles.pageTitle}>Customization Requests</h1>
                     <p style={styles.pageSub}>
-                        {pagination.totalRecords ?? rows.length} total records
+                        {filtered.length} total customized records
                     </p>
                 </div>
 
