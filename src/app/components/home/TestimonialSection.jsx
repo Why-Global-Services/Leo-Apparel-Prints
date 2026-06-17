@@ -269,6 +269,13 @@ export default function TestimonialSection() {
           ))}
         </div>
 
+        {/* View All Button */}
+        <div className="text-center mt-10 sm:mt-12">
+          <a href="/testimonials" className="inline-block bg-primary text-white font-bold py-3 px-8 rounded-full shadow-lg hover:shadow-xl hover:bg-yellow-500 transition-all">
+            View All Testimonials
+          </a>
+        </div>
+
       </div>
     </section>
   );

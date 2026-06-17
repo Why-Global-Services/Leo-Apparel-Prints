@@ -2,25 +2,32 @@
 
 /* ------------------ ROOT VARIABLES ------------------ */
 :root {
-  --background: #020617;      /* 🔥 main dark */
+  --background: #e6f0ff;
+  /* 🔥 main dark */
   --foreground: #E2E8F0;
 
-  --primary: #F5B800;         /* gold */
+  --primary: #F5B800;
+  /* gold */
   --secondary: #E8960A;
-  
-  --primary-blue: #003E9B;    /* 🔵 Primary blue color */
-  --primary-blue-dark: #002a6e; /* Darker blue for hover states */
-  --primary-blue-light: #e6f0ff; /* Light blue for backgrounds */
 
-  --accent: #0EA5E9;          /* blue */
-  --accent-dark: #1E3A8A;     /* deep blue */
+  --primary-blue: #003E9B;
+  /* 🔵 Primary blue color */
+  --primary-blue-dark: #002a6e;
+  /* Darker blue for hover states */
+  --primary-blue-light: #e6f0ff;
+  /* Light blue for backgrounds */
+
+  --accent: #0EA5E9;
+  /* blue */
+  --accent-dark: #1E3A8A;
+  /* deep blue */
 
   --nav-start: #09185b;
   --nav-mid: #0B3C6D;
   --nav-end: #1E3A8A;
 
   --third: #0F172A;
-  
+
   /* Button Gradient Colors */
   --gradient-start: #0EA5E9;
   --gradient-mid: #0284C7;
@@ -32,14 +39,20 @@
   :root {
     --background: #0a0a0a;
     --foreground: #ededed;
-    --primary: #F59E0B;   /* Rich golden (main brand color) */
-    --secondary: #D97706; /* Deep gold / orange (gradient depth) */
-    --primary-blue: #0052cc; /* Lighter blue for dark mode */
+    --primary: #F59E0B;
+    /* Rich golden (main brand color) */
+    --secondary: #D97706;
+    /* Deep gold / orange (gradient depth) */
+    --primary-blue: #0052cc;
+    /* Lighter blue for dark mode */
     --primary-blue-dark: #003d99;
     --primary-blue-light: #1a2a4a;
-    --accent: #38BDF8;      /* brighter blue for dark UI */
-    --accent-dark: #0EA5E9; /* hover */
-    --third: #0F172A;       /* dark surface */
+    --accent: #38BDF8;
+    /* brighter blue for dark UI */
+    --accent-dark: #0EA5E9;
+    /* hover */
+    --third: #0F172A;
+    /* dark surface */
     --gradient-start: #38BDF8;
     --gradient-mid: #0284C7;
     --gradient-end: #1E3A8A;
@@ -65,7 +78,12 @@ body {
 }
 
 /* All headings (h1, h2, h3, h4, h5, h6) will use primary font */
-h1, h2, h3, h4, h5, h6 {
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
   font-family: var(--font-poppins), 'Poppins', sans-serif;
   font-weight: 700;
 }
@@ -78,20 +96,23 @@ p {
 /* ------------------ LOGO TEXT STYLES ------------------ */
 .logo-text {
   font-weight: 900;
-  background: linear-gradient(
-    to bottom,
-    #FFF9C4 0%,   /* light yellow */
-    #FFD54F 35%,  /* gold */
-    #FF9800 70%,  /* orange */
-    #E65100 100%  /* deep orange */
-  );
+  background: linear-gradient(to bottom,
+      #FFF9C4 0%,
+      /* light yellow */
+      #FFD54F 35%,
+      /* gold */
+      #FF9800 70%,
+      /* orange */
+      #E65100 100%
+      /* deep orange */
+    );
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 
   /* Optional glow */
-  text-shadow: 
-    0 2px 4px rgba(0,0,0,0.2),
-    0 0 10px rgba(255,165,0,0.4);
+  text-shadow:
+    0 2px 4px rgba(0, 0, 0, 0.2),
+    0 0 10px rgba(255, 165, 0, 0.4);
 }
 
 /* ------------------ TAILWIND THEME ------------------ */
@@ -103,8 +124,8 @@ p {
   --color-primary-blue: var(--primary-blue);
   --color-primary-blue-dark: var(--primary-blue-dark);
   --color-primary-blue-light: var(--primary-blue-light);
-  --color-third: var(--third); 
-  --color-accent: var(--accent);   
+  --color-third: var(--third);
+  --color-accent: var(--accent);
   --color-accent-dark: var(--accent-dark);
   --color-gradient-start: var(--gradient-start);
   --color-gradient-mid: var(--gradient-mid);
@@ -288,6 +309,7 @@ p {
     color: #1a1a1a;
     -webkit-text-fill-color: #1a1a1a;
   }
+
   55% {
     opacity: 1;
     transform: scale(0.88) translateY(2px);
@@ -296,12 +318,14 @@ p {
     -webkit-text-fill-color: #fff8c0;
     text-shadow: 0 0 18px #f5b800, 0 0 40px #e8960a, 0 0 6px #fff4b0;
   }
+
   75% {
     transform: scale(1.04) translateY(-1px);
     color: #f5b800;
     -webkit-text-fill-color: #f5b800;
     text-shadow: 0 0 10px rgba(245, 184, 0, 0.5);
   }
+
   100% {
     opacity: 1;
     transform: scale(1) translateY(0);
@@ -345,9 +369,11 @@ p {
   0% {
     box-shadow: 0 0 0 0 rgba(14, 165, 233, 0.4);
   }
+
   70% {
     box-shadow: 0 0 0 10px rgba(14, 165, 233, 0);
   }
+
   100% {
     box-shadow: 0 0 0 0 rgba(14, 165, 233, 0);
   }
@@ -356,6 +382,7 @@ p {
 .btn-pulse {
   animation: buttonPulse 1.5s infinite;
 }
+
 /* ------------------ CUSTOM SCROLLBAR ------------------ */
 ::-webkit-scrollbar {
   width: 10px;
@@ -394,15 +421,31 @@ p {
 /* login page Animation */
 
 @keyframes floatJersey {
-  0% { transform: translateY(0px) rotate(0deg); }
-  50% { transform: translateY(-12px) rotate(1deg); }
-  100% { transform: translateY(0px) rotate(0deg); }
+  0% {
+    transform: translateY(0px) rotate(0deg);
+  }
+
+  50% {
+    transform: translateY(-12px) rotate(1deg);
+  }
+
+  100% {
+    transform: translateY(0px) rotate(0deg);
+  }
 }
 
 @keyframes autoRotateSlow {
-  0% { transform: rotateY(-10deg); }
-  50% { transform: rotateY(10deg); }
-  100% { transform: rotateY(-10deg); }
+  0% {
+    transform: rotateY(-10deg);
+  }
+
+  50% {
+    transform: rotateY(10deg);
+  }
+
+  100% {
+    transform: rotateY(-10deg);
+  }
 }
 
 .leoGradient {
@@ -420,20 +463,26 @@ p {
 }
 
 @keyframes gradientMove {
-  0% { background-position: 0% 50%; }
-  50% { background-position: 100% 50%; }
-  100% { background-position: 0% 50%; }
+  0% {
+    background-position: 0% 50%;
+  }
+
+  50% {
+    background-position: 100% 50%;
+  }
+
+  100% {
+    background-position: 0% 50%;
+  }
 }
 
 
 
 .toast-gradient {
-  background: linear-gradient(
-    135deg,
-    var(--gradient-start),
-    var(--gradient-mid),
-    var(--gradient-end)
-  ) !important;
+  background: linear-gradient(135deg,
+      var(--gradient-start),
+      var(--gradient-mid),
+      var(--gradient-end)) !important;
   color: #fff !important;
   border-radius: 12px;
   font-weight: 600;

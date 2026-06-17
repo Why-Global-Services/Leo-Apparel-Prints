@@ -7,6 +7,7 @@ import {
   Calendar, Shield, ArrowRight, Globe, Phone, User, Mail, MessageSquare, X,
   Clock, Headphones, MapPin, Send
 } from 'lucide-react';
+import axiosClient from "@/lib/axios";
 
 const FloatingInput = ({ label, icon: Icon, id, type = "text", value, onChange, required, placeholder = " " }) => (
   <div className="relative group w-full">
@@ -41,6 +42,7 @@ export default function BulkEnquiry() {
   const [fileName, setFileName] = useState('');
   const [dragActive, setDragActive] = useState(false);
   const [submitted, setSubmitted] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   const uniformOptions = [
     { id: 'academy', label: 'Academy', icon: Users },
@@ -114,14 +116,48 @@ export default function BulkEnquiry() {
     }
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (!formData.firstName || !formData.lastName || !formData.phone || !formData.email || !formData.orgName || formData.uniformFor.length === 0 || formData.products.length === 0) {
       alert('Please fill in all required fields.');
       return;
     }
-    setSubmitted(true);
-    setTimeout(() => setSubmitted(false), 3000);
+
+    setLoading(true);
+    try {
+      const data = new FormData();
+      data.append('firstName', formData.firstName);
+      data.append('lastName', formData.lastName);
+      data.append('phone', formData.phone);
+      data.append('email', formData.email);
+      data.append('orgName', formData.orgName);
+      data.append('uniformFor', JSON.stringify(formData.uniformFor));
+      data.append('products', JSON.stringify(formData.products));
+      data.append('hasDesign', formData.hasDesign);
+      data.append('message', formData.message);
+      data.append('agreeTerms', formData.agreeTerms);
+      
+      if (formData.designFile) {
+        data.append('designFile', formData.designFile);
+      }
+
+      await axiosClient.post('/v1/user/bulk-enquiry', data, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+      });
+      
+      setSubmitted(true);
+      setTimeout(() => setSubmitted(false), 3000);
+      setFormData({
+        firstName: '', lastName: '', phone: '', email: '',
+        orgName: '', uniformFor: [], products: [],
+        hasDesign: null, message: '', agreeTerms: false
+      });
+      setFileName('');
+    } catch (error) {
+      alert('Failed to submit enquiry. Please try again.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   if (submitted) {
@@ -314,9 +350,10 @@ export default function BulkEnquiry() {
 
             <button
               type="submit"
-              className="btn btn-gradient btn-md btn-shine group"
+              disabled={loading}
+              className={`btn btn-gradient btn-md btn-shine group ${loading ? 'opacity-70 cursor-not-allowed' : ''}`}
             >
-              Submit Enquiry
+              {loading ? 'Submitting...' : 'Submit Enquiry'}
               <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />
             </button>
           </div>

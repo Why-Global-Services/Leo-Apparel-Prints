@@ -49,23 +49,23 @@ console.log("user data in sidebar",user)
         style={{ borderBottom: "1px solid #e5e7eb" }}
       >
         <div
-          className="w-12 h-12 rounded-full flex items-center justify-center text-white font-bold text-lg shrink-0"
+          className="w-12 h-12 rounded-full flex items-center justify-center text-white font-bold text-lg shrink-0 uppercase"
           style={{
             background: "linear-gradient(135deg, var(--primary-blue), var(--accent-dark))",
           }}
         >
-          V
+          {user?.name ? user.name.charAt(0) : "U"}
         </div>
         <div className="flex-1 min-w-0">
           <p className="text-xs" style={{ color: "#9ca3af" }}>Welcome Back</p>
           <p
-            className="font-semibold text-sm truncate"
+            className="font-semibold text-sm truncate capitalize"
             style={{
               color: "#1f2937",
               fontFamily: "var(--font-poppins), Poppins, sans-serif",
             }}
           >
-           {user.name}
+           {user?.name || "User"}
           </p>
         </div>
       </div>

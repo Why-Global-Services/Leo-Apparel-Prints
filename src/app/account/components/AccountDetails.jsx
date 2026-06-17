@@ -1,9 +1,10 @@
 // src/app/account/components/AccountDetails.jsx
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { User, Mail, Phone, Lock, Eye, EyeOff, Save, CheckCircle } from "lucide-react";
-import { useSelector } from "react-redux";
-import { useEffect } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import axiosClient from "../../../lib/axios";
+import { setUser } from "@/features/auth/authSlice";
 
 function InputField({ label, name, value, onChange, icon, type = "text", required, hint }) {
   return (
@@ -91,7 +92,8 @@ function PasswordField({ label, name, value, onChange, show, onToggle }) {
 
 export default function AccountDetails() {
   const user = useSelector((state) => state.auth.user);
-  console.log("user profile",user)
+  const dispatch = useDispatch();
+  
   const [form, setForm] = useState({
     fullName: "",
     email: "",
@@ -106,15 +108,15 @@ export default function AccountDetails() {
   const [saved, setSaved] = useState(false);
 
   useEffect(() => {
-  if (user) {
-    setForm((prev) => ({
-      ...prev,
-      fullName: user.name || "",
-      email: user.email || "",
-      phone: user.phoneNumber || "",
-    }));
-  }
-}, [user]);
+    if (user) {
+      setForm((prev) => ({
+        ...prev,
+        fullName: user.name || "",
+        email: user.email || "",
+        phone: user.phoneNumber || user.phone || "",
+      }));
+    }
+  }, [user]);
 
   const handleChange = (e) => {
     setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }));
@@ -126,10 +128,30 @@ export default function AccountDetails() {
 
   const handleSave = async () => {
     setSaving(true);
-    await new Promise((r) => setTimeout(r, 900));
-    setSaving(false);
-    setSaved(true);
-    setTimeout(() => setSaved(false), 3000);
+    try {
+      const payload = {
+        name: form.fullName,
+        email: form.email,
+        phoneNumber: form.phone,
+      };
+
+      if (form.newPassword && form.newPassword === form.confirmPassword) {
+        payload.password = form.newPassword;
+      }
+
+      const response = await axiosClient.put("/v1/user/editDetails", payload);
+      
+      if (response.data) {
+        dispatch(setUser({ ...user, ...payload }));
+        setSaved(true);
+        setTimeout(() => setSaved(false), 3000);
+      }
+    } catch (error) {
+      console.error("Failed to update profile:", error);
+      alert("Failed to update profile. Please check your details.");
+    } finally {
+      setSaving(false);
+    }
   };
 
   return (

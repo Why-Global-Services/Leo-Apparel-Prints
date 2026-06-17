@@ -203,6 +203,8 @@ import { FaWhatsapp, FaFacebook, FaInstagram, FaTwitter } from "react-icons/fa";
 import Image from "next/image";
 
 export default function Footer() {
+  const [email, setEmail] = React.useState("");
+  const [offerSent, setOfferSent] = React.useState(false);
   const currentYear = new Date().getFullYear();
 
   const socialLinks = [
@@ -306,6 +308,12 @@ export default function Footer() {
                 </Link>
               </li>
             ))}
+              <li>
+                <Link href="/testimonials" className="text-white font-medium text-xs uppercase hover:text-primary transition-all tracking-tight flex items-center gap-2 group font-secondary">
+                  <span className="w-0 h-[1.5px] bg-primary transition-all duration-300 group-hover:w-4" />
+                  Testimonials
+                </Link>
+              </li>
           </ul>
         </div>
 
@@ -314,33 +322,65 @@ export default function Footer() {
           <h4 className="text-primary font-black italic text-[11px] tracking-[0.4em] uppercase font-primary">Join the Cult</h4>
           <div className="bg-white/5 p-6 rounded-[2rem] border border-white/10 space-y-4">
             <p className="text-white font-semibold text-[10px] italic uppercase tracking-widest leading-snug font-primary">
-              Get 10% off your first custom kit order.
+              Get 10% off your first bulk order.
             </p>
-            <div className="space-y-2">
-              <input 
-                type="email" 
-                placeholder="EMAIL@LEOCULT.COM" 
-                className="w-full bg-transparent border-b border-white/20 py-2 text-white font-normal text-[11px] outline-none focus:border-primary transition-colors placeholder:text-white/20 font-secondary"
-              />
-              <button className="btn btn-gradient btn-md btn-shine w-full">
-                Register
-                <svg className="w-3.5 h-3.5 transition-transform duration-300 group-hover:translate-x-1" viewBox="0 0 14 14" fill="none">
-                  <path
-                    d="M2 7h10M8 3.5L11.5 7 8 10.5"
-                    stroke="white"
-                    strokeWidth="1.8"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
-                </svg>
-              </button>
-            </div>
+            {offerSent ? (
+              <div className="bg-green-500/20 border border-green-500/50 p-3 rounded-lg text-center">
+                <p className="text-green-400 font-bold text-xs uppercase tracking-wider">Offer Sent!</p>
+                <p className="text-green-200 text-[10px] mt-1">Check your email for the discount code.</p>
+              </div>
+            ) : (
+              <form 
+                className="space-y-2"
+                onSubmit={async (e) => {
+                  e.preventDefault();
+                  if (!email) return;
+                  try {
+                    await fetch("http://localhost:5001/v1/user/newsletter/claim-offer", {
+                      method: "POST",
+                      headers: { "Content-Type": "application/json" },
+                      body: JSON.stringify({ email })
+                    });
+                    setOfferSent(true);
+                  } catch (err) {
+                    console.error("Failed to claim offer", err);
+                  }
+                }}
+              >
+                <input 
+                  type="email" 
+                  required
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="EMAIL@LEOCULT.COM" 
+                  className="w-full bg-transparent border-b border-white/20 py-2 text-white font-normal text-[11px] outline-none focus:border-primary transition-colors placeholder:text-white/20 font-secondary"
+                />
+                <button type="submit" className="btn btn-gradient btn-md btn-shine w-full">
+                  Claim Offer
+                  <svg className="w-3.5 h-3.5 transition-transform duration-300 group-hover:translate-x-1" viewBox="0 0 14 14" fill="none">
+                    <path
+                      d="M2 7h10M8 3.5L11.5 7 8 10.5"
+                      stroke="white"
+                      strokeWidth="1.8"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                  </svg>
+                </button>
+              </form>
+            )}
           </div>
         </div>
       </div>
 
       {/* ── LEGAL ── */}
-      <div className="max-w-7xl mx-auto px-6 py-3 flex flex-col lg:flex-row justify-center items-center gap-8 border-t border-white/5">
+      <div className="max-w-7xl mx-auto px-6 py-5 flex flex-col justify-center items-center gap-4 border-t border-white/5">
+        <div className="flex flex-wrap justify-center gap-4 md:gap-8 text-[9px] md:text-[11px] font-semibold tracking-widest uppercase text-white/60 font-secondary">
+          <Link href="/about-us" className="hover:text-primary transition-colors">About Us</Link>
+          <Link href="/privacy-policy" className="hover:text-primary transition-colors">Privacy Policy</Link>
+          <Link href="/terms-and-conditions" className="hover:text-primary transition-colors">Terms & Conditions</Link>
+          <Link href="/return-and-refund-policy" className="hover:text-primary transition-colors">Return & Refund Policy</Link>
+        </div>
         <p className="text-white font-normal text-[7px] md:text-[10px] italic tracking-[0.2em] uppercase opacity-60 font-secondary">
           © {currentYear} LEO CULT APPAREL. ALL RIGHTS RESERVED.
         </p>
