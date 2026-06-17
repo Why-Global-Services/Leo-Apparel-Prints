@@ -12,6 +12,8 @@ import Createpattern from './pages/Createpattern';
 import Customizationlist from './pages/Customizationlist';
 import Orderspage from './pages/Orderspage';
 import Dashboardpage from './pages/Dashboardpage';
+import BulkEnquiriesPage from './pages/BulkEnquiriesPage';
+import TestimonialsPage from './pages/TestimonialsPage';
 
 
 
@@ -42,6 +44,8 @@ function App() {
           <Route path="customize" element={<Customizationlist />} />
           <Route path="orderspage" element={<Orderspage />} />
           <Route path="dashboard" element={<Dashboardpage />} />
+          <Route path="bulkenquiries" element={<BulkEnquiriesPage />} />
+          <Route path="testimonials" element={<TestimonialsPage />} />
           <Route path="users" element={<div style={{ padding: '24px', color: 'white' }}>Users Page</div>} />
           <Route path="orders" element={<div style={{ padding: '24px', color: 'white' }}>Orders Page</div>} />
           <Route path="settings" element={<div style={{ padding: '24px', color: 'white' }}>Settings Page</div>} />

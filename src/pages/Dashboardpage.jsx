@@ -1,5 +1,6 @@
 // DashboardPage.jsx - Fixed with proper export
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import {
     IoStatsChart,
     IoTrendingUp,
@@ -10,6 +11,7 @@ import { FaRegChartBar } from "react-icons/fa";
 import axiosInstance from "../api/axiosInstance";
 
 function Dashboardpage() {
+    const navigate = useNavigate();
     const isDark = false;
 
     const [dashboardData, setDashboardData] = useState(null);
@@ -64,7 +66,7 @@ function Dashboardpage() {
         { title: "Products Sold", value: "...", change: "...", icon: <FiPackage size={24} />, color: "#EF4444" },
     ];
 
-    const recentOrders = dashboardData?.OrderDetails ? dashboardData.OrderDetails.map(order => {
+    const recentOrders = dashboardData?.OrderDetails ? dashboardData.OrderDetails.slice(0, 5).map(order => {
         let customerName = "Unknown Customer";
         if (order.deliveryAddress && order.deliveryAddress.fullName) {
             customerName = order.deliveryAddress.fullName.trim();
@@ -308,6 +310,21 @@ function Dashboardpage() {
                         <h3 style={{ fontSize: '18px', fontWeight: 600, marginBottom: '4px', color: isDark ? '#FFFFFF' : '#111827' }}>Recent Orders</h3>
                         <p style={{ color: isDark ? 'rgba(255, 255, 255, 0.6)' : '#6B7280', fontSize: '12px' }}>Latest transactions</p>
                     </div>
+                    <button 
+                        onClick={() => navigate('/orderspage')}
+                        style={{
+                            background: 'transparent',
+                            color: primaryColor,
+                            border: `1px solid ${primaryColor}`,
+                            padding: '6px 16px',
+                            borderRadius: '6px',
+                            fontSize: '14px',
+                            fontWeight: 500,
+                            cursor: 'pointer'
+                        }}
+                    >
+                        View All
+                    </button>
                 </div>
 
                 <table style={{ width: '100%', borderCollapse: 'collapse' }}>

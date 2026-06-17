@@ -2,7 +2,7 @@
 import { useState } from "react";
 import { NavLink, useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
-// import { logoutThunk } from "../store/slices/uiSlice";
+import { logoutThunk } from "../store/slices/authSlice";
 import {
   IoGridOutline,
   IoPeopleOutline,
@@ -29,6 +29,8 @@ export default function Sidebar({ collapsed, setCollapsed }) {
     { path: "/pattern", name: "Pattern", icon: <IoStatsChartOutline size={20} /> },
     { path: "/customize", name: "Customization", icon: <IoSettingsOutline size={20} /> },
     { path: "/orderspage", name: "orders", icon: <IoSettingsOutline size={20} /> },
+    { path: "/bulkenquiries", name: "Bulk Enquiries", icon: <IoPeopleOutline size={20} /> },
+    { path: "/testimonials", name: "Testimonials", icon: <IoStatsChartOutline size={20} /> },
   ];
 
   const handleLogout = async () => {
