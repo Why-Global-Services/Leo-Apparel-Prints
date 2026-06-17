@@ -264,4 +264,14 @@ router.route("/getActiveTopbar").get(userController.getActiveTopbarsController);
 //Idgenarate
 router.get("/idGenerator", userController.IDGenerator);
 
+// Bulk Enquiry
+router.post("/bulk-enquiry", uploads.single("designFile"), userController.createBulkEnquiry);
+
+const testimonialController = require("../../controller/testimonial.controller");
+router.post("/testimonials", uploads.single("profileImage"), testimonialController.submitTestimonial);
+router.get("/testimonials", testimonialController.getApprovedTestimonials);
+
+const newsletterOfferController = require("../../controller/newsletterOffer.controller");
+router.post("/newsletter/claim-offer", newsletterOfferController.claimOffer);
+
 module.exports = router;
