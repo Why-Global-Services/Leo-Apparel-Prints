@@ -445,4 +445,14 @@ AdminRouter.route("/deleteTopbar/:id").delete(
 // view Costomization
 AdminRouter.route("/viewcustomization").get(adminController.getUsersWithCustomizations);
 AdminRouter.route("/viewcustomization/:userId").get(adminController.getUsersWithCustomizations);
+
+// Bulk Enquiries
+AdminRouter.route("/bulk-enquiries").get(adminController.getBulkEnquiries);
+
+const testimonialController = require("../../controller/testimonial.controller");
+AdminRouter.get("/testimonials", testimonialController.getAllTestimonialsAdmin);
+AdminRouter.patch("/testimonials/:id/approve", testimonialController.approveTestimonial);
+AdminRouter.patch("/testimonials/:id/reject", testimonialController.rejectTestimonial);
+AdminRouter.delete("/testimonials/:id", testimonialController.removeTestimonial);
+
 module.exports = AdminRouter;

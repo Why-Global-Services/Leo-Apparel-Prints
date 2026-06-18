@@ -36,6 +36,7 @@ const {
 } = require("../services/admin Services/topbarMessage/topbarMessage.service");
 
 const patternService = require("../services/admin Services/pattern.service")
+const bulkEnquiryService = require("../services/bulkEnquiry.service");
 
 const createBanner = catchAsync(async (req, res) => {
   const data = await adminService.createBanner(req);
@@ -745,6 +746,11 @@ const getUsersWithCustomizations = catchAsync(async (req, res) => {
   res.status(200).send(data);
 });
 
+const getBulkEnquiries = catchAsync(async (req, res) => {
+  const data = await bulkEnquiryService.getBulkEnquiries();
+  res.status(200).send(data);
+});
+
 
 module.exports = {
   GetAllUserQueries,
@@ -887,5 +893,6 @@ module.exports = {
   deletePattern,
   getPatternsByIds,
 
-getUsersWithCustomizations
+  getUsersWithCustomizations,
+  getBulkEnquiries
 };

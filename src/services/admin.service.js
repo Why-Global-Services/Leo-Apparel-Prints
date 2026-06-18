@@ -4445,31 +4445,62 @@ const getInventoryReport = async (req, res) => {
 const dashboard = async (req) => {
   const now = new Date();
 
-  // Date Ranges
-  const startOfCurrentMonth = new Date(now.getFullYear(), now.getMonth(), 1);
-  const endOfCurrentMonth = new Date(
-    now.getFullYear(),
-    now.getMonth() + 1,
-    0,
-    23,
-    59,
-    59,
-    999
-  );
-  const startOfPreviousMonth = new Date(
-    now.getFullYear(),
-    now.getMonth() - 1,
-    1
-  );
-  const endOfPreviousMonth = new Date(
-    now.getFullYear(),
-    now.getMonth(),
-    0,
-    23,
-    59,
-    59,
-    999
-  );
+  let { filter = "Monthly", startDate: reqStart, endDate: reqEnd } = req.query;
+  let startOfCurrentPeriod, endOfCurrentPeriod, startOfPreviousPeriod, endOfPreviousPeriod;
+  let chartFormat = "day"; 
+
+  switch (filter) {
+    case "Daily":
+      startOfCurrentPeriod = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+      endOfCurrentPeriod = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59, 999);
+      startOfPreviousPeriod = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1);
+      endOfPreviousPeriod = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1, 23, 59, 59, 999);
+      chartFormat = "hour";
+      break;
+
+    case "Weekly":
+      startOfCurrentPeriod = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 6);
+      endOfCurrentPeriod = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59, 999);
+      startOfPreviousPeriod = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 13);
+      endOfPreviousPeriod = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 7, 23, 59, 59, 999);
+      chartFormat = "day";
+      break;
+
+    case "Yearly":
+      startOfCurrentPeriod = new Date(now.getFullYear(), 0, 1);
+      endOfCurrentPeriod = new Date(now.getFullYear(), 11, 31, 23, 59, 59, 999);
+      startOfPreviousPeriod = new Date(now.getFullYear() - 1, 0, 1);
+      endOfPreviousPeriod = new Date(now.getFullYear() - 1, 11, 31, 23, 59, 59, 999);
+      chartFormat = "month";
+      break;
+
+    case "Custom":
+      if (reqStart && reqEnd) {
+        startOfCurrentPeriod = new Date(reqStart);
+        endOfCurrentPeriod = new Date(reqEnd);
+        endOfCurrentPeriod.setHours(23, 59, 59, 999);
+        const duration = endOfCurrentPeriod.getTime() - startOfCurrentPeriod.getTime();
+        startOfPreviousPeriod = new Date(startOfCurrentPeriod.getTime() - duration);
+        endOfPreviousPeriod = new Date(startOfCurrentPeriod.getTime() - 1);
+        chartFormat = duration > 31 * 24 * 60 * 60 * 1000 ? "month" : "day";
+      } else {
+        startOfCurrentPeriod = new Date(now.getFullYear(), now.getMonth(), 1);
+        endOfCurrentPeriod = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59, 999);
+        startOfPreviousPeriod = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+        endOfPreviousPeriod = new Date(now.getFullYear(), now.getMonth(), 0, 23, 59, 59, 999);
+        chartFormat = "day";
+      }
+      break;
+
+    case "Monthly":
+    default:
+      startOfCurrentPeriod = new Date(now.getFullYear(), now.getMonth(), 1);
+      endOfCurrentPeriod = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59, 999);
+      startOfPreviousPeriod = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+      endOfPreviousPeriod = new Date(now.getFullYear(), now.getMonth(), 0, 23, 59, 59, 999);
+      chartFormat = "day";
+      break;
+  }
 
   const getTrend = (current, previous) => {
     if (current > previous) return "increase";
@@ -4477,192 +4508,138 @@ const dashboard = async (req) => {
     return "neutral";
   };
 
-  // Fetch orders for both months
-  const [thisMonthOrders, previousMonthOrdersData] = await Promise.all([
+  const [currentPeriodOrdersData, previousPeriodOrdersData] = await Promise.all([
     orderDetailsModel.find({
-      createdAt: { $gte: startOfCurrentMonth, $lte: endOfCurrentMonth },
+      createdAt: { $gte: startOfCurrentPeriod, $lte: endOfCurrentPeriod },
     }),
     orderDetailsModel.find({
-      createdAt: { $gte: startOfPreviousMonth, $lte: endOfPreviousMonth },
+      createdAt: { $gte: startOfPreviousPeriod, $lte: endOfPreviousPeriod },
     }),
   ]);
 
-  const currentMonthOrders = thisMonthOrders.length;
-  const previousMonthOrders = previousMonthOrdersData.length;
+  const currentMonthOrders = currentPeriodOrdersData.length;
+  const previousMonthOrders = previousPeriodOrdersData.length;
   const orderTrend = getTrend(currentMonthOrders, previousMonthOrders);
 
-  const increasePercentage =
-    previousMonthOrders > 0
-      ? ((currentMonthOrders - previousMonthOrders) / previousMonthOrders) * 100
-      : currentMonthOrders > 0
-        ? 100
-        : 0;
+  const increasePercentage = previousMonthOrders > 0
+    ? ((currentMonthOrders - previousMonthOrders) / previousMonthOrders) * 100
+    : currentMonthOrders > 0 ? 100 : 0;
 
-  // Revenue & Product Count
   const calculateRevenueAndCount = (orders) => {
     let totalRevenue = 0;
     let productCount = 0;
-
     orders.forEach((order) => {
       order.orderDetails?.forEach((item) => {
         totalRevenue += item?.price || 0;
         productCount += 1;
       });
     });
-
     return { totalRevenue, productCount };
   };
 
-  const { totalRevenue: thisRevenue, productCount: thisProductCount } =
-    calculateRevenueAndCount(thisMonthOrders);
-  const { totalRevenue: prevRevenue, productCount: prevProductCount } =
-    calculateRevenueAndCount(previousMonthOrdersData);
+  const { totalRevenue: thisRevenue, productCount: thisProductCount } = calculateRevenueAndCount(currentPeriodOrdersData);
+  const { totalRevenue: prevRevenue, productCount: prevProductCount } = calculateRevenueAndCount(previousPeriodOrdersData);
 
   const revenueTrend = getTrend(thisRevenue, prevRevenue);
-  const revenueIncreasePercentage =
-    prevRevenue > 0
-      ? ((thisRevenue - prevRevenue) / prevRevenue) * 100
-      : thisRevenue > 0
-        ? 100
-        : 0;
+  const revenueIncreasePercentage = prevRevenue > 0
+    ? ((thisRevenue - prevRevenue) / prevRevenue) * 100
+    : thisRevenue > 0 ? 100 : 0;
 
-  const thisMonthProductAverage =
-    thisProductCount > 0 ? thisRevenue / thisProductCount : 0;
-  const previousMonthProductAverage =
-    prevProductCount > 0 ? prevRevenue / prevProductCount : 0;
+  const thisMonthProductAverage = thisProductCount > 0 ? thisRevenue / thisProductCount : 0;
+  const previousMonthProductAverage = prevProductCount > 0 ? prevRevenue / prevProductCount : 0;
+  const productAverageTrend = getTrend(thisMonthProductAverage, previousMonthProductAverage);
+  const AverageProductPercentage = previousMonthProductAverage > 0
+    ? ((thisMonthProductAverage - previousMonthProductAverage) / previousMonthProductAverage) * 100
+    : thisMonthProductAverage > 0 ? 100 : 0;
 
-  const productAverageTrend = getTrend(
-    thisMonthProductAverage,
-    previousMonthProductAverage
-  );
-  const AverageProductPercentage =
-    previousMonthProductAverage > 0
-      ? ((thisMonthProductAverage - previousMonthProductAverage) /
-        previousMonthProductAverage) *
-      100
-      : thisMonthProductAverage > 0
-        ? 100
-        : 0;
-
-  // Sales Count
   const nowMonthSales = thisProductCount;
   const previousMonthSales = prevProductCount;
   const salesTrend = getTrend(nowMonthSales, previousMonthSales);
+  const salesIncrement = previousMonthSales > 0
+    ? ((nowMonthSales - previousMonthSales) / previousMonthSales) * 100
+    : nowMonthSales > 0 ? 100 : 0;
 
-  const salesIncrement =
-    previousMonthSales > 0
-      ? ((nowMonthSales - previousMonthSales) / previousMonthSales) * 100
-      : nowMonthSales > 0
-        ? 100
-        : 0;
+  const chartMap = new Map();
+  if (chartFormat === "hour") {
+    for (let i = 0; i < 24; i++) chartMap.set(`${i}:00`, 0);
+  } else if (chartFormat === "day") {
+    let curr = new Date(startOfCurrentPeriod);
+    while (curr <= endOfCurrentPeriod) {
+      const dateStr = curr.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+      chartMap.set(dateStr, 0);
+      curr.setDate(curr.getDate() + 1);
+    }
+  } else if (chartFormat === "month") {
+    let curr = new Date(startOfCurrentPeriod);
+    while (curr <= endOfCurrentPeriod) {
+      const monthStr = curr.toLocaleDateString("en-US", { month: "short", year: "numeric" });
+      chartMap.set(monthStr, 0);
+      curr.setMonth(curr.getMonth() + 1);
+    }
+  }
 
-  // Best Sellers
+  currentPeriodOrdersData.forEach((order) => {
+    let orderRevenue = 0;
+    order.orderDetails?.forEach((item) => {
+      orderRevenue += item?.price || 0;
+    });
+    const d = new Date(order.createdAt);
+    let key;
+    if (chartFormat === "hour") {
+      key = `${d.getHours()}:00`;
+    } else if (chartFormat === "day") {
+      key = d.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+    } else if (chartFormat === "month") {
+      key = d.toLocaleDateString("en-US", { month: "short", year: "numeric" });
+    }
+    if (chartMap.has(key)) {
+      chartMap.set(key, chartMap.get(key) + orderRevenue);
+    }
+  });
+
+  const chartData = {
+    labels: Array.from(chartMap.keys()),
+    data: Array.from(chartMap.values()),
+  };
+
   const bestSellers = await orderDetailsModel.aggregate([
-    {
-      $unwind: { path: "$orderDetails", preserveNullAndEmptyArrays: true },
+    { 
+      $match: { 
+        createdAt: { $gte: startOfCurrentPeriod, $lte: endOfCurrentPeriod },
+        orderStatus: { $in: ["Ordered", "Packing", "Shipped", "Delivered"] }
+      } 
     },
-    {
-      $unwind: { path: "$orderDetails.products" },
-    },
-    {
-      $group: {
-        _id: "$orderDetails.products.variantId",
-        totalBought: { $sum: "$orderDetails.products.quantity" },
-      },
-    },
-    {
-      $sort: { totalBought: -1 },
-    },
-    {
-      $lookup: {
-        from: "product",
-        localField: "_id",
-        foreignField: "varient._id",
-        as: "productInfo",
-      },
-    },
-    {
-      $unwind: {
-        path: "$productInfo",
-        preserveNullAndEmptyArrays: true,
-      },
-    },
-    {
-      $match: { "productInfo.status": "active" },
-    },
-    {
-      $limit: 10,
-    },
-    {
-      $project: {
-        _id: "$productInfo._id",
-        "productInfo.productImage": 1,
-        "productInfo.productCategory": 1,
-        "productInfo.productBrand": 1,
-        "productInfo.linkProducts": 1,
-        "productInfo.productName": 1,
-        "productInfo.productDescription": 1,
-        "productInfo.nonVarient": 1,
-        "productInfo.varient": 1,
-      },
-    },
+    { $unwind: { path: "$orderDetails", preserveNullAndEmptyArrays: true } },
+    { $unwind: { path: "$orderDetails.products", preserveNullAndEmptyArrays: true } },
+    { $group: { _id: "$orderDetails.products.productId", totalBought: { $sum: "$orderDetails.products.quantity" } } },
+    { $sort: { totalBought: -1 } },
+    { $lookup: { from: "products", localField: "_id", foreignField: "_id", as: "productInfo" } },
+    { $unwind: { path: "$productInfo", preserveNullAndEmptyArrays: true } },
+    { $limit: 10 },
+    { $project: { _id: "$productInfo._id", "productInfo.images": 1, "productInfo.productName": "$productInfo.name", totalBought: 1 } },
   ]);
 
-  // User Count Stats
   const [currentMonthCount, previousMonthCount] = await Promise.all([
-    User.countDocuments({
-      createdAt: { $gte: startOfCurrentMonth, $lte: endOfCurrentMonth },
-    }),
-    User.countDocuments({
-      createdAt: { $gte: startOfPreviousMonth, $lte: endOfPreviousMonth },
-    }),
+    User.countDocuments({ createdAt: { $gte: startOfCurrentPeriod, $lte: endOfCurrentPeriod } }),
+    User.countDocuments({ createdAt: { $gte: startOfPreviousPeriod, $lte: endOfPreviousPeriod } }),
   ]);
 
   const userTrend = getTrend(currentMonthCount, previousMonthCount);
-  const userIncrementPercentage =
-    previousMonthCount > 0
-      ? ((currentMonthCount - previousMonthCount) / previousMonthCount) * 100
-      : currentMonthCount > 0
-        ? 100
-        : 0;
+  const userIncrementPercentage = previousMonthCount > 0
+    ? ((currentMonthCount - previousMonthCount) / previousMonthCount) * 100
+    : currentMonthCount > 0 ? 100 : 0;
 
-  // Latest 10 Orders
-  const OrderDetails = await orderDetailsModel
-    .find()
-    .sort({ createdAt: -1 })
-    .limit(10);
+  const OrderDetails = await orderDetailsModel.find({
+    createdAt: { $gte: startOfCurrentPeriod, $lte: endOfCurrentPeriod }
+  }).sort({ createdAt: -1 }).limit(10);
 
   return {
-    orderStats: {
-      currentMonthOrders,
-      previousMonthOrders,
-      increasePercentage: increasePercentage.toFixed(2),
-      trend: orderTrend,
-    },
-    revenueStats: {
-      thistotal: thisRevenue.toFixed(2),
-      previoustotal: prevRevenue.toFixed(2),
-      revenueIncreasePercentage: revenueIncreasePercentage.toFixed(2),
-      trend: revenueTrend,
-    },
-    productStats: {
-      thisMonthProductAverage: thisMonthProductAverage.toFixed(2),
-      previousMonthProductAverage: previousMonthProductAverage.toFixed(2),
-      AverageProductPercentage: AverageProductPercentage.toFixed(2),
-      trend: productAverageTrend,
-    },
-    salesStats: {
-      nowMonthSales,
-      previousMonthSales,
-      salesIncrement: salesIncrement.toFixed(2),
-      trend: salesTrend,
-    },
-    userStats: {
-      currentMonthCount,
-      previousMonthCount,
-      incrementPercentage: `${userIncrementPercentage.toFixed(2)}%`,
-      trend: userTrend,
-    },
+    orderStats: { currentMonthOrders, previousMonthOrders, increasePercentage: increasePercentage.toFixed(2), trend: orderTrend },
+    revenueStats: { thistotal: thisRevenue.toFixed(2), previoustotal: prevRevenue.toFixed(2), revenueIncreasePercentage: revenueIncreasePercentage.toFixed(2), trend: revenueTrend },
+    productStats: { thisMonthProductAverage: thisMonthProductAverage.toFixed(2), previousMonthProductAverage: previousMonthProductAverage.toFixed(2), AverageProductPercentage: AverageProductPercentage.toFixed(2), trend: productAverageTrend },
+    salesStats: { nowMonthSales, previousMonthSales, salesIncrement: salesIncrement.toFixed(2), trend: salesTrend },
+    userStats: { currentMonthCount, previousMonthCount, incrementPercentage: `${userIncrementPercentage.toFixed(2)}%`, trend: userTrend },
+    chartData,
     bestSellers,
     OrderDetails,
   };

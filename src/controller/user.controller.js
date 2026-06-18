@@ -90,6 +90,7 @@ const { createTestimonial, getTestimonial, updateTestimonial, deleteTestimonial 
 const { getActiveTopbarMessages } = require("../services/admin Services/topbarMessage/topbarMessage.service");
 const { idGenerator } = require("../services/user Services/guestId")
 const customizerService = require("../services/user Services/customize/customizer.service")
+const bulkEnquiryService = require("../services/bulkEnquiry.service");
 
 const CreateUsers = catchAsync(async (req, res) => {
   const data = await createUser(req);
@@ -543,12 +544,6 @@ const IDGenerator = async (req, res) => {
   res.status(200).send(data);
 };
 
-// bulk enquiry controller
-
-
-
-
-
 module.exports = {
   CreateUserQuery,
   ForgotPassword,
@@ -632,5 +627,6 @@ module.exports = {
   refreshToken,
   getCustomizer,
   saveCustomization,
-  getCustomizationByIdHandler
+  getCustomizationByIdHandler,
+  createBulkEnquiry
 };
