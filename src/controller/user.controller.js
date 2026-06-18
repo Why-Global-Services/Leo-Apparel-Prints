@@ -543,6 +543,12 @@ const IDGenerator = async (req, res) => {
   res.status(200).send(data);
 };
 
+// bulk enquiry controller
+
+
+
+
+
 module.exports = {
   CreateUserQuery,
   ForgotPassword,

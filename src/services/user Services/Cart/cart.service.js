@@ -484,22 +484,23 @@ const cleanCustomization = (customizationArray) => {
 const addToCart = async (req) => {
   const { customizationId, sizes = [] } = req.body;
 
-  // ✅ Validation
   if (!sizes.length) {
     throw new ApiError(400, "At least one size required");
   }
 
   const userId = req.user?._id || null;
-
-  const guestId = req.headers["guestid"] || req.headers["guest-id"] || null;
+  const guestId =
+    req.headers["guestid"] ||
+    req.headers["guest-id"] ||
+    null;
 
   if (!userId && !guestId) {
     throw new ApiError(400, "User ID or Guest ID required");
   }
 
-  // =========================
-  // ✅ AUTO MERGE GUEST → USER
-  // =========================
+  // ==========================================
+  // MERGE GUEST CART TO USER CART
+  // ==========================================
   if (userId && guestId) {
     const guestCart = await Cart.findOne({ guestId });
 
@@ -516,31 +517,24 @@ const addToCart = async (req) => {
       for (const guestItem of guestCart.items) {
         const existingIndex = userCart.items.findIndex(
           (item) =>
-            String(item.customizationId) === String(guestItem.customizationId),
+            String(item.productId) ===
+            String(guestItem.productId)
         );
 
         if (existingIndex !== -1) {
-          // ✅ MERGE SIZES
-          guestItem.sizes.forEach((newSize) => {
-            const existing = userCart.items[existingIndex].sizes.find(
-              (s) => s.size === newSize.size,
-            );
-
-            if (existing) {
-              existing.quantity += newSize.quantity;
-            } else {
-              userCart.items[existingIndex].sizes.push(newSize);
-            }
-          });
+          userCart.items[existingIndex] = {
+            ...userCart.items[existingIndex]._doc,
+            customizationId: guestItem.customizationId,
+            sizes: guestItem.sizes,
+            image: guestItem.image,
+          };
         } else {
-          // ✅ PUSH NEW ITEM
           userCart.items.push(guestItem);
         }
       }
 
       await userCart.save();
 
-      // ✅ MOVE CUSTOMIZATIONS
       await Customization.updateMany(
         { guestId },
         {
@@ -548,63 +542,64 @@ const addToCart = async (req) => {
             userId,
             guestId: null,
           },
-        },
+        }
       );
 
-      // ✅ DELETE GUEST CART
-      await Cart.deleteOne({
-        guestId,
-      });
+      await Cart.deleteOne({ guestId });
 
       console.log("✅ Guest cart merged");
     }
   }
 
-  // =========================
-  // ✅ GET CUSTOMIZATION
-  // =========================
-  const customization = await Customization.findOne({ _id: customizationId });
+  // ==========================================
+  // GET CUSTOMIZATION
+  // ==========================================
+  const customization = await Customization.findById(
+    customizationId
+  );
 
   if (!customization) {
-    throw new ApiError(404, "Customization not found");
+    throw new ApiError(
+      404,
+      "Customization not found"
+    );
   }
 
-  // =========================
-  // ✅ GET PRODUCT
-  // =========================
-  const product = await Product.findOne({ _id: customization.productId });
+  // ==========================================
+  // GET PRODUCT
+  // ==========================================
+  const product = await Product.findById(
+    customization.productId
+  );
 
   if (!product) {
     throw new ApiError(404, "Product not found");
   }
 
-  // =========================
-  // ✅ CART QUERY
-  // =========================
-  let cartQuery = userId ? { userId } : { guestId };
+  // ==========================================
+  // FIND CART
+  // ==========================================
+  const cartQuery = userId
+    ? { userId }
+    : { guestId };
 
-  if (userId) {
-    cartQuery = { userId };
-  }
-
-  // =========================
-  // ✅ FIND CART
-  // =========================
   let userCart = await Cart.findOne(cartQuery);
 
-  // =========================
-  // ✅ CREATE CART
-  // =========================
+  // ==========================================
+  // CREATE CART
+  // ==========================================
   if (!userCart) {
     userCart = await Cart.create({
       ...cartQuery,
-
       items: [
         {
           customizationId,
           productId: product._id,
           sizes,
-          image: product?.viewImages?.front || product?.images?.[0] || "",
+          image:
+            product?.viewImages?.front ||
+            product?.images?.[0] ||
+            "",
         },
       ],
     });
@@ -616,16 +611,19 @@ const addToCart = async (req) => {
     };
   }
 
-  // =========================
-  // ✅ CHECK EXISTING ITEM
-  // =========================
-  const existingIndex = userCart.items.findIndex(
-    (item) => String(item.customizationId) === String(customizationId),
-  );
+  // ==========================================
+  // CHECK PRODUCT EXISTS
+  // ==========================================
+  const existingIndex =
+    userCart.items.findIndex(
+      (item) =>
+        String(item.productId) ===
+        String(product._id)
+    );
 
-  // =========================
-  // ✅ UPDATE EXISTING ITEM
-  // =========================
+  // ==========================================
+  // UPDATE EXISTING PRODUCT
+  // ==========================================
   if (existingIndex !== -1) {
     userCart.items[existingIndex] = {
       ...userCart.items[existingIndex]._doc,
@@ -633,32 +631,43 @@ const addToCart = async (req) => {
       customizationId,
       productId: product._id,
       sizes,
-      image: product?.viewImages?.front || product?.images?.[0] || "",
+
+      image:
+        product?.viewImages?.front ||
+        product?.images?.[0] ||
+        "",
     };
-  } else {
-    // =========================
-    // ✅ NEW ITEM
-    // =========================
-    userCart.items.push({
-      customizationId,
-      productId: product._id,
-      sizes,
-      image: product?.viewImages?.front || product?.images?.[0] || "",
-    });
+
+    await userCart.save();
+
+    return {
+      success: true,
+      message: "Cart updated",
+      data: userCart,
+    };
   }
 
-  // =========================
-  // ✅ SAVE
-  // =========================
+  // ==========================================
+  // ADD NEW PRODUCT
+  // ==========================================
+  userCart.items.push({
+    customizationId,
+    productId: product._id,
+    sizes,
+    image:
+      product?.viewImages?.front ||
+      product?.images?.[0] ||
+      "",
+  });
+
   await userCart.save();
 
   return {
     success: true,
-    message: "Cart updated",
+    message: "Added to cart",
     data: userCart,
   };
 };
-
 // =========================
 // ✅ GET CART
 // =========================
@@ -688,12 +697,12 @@ const getCart = async (req) => {
         const guestCustomization = await Customization.findById(
           guestItem.customizationId,
         );
-if (!guestCustomization) {
+        if (!guestCustomization) {
 
-  console.log("❌ Guest customization missing");
+          console.log("❌ Guest customization missing");
 
-  continue;
-}
+          continue;
+        }
 
         let match = null;
 
@@ -702,29 +711,29 @@ if (!guestCustomization) {
             item.customizationId,
           );
 
-     if (!existingCustomization) {
+          if (!existingCustomization) {
 
-  console.log("❌ Existing customization missing");
+            console.log("❌ Existing customization missing");
 
-  // 🔥 REMOVE INVALID ITEM
-  userCart.items = userCart.items.filter(
-    (cartItem) =>
-      String(cartItem.customizationId) !==
-      String(item.customizationId)
-  );
+            // 🔥 REMOVE INVALID ITEM
+            userCart.items = userCart.items.filter(
+              (cartItem) =>
+                String(cartItem.customizationId) !==
+                String(item.customizationId)
+            );
 
-  continue;
-}
+            continue;
+          }
 
           const isSame =
             String(existingCustomization.productId) ===
-              String(guestCustomization.productId) &&
+            String(guestCustomization.productId) &&
             JSON.stringify(
               cleanCustomization(existingCustomization.customization),
             ) ===
-              JSON.stringify(
-                cleanCustomization(guestCustomization.customization),
-              );
+            JSON.stringify(
+              cleanCustomization(guestCustomization.customization),
+            );
 
           if (isSame) {
             match = item;
@@ -795,7 +804,7 @@ if (!guestCustomization) {
 
       if (!product || !customization) return null;
 
-      const price = product.basePrice || 0;
+      const price = product.finalPrice || 0;
 
       const totalQty = item.sizes.reduce((sum, s) => sum + s.quantity, 0);
 

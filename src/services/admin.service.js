@@ -2321,7 +2321,7 @@ const getReport = async (req, res) => {
 };
 
 
-const getOrder= async (req, res) => {
+const getOrder = async (req, res) => {
 
   const fetchedOrders = await orderDetailsModel.aggregate([
 
@@ -2403,7 +2403,7 @@ const getOrder= async (req, res) => {
         billingAddress: 1,
 
         deliveryAddress: 1,
-        deliveryDays:1,
+        deliveryDays: 1,
 
         createdAt: 1,
 
@@ -5142,46 +5142,19 @@ const deleteHolidayTimeSlot = async (req, res) => {
   };
 };
 
-const getUsersWithCustomizations = async (req, res) => {
+
+const getUsersWithCustomizations = async (req) => {
   try {
     const page = Number(req.query.page) || 1;
     const limit = Number(req.query.limit) || 10;
-
     const skip = (page - 1) * limit;
 
-    const countPipeline = [
+    const pipeline = [
       {
-        $lookup: {
-          from: "products",
-          localField: "productId",
-          foreignField: "_id",
-          as: "productDetails",
+        $match: {
+          "customization.0": { $exists: true },
         },
       },
-      {
-        $lookup: {
-          from: "users",
-          localField: "userId",
-          foreignField: "_id",
-          as: "userDetails",
-        },
-      },
-      {
-        $unwind: "$productDetails",
-      },
-      {
-        $unwind: "$userDetails",
-      },
-      {
-        $count: "total",
-      },
-    ];
-
-    const totalResult = await customization.aggregate(countPipeline);
-
-    const totalRecords = totalResult[0]?.total || 0;
-
-    const data = await customization.aggregate([
       {
         $lookup: {
           from: "products",
@@ -5223,12 +5196,27 @@ const getUsersWithCustomizations = async (req, res) => {
         },
       },
       {
-        $skip: skip,
+        $facet: {
+          metadata: [
+            {
+              $count: "totalRecords",
+            },
+          ],
+          data: [
+            {
+              $skip: skip,
+            },
+            {
+              $limit: limit,
+            },
+          ],
+        },
       },
-      {
-        $limit: limit,
-      },
-    ]);
+    ];
+
+    const result = await customization.aggregate(pipeline);
+    
+    const totalRecords = result[0]?.metadata?.[0]?.totalRecords || 0;
 
     return {
       success: true,
@@ -5239,17 +5227,15 @@ const getUsersWithCustomizations = async (req, res) => {
         totalPages: Math.ceil(totalRecords / limit),
         limit,
       },
-      data,
+      data: result[0]?.data || [],
     };
   } catch (error) {
     throw new ApiError(
       httpStatus.INTERNAL_SERVER_ERROR,
-      "An error occurred while fetching users with customizations",
       error.message
     );
   }
 };
-
 
 
 module.exports = {
