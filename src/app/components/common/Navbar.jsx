@@ -15,15 +15,35 @@ const CRICKET_MENU = {
     {
       title: "BUILD YOUR KIT",
       links: [
-        { name: "Playing Jersey", href: "/cricket/playing-jersey" },
-        { name: "White T-Shirts & Trousers", href: "/cricket/white-tshirts" },
+        {
+          name: "Playing Jersey",
+          href: "/products?segment=Uniforms&sport=Cricket&apparel=Jersey%20%2F%20T-Shirt",
+        },
+        {
+          name: "Playing Shorts",
+          href: "/products?segment=Uniforms&sport=Cricket&apparel=Shorts",
+        },
+        {
+          name: "Playing Trousers",
+          href: "/products?segment=Uniforms&sport=Cricket&apparel=Track%20Pants",
+        },
       ],
     },
     {
       title: "TRAINING WEAR",
       links: [
-        { name: "Training Jersey", href: "/cricket/training-jersey" },
-        { name: "Training Shorts", href: "/cricket/training-shorts" },
+        {
+          name: "Training Jersey",
+          href: "/products?segment=Uniforms&sport=Cricket&apparel=Jersey%20%2F%20T-Shirt",
+        },
+        {
+          name: "Training Shorts",
+          href: "/products?segment=Uniforms&sport=Cricket&apparel=Shorts",
+        },
+        {
+          name: "Training Trousers",
+          href: "/products?segment=Uniforms&sport=Cricket&apparel=Track%20Pants",
+        },
       ],
     },
     {
@@ -37,104 +57,99 @@ const CRICKET_MENU = {
 };
 
 const SPORTS_INDIA_MENU = [
-  { 
-    name: "Cricket", 
-    href: "/sports/cricket", 
-    accessories: [
-    {
-  name: "Cricket Jersey",
-  href: "/products?segment=Custom Sportswear&sport=Cricket&apparel=Jersey / T-Shirt"
-},
-
-{
-  name: "Cricket Trousers",
-  href: "/products?segment=Custom Sportswear&sport=Cricket&apparel=Track Pants"
-},
-
-{
-  name: "Cricket Shorts",
-  href: "/products?segment=Custom Sportswear&sport=Cricket&apparel=Shorts"
-},
-    ]
-  },
-  { 
-    name: "Soccer", 
-    href: "/sports/soccer", 
+  {
+    name: "Cricket",
+    href: "/sports/cricket",
     accessories: [
       {
-  name: "Soccer Jersey",
-  href: "/products?segment=Custom Sportswear&sport=Soccer&apparel=Jersey / T-Shirt"
-},
-
-{
-  name: "Soccer Trousers",
-  href: "/products?segment=Custom Sportswear&sport=Soccer&apparel=Track Pants"
-},
-
-{
-  name: "Soccer Shorts",
-  href: "/products?segment=Custom Sportswear&sport=Soccer&apparel=Shorts"
-},
-    ]
+        name: "Cricket Jersey",
+        href: "/products?segment=Uniforms&sport=Cricket&apparel=Jersey%20%2F%20T-Shirt",
+      },
+      {
+        name: "Cricket Trousers",
+        href: "/products?segment=Uniforms&sport=Cricket&apparel=Track%20Pants",
+      },
+      {
+        name: "Cricket Shorts",
+        href: "/products?segment=Uniforms&sport=Cricket&apparel=Shorts",
+      },
+    ],
   },
-  { 
-    name: "Tennis", 
-    href: "/sports/tennis", 
-    accessories: [
-   {
-  name: "Tennis Jersey",
-  href: "/products?segment=Custom Sportswear&sport=Tennis&apparel=Jersey / T-Shirt"
-},
-{
-  name: "Tennis Shorts",
-  href: "/products?segment=Custom Sportswear&sport=Tennis&apparel=Shorts"
-},
 
-{
-  name: "Tennis Trousers",
-  href: "/products?segment=Custom Sportswear&sport=Tennis&apparel=Track Pants"
-},
-    ]
+  {
+    name: "Soccer",
+    href: "/sports/soccer",
+    accessories: [
+      {
+        name: "Soccer Jersey",
+        href: "/products?segment=Uniforms&sport=Soccer&apparel=Jersey%20%2F%20T-Shirt",
+      },
+      {
+        name: "Soccer Trousers",
+        href: "/products?segment=Uniforms&sport=Soccer&apparel=Track%20Pants",
+      },
+      {
+        name: "Soccer Shorts",
+        href: "/products?segment=Uniforms&sport=Soccer&apparel=Shorts",
+      },
+    ],
   },
-  { 
-    name: "Badminton", 
-    href: "/sports/badminton", 
+
+  {
+    name: "Tennis",
+    href: "/sports/tennis",
     accessories: [
-     {
-  name: "Badminton Jersey",
-  href: "/products?segment=Custom Sportswear&sport=Badminton&apparel=Jersey / T-Shirt"
-},
-
-{
-  name: "Badminton Trousers",
-  href: "/products?segment=Custom Sportswear&sport=Badminton&apparel=Track Pants"
-},
-
-{
-  name: "Badminton Shorts",
-  href: "/products?segment=Custom Sportswear&sport=Badminton&apparel=Shorts"
-},
-    ]
+      {
+        name: "Tennis Jersey",
+        href: "/products?segment=Uniforms&sport=Tennis&apparel=Jersey%20%2F%20T-Shirt",
+      },
+      {
+        name: "Tennis Trousers",
+        href: "/products?segment=Uniforms&sport=Tennis&apparel=Track%20Pants",
+      },
+      {
+        name: "Tennis Shorts",
+        href: "/products?segment=Uniforms&sport=Tennis&apparel=Shorts",
+      },
+    ],
   },
-  { 
-    name: "Pickleball", 
-    href: "/sports/pickleball", 
+
+  {
+    name: "Badminton",
+    href: "/sports/badminton",
     accessories: [
-{
-  name: "Pickleball Jersey",
-  href: "/products?segment=Custom Sportswear&sport=Pickleball&apparel=Jersey / T-Shirt"
-},
+      {
+        name: "Badminton Jersey",
+        href: "/products?segment=Uniforms&sport=Badminton&apparel=Jersey%20%2F%20T-Shirt",
+      },
+      {
+        name: "Badminton Trousers",
+        href: "/products?segment=Uniforms&sport=Badminton&apparel=Track%20Pants",
+      },
+      {
+        name: "Badminton Shorts",
+        href: "/products?segment=Uniforms&sport=Badminton&apparel=Shorts",
+      },
+    ],
+  },
 
-{
-  name: "Pickleball Trousers",
-  href: "/products?segment=Custom Sportswear&sport=Pickleball&apparel=Track Pants"
-},
-
-{
-  name: "Pickleball Shorts",
-  href: "/products?segment=Custom Sportswear&sport=Pickleball&apparel=Shorts"
-},
-    ]
+  {
+    name: "Pickleball",
+    href: "/sports/pickleball",
+    accessories: [
+      {
+        name: "Pickleball Jersey",
+        href: "/products?segment=Uniforms&sport=Pickleball&apparel=Jersey%20%2F%20T-Shirt",
+      },
+      {
+        name: "Pickleball Trousers",
+        href: "/products?segment=Uniforms&sport=Pickleball&apparel=Track%20Pants",
+      },
+      {
+        name: "Pickleball Shorts",
+        href: "/products?segment=Uniforms&sport=Pickleball&apparel=Shorts",
+      },
+    ],
   },
 ];
 
@@ -143,7 +158,7 @@ const RESOURCES_MENU = [
   { name: "FAQ", href: "/faq" },
   { name: "Price Estimator", href: "/price-estimator" },
   { name: "Catalog", href: "/catalog" },
-  { name: "Bulk Orders", href: "/bulk-orders" },
+  { name: "Bulk Orders", href: "/bulk-enquiry" },
 ];
 
 const NAV_ITEMS = [
@@ -323,7 +338,7 @@ function MobileItem({ item }) {
 
 function AnimatedLogo() {
   const letters = "LEOCULT".split("");
-  const primaryBlue = "#2563EB"; 
+  const primaryBlue = "#2563EB";
 
   return (
     <div className="flex flex-col items-center">
@@ -331,10 +346,10 @@ function AnimatedLogo() {
         {letters.map((l, i) => (
           <motion.span
             key={i}
-            animate={{ 
+            animate={{
               y: [0, -4, 0],
-              color: i < 3 
-                ? ["#000", "#6B7280", "#000"] 
+              color: i < 3
+                ? ["#000", "#6B7280", "#000"]
                 : [primaryBlue, "#60A5FA", primaryBlue]
             }}
             transition={{
@@ -349,7 +364,7 @@ function AnimatedLogo() {
           </motion.span>
         ))}
       </div>
-      <motion.div 
+      <motion.div
         animate={{ width: ["20%", "100%", "20%"] }}
         transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
         className="h-[2px] bg-blue-600 mt-1"
@@ -413,10 +428,9 @@ function Tooltip({
               -translate-x-1/2
               w-2 h-2 rotate-45
               bg-blue-700
-              ${
-                position === "bottom"
-                  ? "-top-1"
-                  : "-bottom-1"
+              ${position === "bottom"
+                ? "-top-1"
+                : "-bottom-1"
               }
             `}
           />
@@ -439,24 +453,13 @@ export default function Navbar() {
   const headerRef = useRef(null);
   const { user } = useSelector((state) => state.auth);
   const cartItems = useSelector((state) => state.cart?.items || []);
+  const cartItemCount = cartItems.length; const [mounted, setMounted] =
+    useState(false);
 
- const [mounted, setMounted] =
-  useState(false);
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
-useEffect(() => {
-  setMounted(true);
-}, []);
-
-const cartItemCount = cartItems.reduce(
-  (total, item) =>
-    total +
-    (item.sizes || []).reduce(
-      (sum, size) =>
-        sum + size.quantity,
-      0
-    ),
-  0
-);
 
   const openAuthModal = (mode = "login") => {
     setAuthModalMode(mode);
@@ -475,27 +478,27 @@ const cartItemCount = cartItems.reduce(
         document.documentElement.style.setProperty('--navbar-height', `${headerRef.current.getBoundingClientRect().height}px`);
       }
     };
-    
+
     updateNavbarHeight();
-    
+
     const onScroll = () => {
       setScrolled(window.scrollY > 10);
     };
-    
+
     const onResize = () => {
       if (window.innerWidth >= 768) setMobileOpen(false);
       updateNavbarHeight();
     };
-    
+
     window.addEventListener("scroll", onScroll);
     window.addEventListener("resize", onResize);
-    
+
     // Observer for navbar changes
     const observer = new ResizeObserver(updateNavbarHeight);
     if (headerRef.current) {
       observer.observe(headerRef.current);
     }
-    
+
     return () => {
       window.removeEventListener("scroll", onScroll);
       window.removeEventListener("resize", onResize);
@@ -513,17 +516,17 @@ const cartItemCount = cartItems.reduce(
   };
 
   const stayOpen = () => clearTimeout(leaveTimer.current);
-
+  console.log("Navbar Cart Items:", cartItems);
   return (
     <>
       {/* Navbar */}
-<header
-  ref={headerRef}
-  className={`fixed left-0 right-0 z-40 bg-[#f2f7fb] transition-all duration-300 ${scrolled ? "top-0" : "top-[40px]"}`}
->
+      <header
+        ref={headerRef}
+        className={`fixed left-0 right-0 z-40 bg-[#f2f7fb] transition-all duration-300 ${scrolled ? "top-0" : "top-[40px]"}`}
+      >
         <div className="max-w-full mx-auto px-4 md:px-8 flex items-center justify-between h-[80px]">
           <Link href="/" className="flex items-center gap-3 h-full group">
-            <Image 
+            <Image
               src="/images/icons/mainlogo1.png"
               alt="logo"
               width={140}
@@ -542,16 +545,14 @@ const cartItemCount = cartItems.reduce(
                 className="relative"
               >
                 <button
-                  className={`flex items-center gap-1.5 px-6 py-3 text-[15px] font-medium transition-colors font-primary ${
-                    activeMenu === item.id ? "text-gray-900" : "text-gray-700 hover:text-primary"
-                  }`}
+                  className={`flex items-center gap-1.5 px-6 py-3 text-[15px] font-medium transition-colors font-primary ${activeMenu === item.id ? "text-gray-900" : "text-gray-700 hover:text-primary"
+                    }`}
                 >
                   {item.label}
-                  <ChevronDown 
-                    size={15} 
-                    className={`transition-transform duration-200 ${
-                      activeMenu === item.id ? "rotate-180" : ""
-                    }`} 
+                  <ChevronDown
+                    size={15}
+                    className={`transition-transform duration-200 ${activeMenu === item.id ? "rotate-180" : ""
+                      }`}
                   />
                 </button>
                 {activeMenu === item.id && (
@@ -603,12 +604,12 @@ const cartItemCount = cartItems.reduce(
                   )}
                 </motion.button>
               </Link>
-              <Tooltip 
+              <Tooltip
                 text={
-                  cartItemCount === 0 ? "Your cart is empty" : 
-                  `View Cart (${cartItemCount} item${cartItemCount > 1 ? 's' : ''})`
-                } 
-                position="bottom" 
+                  cartItemCount === 0 ? "Your cart is empty" :
+                    `View Cart (${cartItemCount} item${cartItemCount > 1 ? 's' : ''})`
+                }
+                position="bottom"
               />
             </div>
 
@@ -720,18 +721,18 @@ const cartItemCount = cartItems.reduce(
               onClick={() => setActiveMenu(null)}
               onMouseEnter={onLeave}
             />
-            
+
             <motion.div
               initial={{ opacity: 0, y: -10 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -10 }}
               transition={{ duration: 0.2 }}
               className="fixed left-0 right-0 bg-white shadow-2xl z-50 border-t border-gray-100"
-              style={{ 
-  top: scrolled 
-    ? `${navbarHeight}px` 
-    : `calc(40px + ${navbarHeight}px)` 
-}}
+              style={{
+                top: scrolled
+                  ? `${navbarHeight}px`
+                  : `calc(40px + ${navbarHeight}px)`
+              }}
               onMouseEnter={stayOpen}
               onMouseLeave={onLeave}
             >
@@ -744,7 +745,7 @@ const cartItemCount = cartItems.reduce(
       </AnimatePresence>
 
       {/* Auth Modal */}
-      <AuthModal 
+      <AuthModal
         isOpen={isAuthModalOpen}
         onClose={closeAuthModal}
         defaultMode={authModalMode}

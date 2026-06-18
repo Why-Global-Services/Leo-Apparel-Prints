@@ -108,14 +108,14 @@ export default function Home() {
       <ShopBySport />
       <WhyChooseUs />
       <TestimonialSection />
-      <FeatureBar />
+      <FeatureBar/>
 
       {/* 🔥 PREMIUM SCROLL BUTTON */}
       {showScrollTop && (
         <button
-  onClick={scrollToTop}
-  aria-label="Scroll to top"
-  className="group fixed bottom-8 right-8 z-50
+          onClick={scrollToTop}
+          aria-label="Scroll to top"
+          className="group fixed bottom-8 right-8 z-50
   bg-gradient-to-r from-[#0EA5E9] via-[#0284C7] to-[#1E3A8A]
   hover:from-[#1E3A8A] hover:via-[#0284C7] hover:to-[#0EA5E9]
   text-white rounded-full p-3
@@ -123,26 +123,26 @@ export default function Home() {
   transition-all duration-500
   active:scale-90
   overflow-hidden"
->
-  {/* 🔥 GOLD ARROW */}
-  <svg
-    className="relative z-10 w-5 h-5 transition-transform duration-300 group-hover:-translate-y-1"
-    fill="none"
-    viewBox="0 0 24 24"
-  >
-    <path
-      stroke="#F5B800"
-      strokeWidth={2}
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      d="M5 10l7-7m0 0l7 7m-7-7v18"
-      style={{ filter: "drop-shadow(0 0 4px #F5B800)" }}
-    />
-  </svg>
+        >
+          {/* 🔥 GOLD ARROW */}
+          <svg
+            className="relative z-10 w-5 h-5 transition-transform duration-300 group-hover:-translate-y-1"
+            fill="none"
+            viewBox="0 0 24 24"
+          >
+            <path
+              stroke="#F5B800"
+              strokeWidth={2}
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              d="M5 10l7-7m0 0l7 7m-7-7v18"
+              style={{ filter: "drop-shadow(0 0 4px #F5B800)" }}
+            />
+          </svg>
 
-  {/* ✨ SHINE */}
-  <div className="absolute inset-0 -translate-x-full group-hover:translate-x-full transition-transform duration-700 bg-gradient-to-r from-transparent via-white/20 to-transparent" />
-</button>
+          {/* ✨ SHINE */}
+          <div className="absolute inset-0 -translate-x-full group-hover:translate-x-full transition-transform duration-700 bg-gradient-to-r from-transparent via-white/20 to-transparent" />
+        </button>
       )}
     </div>
   );

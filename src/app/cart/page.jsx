@@ -797,7 +797,7 @@ export default function CartPage() {
       (sum, item) =>
         sum +
         (item.basePrice || item.price || 0) *
-          (item.sizes || []).reduce((s, size) => s + size.quantity, 0),
+        (item.sizes || []).reduce((s, size) => s + size.quantity, 0),
       0,
     ) || 0;
 
@@ -994,18 +994,13 @@ export default function CartPage() {
                                     <h3 className="font-semibold text-gray-800 font-primary text-sm line-clamp-1">
                                       {item.productName || item.name}
                                     </h3>
-                                    <p className="text-xs text-gray-500">
-                                      {(item.sizes || []).length > 0 && (
-                                        <p className="text-xs text-gray-500">
-                                          {(item.sizes || [])
-                                            .map(
-                                              (s) =>
-                                                `${s.size} × ${s.quantity}`,
-                                            )
-                                            .join(", ")}
-                                        </p>
-                                      )}
-                                    </p>
+                                    {(item.sizes || []).length > 0 && (
+                                      <p className="text-xs text-gray-500">
+                                        {(item.sizes || [])
+                                          .map((s) => `${s.size} × ${s.quantity}`)
+                                          .join(", ")}
+                                      </p>
+                                    )}
                                   </div>
                                   <button
                                     onClick={() => removeItem(itemId)}

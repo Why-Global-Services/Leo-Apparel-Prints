@@ -29,22 +29,22 @@
 //     nameStyle: item.customization?.nameStyle,
 //     textEffect: item.customization?.textEffect,
 //   });
-  
+
 //   return `${item.productId}_${customizationKey}`;
 // };
 
 // // Helper function to convert customization object to array format
 // const convertToArrayFormat = (customizationObj) => {
 //   if (!customizationObj) return [];
-  
+
 //   const customizationArray = [];
-  
+
 //   const fieldsToMap = [
 //     'jerseyColor', 'sleeveColor', 'collarColor', 'playerName', 
 //     'playerNumber', 'fabric', 'size', 'nameFont', 'nameColor', 
 //     'numberFont', 'numberColor', 'nameStyle', 'textEffect'
 //   ];
-  
+
 //   fieldsToMap.forEach((fieldName) => {
 //     const value = customizationObj[fieldName];
 //     if (value && value !== '' && value !== undefined && value !== null) {
@@ -55,7 +55,7 @@
 //       });
 //     }
 //   });
-  
+
 //   return customizationArray;
 // };
 
@@ -66,52 +66,52 @@
 //     try {
 //       const { auth } = getState();
 //       const isAuthenticated = !!auth?.user;
-      
+
 //       console.log("addToCart - isAuthenticated:", isAuthenticated);
 //       console.log("addToCart - cartData:", cartData);
-      
+
 //       if (isAuthenticated) {
 //         // Step 1: Create customization
 //         const customizationArray = convertToArrayFormat(cartData.customization || {});
-        
+
 //         const customizationData = {
 //           productId: cartData.productId,
 //           customization: customizationArray,
 //         };
-        
+
 //         console.log("Creating customization with data:", customizationData);
 //         const customizationResponse = await saveCustomizationAPI(customizationData);
 //         console.log("Customization response:", customizationResponse);
-        
+
 //         const customizationId = customizationResponse.data?._id || customizationResponse._id;
-        
+
 //         if (!customizationId) {
 //           throw new Error("Failed to create customization");
 //         }
-        
+
 //         // Step 2: Add to cart
 //         const cartPayload = {
 //           customizationId: customizationId,
 //           quantity: cartData.quantity,
 //         };
-        
+
 //         console.log("Adding to cart with payload:", cartPayload);
 //         const response = await addToCartAPI(cartPayload);
 //         console.log("Cart API response:", response);
-        
+
 //         return { data: response, isAuthenticated: true };
 //       } else {
 //         // Guest user - store in localStorage
 //         let guestCart = JSON.parse(localStorage.getItem("guestCart") || "[]");
-        
+
 //         // Generate unique key for the new item
 //         const newItemKey = getItemUniqueKey(cartData);
-        
+
 //         // Find existing item with the EXACT same customization
 //         const existingIndex = guestCart.findIndex(item => 
 //           getItemUniqueKey(item) === newItemKey
 //         );
-        
+
 //         if (existingIndex !== -1) {
 //           // Same product with SAME customization - increase quantity
 //           guestCart[existingIndex].quantity += cartData.quantity;
@@ -126,10 +126,10 @@
 //           });
 //           console.log("Added new item with different customization");
 //         }
-        
+
 //         localStorage.setItem("guestCart", JSON.stringify(guestCart));
 //         console.log("Guest cart saved:", guestCart);
-        
+
 //         return { 
 //           data: { items: guestCart }, 
 //           isAuthenticated: false 
@@ -150,7 +150,7 @@
 //     try {
 //       const { auth } = getState();
 //       const isAuthenticated = !!auth?.user;
-      
+
 //       if (isAuthenticated) {
 //         const response = await getCartAPI();
 //         console.log("Cart API response:", response);
@@ -174,9 +174,9 @@
 //     try {
 //       const { auth } = getState();
 //       const isAuthenticated = !!auth?.user;
-      
+
 //       console.log("editCartItem - customizationId:", customizationId, "quantity:", quantity);
-      
+
 //       if (isAuthenticated) {
 //         const response = await editCartAPI({ customizationId, quantity });
 //         return { data: response, isAuthenticated: true };
@@ -185,7 +185,7 @@
 //         const itemIndex = guestCart.findIndex(item => 
 //           item.id === customizationId || item.customizationId === customizationId
 //         );
-        
+
 //         if (itemIndex !== -1) {
 //           if (quantity < 1) {
 //             guestCart.splice(itemIndex, 1);
@@ -194,7 +194,7 @@
 //           }
 //           localStorage.setItem("guestCart", JSON.stringify(guestCart));
 //         }
-        
+
 //         return { data: { items: guestCart }, isAuthenticated: false };
 //       }
 //     } catch (err) {
@@ -211,9 +211,9 @@
 //     try {
 //       const { auth } = getState();
 //       const isAuthenticated = !!auth?.user;
-      
+
 //       console.log("removeFromCart - customizationId:", customizationId);
-      
+
 //       if (isAuthenticated) {
 //         const response = await removeCartAPI(customizationId);
 //         return { customizationId, data: response, isAuthenticated: true };
@@ -239,24 +239,24 @@
 //     try {
 //       const guestCart = JSON.parse(localStorage.getItem("guestCart") || "[]");
 //       console.log("Merging guest cart items:", guestCart);
-      
+
 //       if (guestCart.length === 0) {
 //         return null;
 //       }
-      
+
 //       // Process each guest cart item
 //       for (const guestItem of guestCart) {
 //         const customizationArray = convertToArrayFormat(guestItem.customization || {});
-        
+
 //         const customizationData = {
 //           productId: guestItem.productId,
 //           customization: customizationArray,
 //         };
-        
+
 //         console.log("Creating customization for merge item:", guestItem.name);
 //         const customizationResponse = await saveCustomizationAPI(customizationData);
 //         const customizationId = customizationResponse.data?._id || customizationResponse._id;
-        
+
 //         if (customizationId) {
 //           await addToCartAPI({
 //             customizationId: customizationId,
@@ -265,10 +265,10 @@
 //           console.log(`Added item to cart: ${guestItem.name} x ${guestItem.quantity}`);
 //         }
 //       }
-      
+
 //       localStorage.removeItem("guestCart");
 //       console.log("Guest cart merged successfully");
-      
+
 //       return { success: true };
 //     } catch (err) {
 //       console.error("mergeGuestCart error:", err);
@@ -382,6 +382,7 @@ export const addToCart =
             sizes:
               cartData.sizes || [],
           });
+        console.log("ADD TO CART RESPONSE:", response);
 
         return {
           data: response,
@@ -492,7 +493,7 @@ export const removeFromCart = createAsyncThunk(
 // =========================
 //
 export const clearCart = createAsyncThunk(
-  "cart/clearCart",
+  "/removeCart",
   async (_, { rejectWithValue }) => {
     try {
       console.log("🔥 CLEAR CART");
