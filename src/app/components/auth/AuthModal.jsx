@@ -542,6 +542,58 @@ const handleGoogleLogin = () => {
           .am-switch-link { color:#38bdf8;font-weight:600;cursor:pointer;transition:opacity 0.2s; }
           .am-switch-link:hover { opacity:0.75; }
           .am-promo { text-align:center;margin-top:4px;font-size:9.5px;color:rgba(255,255,255,0.28);font-family:'Inter',sans-serif;flex-shrink:0; }
+
+          /* ── Tablet & below: hide left panel via CSS (JS also hides it but this prevents hydration flash) ── */
+          @media (max-width: 900px) {
+            .am-shell { width: 460px !important; height: auto !important; min-height: 0; }
+            .am-left { display: none !important; }
+          }
+
+          /* ── Mobile: compact bottom-sheet — no empty space ── */
+          @media (max-width: 640px) {
+            .am-shell {
+              width: 100vw !important;
+              max-width: 100vw !important;
+              height: auto !important;       /* override desktop 570px */
+              max-height: 92dvh !important;
+              border-radius: 20px 20px 0 0 !important;
+              overflow-y: auto !important;
+              flex-direction: column !important;
+              box-shadow: 0 -12px 40px rgba(0,0,0,0.5) !important;
+            }
+            /* Internal close button — visible top-right */
+            .am-close {
+              top: 12px !important;
+              right: 14px !important;
+              width: 32px !important;
+              height: 32px !important;
+              background: rgba(255,255,255,0.12) !important;
+              border: 1px solid rgba(255,255,255,0.20) !important;
+              color: rgba(255,255,255,0.85) !important;
+            }
+            /* am-right must NOT flex-grow — shrink to content only */
+            .am-right {
+              flex: none !important;
+              padding: 48px 20px 28px !important;   /* top pad = space for the close btn */
+              height: auto !important;
+            }
+            /* am-form must NOT flex-grow or centre — stack from top */
+            .am-form {
+              flex: none !important;
+              gap: 10px !important;
+              justify-content: flex-start !important;
+            }
+            .am-form-register { flex: none !important; gap: 8px !important; }
+            .am-mobile-brand { margin-bottom: 6px !important; }
+            .am-tabs { margin-bottom: 4px !important; }
+            .am-title { font-size: 19px !important; }
+            .am-sub { font-size: 10.5px !important; }
+            .am-two-col { grid-template-columns: 1fr !important; gap: 8px !important; }
+            .am-forgot-row { margin: -2px 0 0 !important; }
+            .am-divider { margin: 2px 0 !important; }
+            .am-switch-text { margin-top: 4px !important; }
+            .am-promo { display: none !important; }
+          }
         `}</style>
       </Modal>
 

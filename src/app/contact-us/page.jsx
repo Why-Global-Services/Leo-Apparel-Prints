@@ -69,8 +69,8 @@ const ContactUs = () => {
                   </div>
                   <div className="flex-1">
                     <h3 className="text-base sm:text-lg md:text-xl font-semibold mb-1 sm:mb-2" style={{ color: '#020617' }}>Phone</h3>
-                    <p className="text-sm sm:text-base md:text-lg mb-1" style={{ color: '#4A5568' }}>+1 (555) 123-4567</p>
-                    <p className="text-xs sm:text-sm" style={{ color: '#A0AEC0' }}>Monday - Friday, 9am - 6pm EST</p>
+                    <p className="text-sm sm:text-base md:text-lg mb-1" style={{ color: '#4A5568' }}>+91 90871 49666</p>
+                    <p className="text-xs sm:text-sm" style={{ color: '#A0AEC0' }}>Monday – Saturday, 9am – 7pm IST</p>
                   </div>
                 </div>
               </div>
@@ -83,7 +83,7 @@ const ContactUs = () => {
                   </div>
                   <div className="flex-1">
                     <h3 className="text-base sm:text-lg md:text-xl font-semibold mb-1 sm:mb-2" style={{ color: '#020617' }}>Email</h3>
-                    <p className="text-sm sm:text-base md:text-lg mb-1" style={{ color: '#4A5568' }}>hello@example.com</p>
+                    <p className="text-sm sm:text-base md:text-lg mb-1" style={{ color: '#4A5568' }}>leocult@gmail.com</p>
                     <p className="text-xs sm:text-sm" style={{ color: '#A0AEC0' }}>We'll respond within 24 hours</p>
                   </div>
                 </div>
@@ -97,8 +97,10 @@ const ContactUs = () => {
                   </div>
                   <div className="flex-1">
                     <h3 className="text-base sm:text-lg md:text-xl font-semibold mb-1 sm:mb-2" style={{ color: '#020617' }}>Office</h3>
-                    <p className="text-sm sm:text-base md:text-lg" style={{ color: '#4A5568' }}>123 Business Avenue, Suite 100</p>
-                    <p className="text-sm sm:text-base md:text-lg" style={{ color: '#4A5568' }}>New York, NY 10001</p>
+                    <p className="text-sm sm:text-base md:text-lg" style={{ color: '#4A5568' }}>44A, Chettiyar veethi,</p>
+                    <p className="text-sm sm:text-base md:text-lg" style={{ color: '#4A5568' }}>Kariyakaliyamman kovil street,</p>
+                    <p className="text-sm sm:text-base md:text-lg" style={{ color: '#4A5568' }}>15-Velampalayam, Tirupur – 641652</p>
+                    <p className="text-xs sm:text-sm mt-1" style={{ color: '#A0AEC0' }}>GST: 33BRVPP8688J2ZK</p>
                   </div>
                 </div>
               </div>
@@ -111,14 +113,14 @@ const ContactUs = () => {
               <div className="absolute -top-4 -left-4 w-20 h-20 sm:w-24 sm:h-24 rounded-full" style={{ background: 'linear-gradient(135deg, rgba(14, 165, 233, 0.1), rgba(30, 58, 138, 0.1))', filter: 'blur(20px)' }}></div>
               <div className="relative rounded-xl sm:rounded-2xl overflow-hidden shadow-2xl" style={{ boxShadow: '0 20px 40px -15px rgba(0, 0, 0, 0.2)' }}>
                 <iframe
-                  src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3024.2219901290355!2d-74.00369368400567!3d40.71312937933077!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x89c25a316bbf27a7%3A0xfb93ffefb7e77a3a!2s123%20Business%20St%2C%20New%20York%2C%20NY%2010001!5e0!3m2!1sen!2sus!4v1645567890123!5m2!1sen!2sus"
+                  src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3916.2661967990077!2d77.33381!3d11.1085!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3ba907b0b2b7b0b1%3A0x0!2sVelampalayam%2C%20Tirupur%2C%20Tamil%20Nadu%20641652!5e0!3m2!1sen!2sin!4v1718779000000!5m2!1sen!2sin"
                   width="100%"
                   height="300"
                   className="sm:h-[350px] md:h-[400px]"
                   style={{ border: 0 }}
                   allowFullScreen=""
                   loading="lazy"
-                  title="Office Location"
+                  title="LEO CULT Office Location – Velampalayam, Tirupur"
                 ></iframe>
               </div>
               <div className="absolute -bottom-4 -right-4 w-24 h-24 sm:w-32 sm:h-32 rounded-full" style={{ background: 'linear-gradient(135deg, rgba(245, 184, 0, 0.1), rgba(232, 150, 10, 0.1))', filter: 'blur(25px)' }}></div>

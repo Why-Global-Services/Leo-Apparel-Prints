@@ -233,7 +233,7 @@ export default function NavbarBottom() {
   const features = [
     { icon: FaCube, text: "Design in 3D", link: null },
     { icon: FaShippingFast, text: "Free Worldwide Shipping", link: null },
-    { icon: FaPhoneAlt, text: "+1 847 624 2660", link: "tel:+18476242660" },
+    { icon: FaPhoneAlt, text: "+91 90871 49666", link: "tel:+919087149666" },
     { icon: FaHeadset, text: "24/7 Support", link: "/contact-us" },
     { icon: FaQuestion, text: "FAQ", link: "/faq" },
   ];
@@ -308,7 +308,7 @@ export default function NavbarBottom() {
                 <FaPhoneAlt className="text-primary text-base group-hover:text-white transition" />
               </div>
               <span className="text-sm font-medium group-hover:text-primary transition font-secondary">
-                +1 847 624 2660
+                +91 90871 49666
               </span>
             </a>
 

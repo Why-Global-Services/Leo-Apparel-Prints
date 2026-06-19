@@ -208,7 +208,7 @@ export default function Footer() {
   const currentYear = new Date().getFullYear();
 
   const socialLinks = [
-    { name: "WhatsApp", icon: <FaWhatsapp size={20} />, url: "https://wa.me/#" },
+    { name: "WhatsApp", icon: <FaWhatsapp size={20} />, url: "https://wa.me/919087149666" },
     { name: "Facebook", icon: <FaFacebook size={20} />, url: "#" },
     { name: "Instagram", icon: <FaInstagram size={20} />, url: "#" },
     { name: "Twitter", icon: <FaTwitter size={20} />, url: "#" },
@@ -305,7 +305,6 @@ export default function Footer() {
               { label: "Bulk Orders", href: "/bulk-enquiry" },
               { label: "Size Guide", href: "/size-guide" },
               { label: "Shipping Info", href: "/shipping-info" },
-              { label: "Affiliates", href: "/affiliates" },
               { label: "Testimonials", href: "/testimonials" },
             ].map((item) => (
               <li key={item.label}>
@@ -384,6 +383,9 @@ export default function Footer() {
         </div>
         <p className="text-white font-normal text-[7px] md:text-[10px] italic tracking-[0.2em] uppercase opacity-60 font-secondary">
           © {currentYear} LEO CULT APPAREL. ALL RIGHTS RESERVED.
+        </p>
+        <p className="text-white/30 text-[7px] md:text-[9px] tracking-widest uppercase font-secondary text-center">
+          HDFC Bank &bull; A/C: 99998438098 43 &bull; IFSC: HDFC0007447 &bull; Anupparpalayam, Tirupur &bull; GST: 33BRVPP8688J2ZK
         </p>
       </div>
 
