@@ -206,6 +206,7 @@ export default function Footer() {
   const [email, setEmail] = React.useState("");
   const [offerSent, setOfferSent] = React.useState(false);
   const currentYear = new Date().getFullYear();
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL;
 
   const socialLinks = [
     { name: "WhatsApp", icon: <FaWhatsapp size={20} />, url: "https://wa.me/#" },
@@ -337,7 +338,7 @@ export default function Footer() {
                   e.preventDefault();
                   if (!email) return;
                   try {
-                    await fetch("http://localhost:5001/v1/user/newsletter/claim-offer", {
+                    await fetch(`${apiUrl}/v1/user/newsletter/claim-offer`, {
                       method: "POST",
                       headers: { "Content-Type": "application/json" },
                       body: JSON.stringify({ email })
