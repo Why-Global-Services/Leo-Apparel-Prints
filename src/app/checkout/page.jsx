@@ -459,23 +459,33 @@ export default function CheckoutPage() {
 
   return (
     <div style={{ minHeight: "100vh", background: C.pageBg, paddingTop: 32, paddingBottom: 48 }}>
+      {/* Responsive checkout grid style */}
+      <style>{`
+        .checkout-step-bar { display: flex; align-items: center; gap: 0; flex-wrap: wrap; justify-content: flex-end; }
+        .checkout-addr-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+        @media (max-width: 640px) {
+          .checkout-header { flex-direction: column; align-items: flex-start !important; gap: 12px; }
+          .checkout-step-bar { justify-content: flex-start; }
+          .checkout-addr-grid { grid-template-columns: 1fr; }
+        }
+      `}</style>
       <div style={{ maxWidth: 1200, margin: "0 auto", padding: "0 16px" }}>
         {/* Page header */}
-        <div  style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 24, background: C.white, borderRadius: 14, padding: "20px 24px", boxShadow: "0 1px 4px rgba(0,0,0,0.04)" }}>
+        <div className="checkout-header" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 24, background: C.white, borderRadius: 14, padding: "20px 24px", boxShadow: "0 1px 4px rgba(0,0,0,0.04)" }}>
           <div>
             <h2 style={{ fontSize: 22, fontWeight: 700, margin: "0 0 4px", color: C.blue }}>Checkout</h2>
             <p style={{ fontSize: 13, color: C.textLight, margin: 0 }}>Complete your order</p>
           </div>
-          <div style={{ display: "flex", alignItems: "center", gap: 0 }}>
+          <div className="checkout-step-bar">
             {["Address", "Payment", "Confirmation"].map((step, i) => (
               <div key={step} style={{ display: "flex", alignItems: "center" }}>
-                <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                  <div style={{ width: 26, height: 26, borderRadius: "50%", background: i === 0 ? `linear-gradient(135deg, ${C.blue}, ${C.blueDark})` : "#e5e7eb", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 11, fontWeight: 700, color: i === 0 ? "#fff" : C.textMuted }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
+                  <div style={{ width: 24, height: 24, borderRadius: "50%", background: i === 0 ? `linear-gradient(135deg, ${C.blue}, ${C.blueDark})` : "#e5e7eb", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 11, fontWeight: 700, color: i === 0 ? "#fff" : C.textMuted, flexShrink: 0 }}>
                     {i === 0 ? <Check size={12} /> : i + 1}
                   </div>
-                  <span style={{ fontSize: 12, fontWeight: i === 0 ? 700 : 500, color: i === 0 ? C.blue : C.textMuted }}>{step}</span>
+                  <span style={{ fontSize: 11, fontWeight: i === 0 ? 700 : 500, color: i === 0 ? C.blue : C.textMuted, whiteSpace: "nowrap" }}>{step}</span>
                 </div>
-                {i < 2 && <div style={{ width: 32, height: 2, background: "#e5e7eb", margin: "0 8px" }} />}
+                {i < 2 && <div style={{ width: 20, height: 2, background: "#e5e7eb", margin: "0 4px", flexShrink: 0 }} />}
               </div>
             ))}
           </div>
@@ -574,7 +584,7 @@ export default function CheckoutPage() {
               </div>
               <div style={{ padding: 20 }}>
                 {billingAddresses.length > 0 ? (
-                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+                  <div className="checkout-addr-grid">
                     {billingAddresses.map(addr => <AddressCard key={addr._id} address={addr} selected={selectedBilling?._id === addr._id} onSelect={() => handleSelectBilling(addr)} />)}
                   </div>
                 ) : (
@@ -640,7 +650,7 @@ export default function CheckoutPage() {
                                 <X size={16} color={C.textLight} />
                               </button>
                             </div>
-                            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+                            <div className="checkout-addr-grid">
                               {deliveryAddresses.map(addr => <AddressCard key={addr._id} address={addr} selected={selectedDelivery?._id === addr._id} onSelect={() => handleSelectDelivery(addr)} />)}
                             </div>
                           </>

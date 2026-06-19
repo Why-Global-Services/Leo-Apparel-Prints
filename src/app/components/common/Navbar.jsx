@@ -528,7 +528,7 @@ useEffect(() => {
       {/* Navbar */}
       <header
         ref={headerRef}
-        className={`fixed left-0 right-0 z-40 bg-[#f2f7fb] transition-all duration-300 ${scrolled ? "top-0" : "top-[40px]"}`}
+        className={`fixed left-0 right-0 z-40 bg-[#f2f7fb] transition-all duration-300 ${scrolled ? "top-0" : "top-[var(--topbar-height,40px)]"}`}
       >
         <div className="max-w-full mx-auto px-4 md:px-8 flex items-center justify-between h-[80px]">
           <Link href="/" className="flex items-center gap-3 h-full group">
@@ -712,7 +712,7 @@ useEffect(() => {
       </header>
 
       {/* Spacer - prevents content from hiding under fixed navbar */}
-      <div style={{ height: `calc(40px + ${navbarHeight}px)`, width: '100%' }} />
+      <div style={{ height: `calc(var(--topbar-height, 40px) + ${navbarHeight}px)`, width: '100%' }} />
 
       {/* Dropdown Panels */}
       <AnimatePresence>
@@ -723,7 +723,7 @@ useEffect(() => {
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               className="fixed inset-0 bg-black/30 z-[45]"
-              style={{ top: `calc(40px + ${navbarHeight}px)` }}
+              style={{ top: `calc(var(--topbar-height, 40px) + ${navbarHeight}px)` }}
               onClick={() => setActiveMenu(null)}
               onMouseEnter={onLeave}
             />
@@ -737,7 +737,7 @@ useEffect(() => {
               style={{
                 top: scrolled
                   ? `${navbarHeight}px`
-                  : `calc(40px + ${navbarHeight}px)`
+                  : `calc(var(--topbar-height, 40px) + ${navbarHeight}px)`
               }}
               onMouseEnter={stayOpen}
               onMouseLeave={onLeave}

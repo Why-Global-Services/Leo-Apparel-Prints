@@ -189,7 +189,7 @@
 
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import {
   FaPhoneAlt,
@@ -203,6 +203,7 @@ export default function NavbarBottom() {
   const [hide, setHide] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
   const [mounted, setMounted] = useState(false);
+  const barRef = useRef(null);
 
   useEffect(() => {
     setMounted(true);
@@ -211,7 +212,22 @@ export default function NavbarBottom() {
     };
 
     window.addEventListener("scroll", onScroll);
-    return () => window.removeEventListener("scroll", onScroll);
+
+    // Publish own height as CSS variable so Navbar can read it
+    const updateHeight = () => {
+      if (barRef.current) {
+        const h = barRef.current.getBoundingClientRect().height;
+        document.documentElement.style.setProperty('--topbar-height', `${h}px`);
+      }
+    };
+    updateHeight();
+    const ro = new ResizeObserver(updateHeight);
+    if (barRef.current) ro.observe(barRef.current);
+
+    return () => {
+      window.removeEventListener("scroll", onScroll);
+      ro.disconnect();
+    };
   }, []);
 
   const features = [
@@ -246,6 +262,7 @@ export default function NavbarBottom() {
 
   return (
     <div
+      ref={barRef}
       className={`fixed top-0 left-0 right-0 
       bg-gradient-to-r from-[var(--nav-start)] via-[var(--nav-mid)] to-[var(--nav-end)]
       text-white z-50 transition-transform duration-300 

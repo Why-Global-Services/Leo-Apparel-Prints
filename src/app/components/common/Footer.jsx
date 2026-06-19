@@ -13,7 +13,6 @@ const footerLinks = {
     { name: "Shipping Info", href: "/shipping-info" },
     { name: "FAQ", href: "/faq" },
     { name: "Testimonials", href: "/testimonials" },
-    { name: "Affiliates", href: "/affiliates" },
   ],
   "Company": [
     { name: "About Us", href: "/about-us" },
