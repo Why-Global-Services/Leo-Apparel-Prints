@@ -544,10 +544,14 @@ const IDGenerator = async (req, res) => {
   res.status(200).send(data);
 };
 
-const createBulkEnquiry = catchAsync(async (req, res) => {
-  const data = await bulkEnquiryService.createBulkEnquiry(req);
-  res.status(201).send(data);
-});
+
+
+const createBulkEnquiry=async(req,res)=>{
+  const data =await bulkEnquiryService.createBulkEnquiry(req);
+  res.status(200).send(data)
+}
+
+
 
 module.exports = {
   CreateUserQuery,
