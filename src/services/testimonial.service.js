@@ -5,8 +5,9 @@ const createTestimonial = async (data, file) => {
     try {
         let profileImage = data.profileImage;
         if (file) {
-            const uploadResult = await uploadToCloud(file.buffer, file.mimetype, "testimonials");
-            profileImage = uploadResult.Location;
+            // Fix: uploadToCloud expects (file, keyPrefix)
+            const uploadResultUrl = await uploadToCloud(file, "testimonials");
+            profileImage = uploadResultUrl;
         }
 
         const testimonial = new Testimonial({

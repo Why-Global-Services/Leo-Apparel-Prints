@@ -90,6 +90,7 @@ const orderDetailsSchema = new mongoose.Schema(
               enum: [
                 "Pending",
                 "Ordered",
+                "Processing",
                 "Packing",
                 "Shipped",
                 "Delivered",
@@ -158,6 +159,7 @@ const orderDetailsSchema = new mongoose.Schema(
       enum: [
         "Pending",
         "Ordered",
+        "Processing",
         "Packing",
         "Shipped",
         "Delivered",

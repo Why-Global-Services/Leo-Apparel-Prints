@@ -10,7 +10,6 @@ const getOrder = async (req, res) => {
     {
       $match: {
         userId,
-        orderStatus: { $ne: "Pending" },
       },
     },
     {

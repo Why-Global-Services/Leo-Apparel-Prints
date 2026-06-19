@@ -455,4 +455,26 @@ AdminRouter.patch("/testimonials/:id/approve", testimonialController.approveTest
 AdminRouter.patch("/testimonials/:id/reject", testimonialController.rejectTestimonial);
 AdminRouter.delete("/testimonials/:id", testimonialController.removeTestimonial);
 
+// Hero Banners
+const heroBannerController = require("../../controller/heroBanner.controller");
+AdminRouter.post(
+  "/heroBanner",
+  uploads.fields([
+    { name: "desktopImage", maxCount: 1 },
+    { name: "mobileImage", maxCount: 1 },
+  ]),
+  heroBannerController.createHeroBanner
+);
+AdminRouter.get("/heroBanner", heroBannerController.getAllHeroBanners);
+AdminRouter.put(
+  "/heroBanner/:id",
+  uploads.fields([
+    { name: "desktopImage", maxCount: 1 },
+    { name: "mobileImage", maxCount: 1 },
+  ]),
+  heroBannerController.updateHeroBanner
+);
+AdminRouter.patch("/heroBanner/:id/toggle", heroBannerController.toggleHeroBanner);
+AdminRouter.delete("/heroBanner/:id", heroBannerController.deleteHeroBanner);
+
 module.exports = AdminRouter;

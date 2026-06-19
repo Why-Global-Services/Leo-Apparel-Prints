@@ -274,4 +274,8 @@ router.get("/testimonials", testimonialController.getApprovedTestimonials);
 const newsletterOfferController = require("../../controller/newsletterOffer.controller");
 router.post("/newsletter/claim-offer", newsletterOfferController.claimOffer);
 
+// Hero Banners (public)
+const heroBannerController = require("../../controller/heroBanner.controller");
+router.get("/heroBanners", heroBannerController.getActiveHeroBanners);
+
 module.exports = router;
