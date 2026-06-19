@@ -363,31 +363,6 @@ export default function NavbarBottom() {
         </div>
 
       </div>
-
-      {/* Global Marquee Animation Styles */}
-      <style jsx global>{`
-        @keyframes marqueeAnimation {
-          0% {
-            transform: translateX(0);
-          }
-          100% {
-            transform: translateX(-50%);
-          }
-        }
-
-        .marquee-track {
-          width: max-content;
-          animation: marqueeAnimation 20s linear infinite;
-        }
-
-        .animate-marquee {
-          animation-play-state: running !important;
-        }
-
-        .marquee-track:hover {
-          animation-play-state: paused;
-        }
-      `}</style>
     </div>
   );
 }

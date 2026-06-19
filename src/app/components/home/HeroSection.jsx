@@ -425,44 +425,31 @@ import {
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
+import axiosClient from "@/lib/axios";
 
 const SEGMENTS = ["Custom Sportswear", "Uniforms"];
 const SPORTS   = ["Cricket", "Soccer", "Tennis", "Badminton", "Basketball", "Hockey", "Pickleball"];
 const APPAREL  = ["Jersey / T-Shirt", "Shorts", "Track Pants"];
 
-const BANNER_IMAGES = [
+// Fallback banners used when API is unavailable
+const FALLBACK_BANNERS = [
   {
-    id: 1,
-    src: "/images/banners/banner.png",
-    alt: "LEO CULT Sportswear",
-    animation: {
-      initial:    { opacity: 0, scale: 1.08 },
-      animate:    { opacity: 1, scale: 1 },
-      exit:       { opacity: 0, scale: 0.95 },
-      transition: { duration: 0.9, ease: "easeOut" },
-    },
+    _id: "f1",
+    desktopImage: "/images/banners/banner.png",
+    mobileImage: "/images/banners/banner.png",
+    altText: "LEO CULT Sportswear",
   },
   {
-    id: 2,
-    src: "/images/banners/banner1.png",
-    alt: "Diverse Athletes Collection",
-    animation: {
-      initial:    { opacity: 0, x: -80 },
-      animate:    { opacity: 1, x: 0 },
-      exit:       { opacity: 0, x: 80 },
-      transition: { duration: 0.7, ease: "easeInOut" },
-    },
+    _id: "f2",
+    desktopImage: "/images/banners/banner1.png",
+    mobileImage: "/images/banners/banner1.png",
+    altText: "Diverse Athletes Collection",
   },
   {
-    id: 3,
-    src: "/images/banners/banner2.png",
-    alt: "Team Spirit Uniforms",
-    animation: {
-      initial:    { opacity: 0, y: -60 },
-      animate:    { opacity: 1, y: 0 },
-      exit:       { opacity: 0, y: 60 },
-      transition: { duration: 0.7, ease: "easeInOut" },
-    },
+    _id: "f3",
+    desktopImage: "/images/banners/banner2.png",
+    mobileImage: "/images/banners/banner2.png",
+    altText: "Team Spirit Uniforms",
   },
 ];
 
@@ -536,18 +523,25 @@ function PremiumDropdown({ icon: Icon, placeholder, options, value, onChange }) 
 }
 
 // ─── Background Carousel ──────────────────────────────────────────────────────
-function AutoScrollCarousel() {
+function AutoScrollCarousel({ banners }) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [paused, setPaused]             = useState(false);
 
+  // Reset index when banners change
   useEffect(() => {
-    if (paused) return;
+    setCurrentIndex(0);
+  }, [banners]);
+
+  useEffect(() => {
+    if (paused || banners.length <= 1) return;
     const t = setInterval(
-      () => setCurrentIndex((i) => (i + 1) % BANNER_IMAGES.length),
+      () => setCurrentIndex((i) => (i + 1) % banners.length),
       3000
     );
     return () => clearInterval(t);
-  }, [paused]);
+  }, [paused, banners.length]);
+
+  const current = banners[currentIndex];
 
   return (
     <div
@@ -556,22 +550,27 @@ function AutoScrollCarousel() {
       onMouseLeave={() => setPaused(false)}
     >
       <AnimatePresence mode="wait">
-        {BANNER_IMAGES.map(
-          (img, idx) =>
-            idx === currentIndex && (
-              <motion.div key={img.id} {...img.animation} className="absolute inset-0">
-                <Image
-                  src={img.src}
-                  alt={img.alt}
-                  fill
-                  priority
-                  className="object-cover object-center"
-                  sizes="100vw"
-                  quality={90}
-                />
-              </motion.div>
-            )
-        )}
+        <motion.div
+          key={current?._id || currentIndex}
+          initial={{ opacity: 0, scale: 1.05 }}
+          animate={{ opacity: 1, scale: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.8, ease: "easeOut" }}
+          className="absolute inset-0"
+        >
+          {/* picture tag: mobile image on small screens, desktop image on md+ */}
+          <picture className="w-full h-full">
+            <source
+              media="(max-width: 767px)"
+              srcSet={current?.mobileImage}
+            />
+            <img
+              src={current?.desktopImage}
+              alt={current?.altText || "Banner"}
+              className="w-full h-full object-cover object-center"
+            />
+          </picture>
+        </motion.div>
       </AnimatePresence>
 
       {/* Overlays */}
@@ -579,24 +578,26 @@ function AutoScrollCarousel() {
       <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-black/20 pointer-events-none" />
 
       {/* Dots */}
-      <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2 z-20">
-        {BANNER_IMAGES.map((_, idx) => (
-          <motion.button
-            key={idx}
-            onClick={() => setCurrentIndex(idx)}
-            whileHover={{ scale: 1.2 }}
-            whileTap={{ scale: 0.9 }}
-          >
-            <div
-              className={`transition-all duration-300 rounded-full ${
-                currentIndex === idx
-                  ? "w-7 h-1.5 bg-primary"
-                  : "w-1.5 h-1.5 bg-white/40 hover:bg-white/70"
-              }`}
-            />
-          </motion.button>
-        ))}
-      </div>
+      {banners.length > 1 && (
+        <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2 z-20">
+          {banners.map((_, idx) => (
+            <motion.button
+              key={idx}
+              onClick={() => setCurrentIndex(idx)}
+              whileHover={{ scale: 1.2 }}
+              whileTap={{ scale: 0.9 }}
+            >
+              <div
+                className={`transition-all duration-300 rounded-full ${
+                  currentIndex === idx
+                    ? "w-7 h-1.5 bg-primary"
+                    : "w-1.5 h-1.5 bg-white/40 hover:bg-white/70"
+                }`}
+              />
+            </motion.button>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
@@ -608,6 +609,21 @@ export default function HeroSection() {
   const [sport, setSport]               = useState("");
   const [apparel, setApparel]           = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [banners, setBanners]           = useState(FALLBACK_BANNERS);
+
+  // Fetch hero banners from backend
+  useEffect(() => {
+    const fetchBanners = async () => {
+      try {
+        const res = await axiosClient.get("/v1/user/heroBanners");
+        const data = res.data?.data || [];
+        if (data.length > 0) setBanners(data);
+      } catch (err) {
+        console.warn("Using fallback banners:", err.message);
+      }
+    };
+    fetchBanners();
+  }, []);
 
   const isFormValid = segment && sport && apparel;
 
@@ -624,8 +640,8 @@ export default function HeroSection() {
 
   return (
     <section className="relative w-full h-screen overflow-hidden bg-black">
-      {/* Background */}
-      <AutoScrollCarousel />
+      {/* Background – pass dynamic banners */}
+      <AutoScrollCarousel banners={banners} />
 
       {/* ── Content ── */}
       <div className="relative z-10 h-full flex flex-col items-center justify-center px-4 sm:px-6 lg:px-8">

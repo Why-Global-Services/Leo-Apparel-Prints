@@ -499,3 +499,27 @@ p {
 .animate-spin {
   animation: spin 1s linear infinite;
 }
+
+/* ------------------ MARQUEE ANIMATION (NavbarBottom) ------------------ */
+@keyframes marqueeAnimation {
+  0% {
+    transform: translateX(0);
+  }
+
+  100% {
+    transform: translateX(-50%);
+  }
+}
+
+.marquee-track {
+  width: max-content;
+  animation: marqueeAnimation 20s linear infinite;
+}
+
+.animate-marquee {
+  animation-play-state: running !important;
+}
+
+.marquee-track:hover {
+  animation-play-state: paused;
+}

@@ -300,20 +300,21 @@ export default function Footer() {
         <div className="space-y-6">
           <h4 className="text-primary font-black italic text-[11px] tracking-[0.4em] uppercase font-primary">Services</h4>
           <ul className="space-y-3">
-            {["Custom Designer", "Bulk Orders", "Size Guide", "Shipping Info", "Affiliates"].map((link) => (
-              <li key={link}>
-                <Link href="#" className="text-white font-medium text-xs uppercase hover:text-primary transition-all tracking-tight flex items-center gap-2 group font-secondary">
+            {[
+              { label: "Custom Designer", href: "/bulk-enquiry" },
+              { label: "Bulk Orders", href: "/bulk-enquiry" },
+              { label: "Size Guide", href: "/size-guide" },
+              { label: "Shipping Info", href: "/shipping-info" },
+              { label: "Affiliates", href: "/affiliates" },
+              { label: "Testimonials", href: "/testimonials" },
+            ].map((item) => (
+              <li key={item.label}>
+                <Link href={item.href} className="text-white font-medium text-xs uppercase hover:text-primary transition-all tracking-tight flex items-center gap-2 group font-secondary">
                   <span className="w-0 h-[1.5px] bg-primary transition-all duration-300 group-hover:w-4" />
-                  {link}
+                  {item.label}
                 </Link>
               </li>
             ))}
-              <li>
-                <Link href="/testimonials" className="text-white font-medium text-xs uppercase hover:text-primary transition-all tracking-tight flex items-center gap-2 group font-secondary">
-                  <span className="w-0 h-[1.5px] bg-primary transition-all duration-300 group-hover:w-4" />
-                  Testimonials
-                </Link>
-              </li>
           </ul>
         </div>
 

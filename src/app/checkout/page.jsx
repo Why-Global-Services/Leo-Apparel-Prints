@@ -2,9 +2,10 @@
 import { useState, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import {
   Plus, Home, Building, MapPin, Truck, ShoppingBag,
-  CreditCard, Shield, Check, ChevronRight, X
+  CreditCard, Shield, Check, ChevronRight, X, Pencil
 } from "lucide-react";
 import { getCheckout, placeOrder } from "@/features/checkout/checkoutThunks";
 import { fetchAddresses, addAddress, updateAddress } from "@/features/user/userThunks";
@@ -665,85 +666,105 @@ export default function CheckoutPage() {
                 <h2 style={{ fontSize: 15, fontWeight: 700, color: "#fff", margin: 0 }}>Order Summary</h2>
               </div>
               <div style={{ padding: 20 }}>
-                {/* Cart items */}
-                {/* Cart items */}
+                {/* Cart items — click to go back to cart and change qty */}
                 <div style={{ maxHeight: 320, overflowY: "auto", marginBottom: 16 }}>
                   {cartItems.length > 0 ? (
-                    cartItems.map((item, i) => (
-                      <div
-                        key={i}
+                    <>
+                      {/* Edit cart hint */}
+                      <Link
+                        href="/cart"
                         style={{
                           display: "flex",
                           alignItems: "center",
-                          gap: 12,
-                          padding: "10px 0",
-                          borderBottom: `1px dashed ${C.cardBorder}`,
+                          gap: 5,
+                          fontSize: 11,
+                          color: C.blue,
+                          fontWeight: 600,
+                          marginBottom: 10,
+                          textDecoration: "none",
+                          opacity: 0.85,
                         }}
                       >
-                        {/* Product Image */}
-                        <img
-                          src={
-                            item.productImages?.[0] ||
-                            item.productData?.viewImages?.front ||
-                            "/placeholder.png"
-                          }
-                          alt={item.productName}
+                        <Pencil size={11} />
+                        Edit cart / change quantities
+                      </Link>
+
+                      {cartItems.map((item, i) => (
+                        <Link
+                          key={i}
+                          href="/cart"
+                          title="Click to edit quantities in cart"
                           style={{
-                            width: 65,
-                            height: 65,
-                            borderRadius: 10,
-                            objectFit: "cover",
-                            border: "1px solid #e5e7eb",
+                            display: "flex",
+                            alignItems: "center",
+                            gap: 12,
+                            padding: "10px 8px",
+                            borderBottom: `1px dashed ${C.cardBorder}`,
+                            textDecoration: "none",
+                            borderRadius: 8,
+                            transition: "background 0.15s",
+                            cursor: "pointer",
                           }}
-                        />
-
-                        {/* Product Details */}
-                        <div style={{ flex: 1 }}>
-                          <p
-                            style={{
-                              fontSize: 14,
-                              fontWeight: 600,
-                              color: C.textDark,
-                              margin: "0 0 4px",
-                            }}
-                          >
-                            {item.productName}
-                          </p>
-
-                          <p
-                            style={{
-                              fontSize: 12,
-                              color: C.textMuted,
-                              margin: 0,
-                            }}
-                          >
-                            Quantity: {item.quantity}
-                          </p>
-                        </div>
-
-                        {/* Price */}
-                        <div>
-                          <span
-                            style={{
-                              fontSize: 14,
+                          onMouseEnter={e => e.currentTarget.style.background = "#f0f5ff"}
+                          onMouseLeave={e => e.currentTarget.style.background = "transparent"}
+                        >
+                          {/* Product Image */}
+                          <div style={{ position: "relative", flexShrink: 0 }}>
+                            <img
+                              src={
+                                item.productImages?.[0] ||
+                                item.productData?.viewImages?.front ||
+                                "/placeholder.png"
+                              }
+                              alt={item.productName}
+                              style={{
+                                width: 60,
+                                height: 60,
+                                borderRadius: 10,
+                                objectFit: "cover",
+                                border: `1px solid ${C.cardBorder}`,
+                                display: "block",
+                              }}
+                            />
+                            {/* Qty badge */}
+                            <span style={{
+                              position: "absolute",
+                              top: -6,
+                              right: -6,
+                              background: C.blue,
+                              color: "#fff",
+                              fontSize: 10,
                               fontWeight: 700,
-                              color: C.textDark,
-                            }}
-                          >
+                              width: 18,
+                              height: 18,
+                              borderRadius: "50%",
+                              display: "flex",
+                              alignItems: "center",
+                              justifyContent: "center",
+                            }}>
+                              {item.quantity}
+                            </span>
+                          </div>
+
+                          {/* Product Details */}
+                          <div style={{ flex: 1 }}>
+                            <p style={{ fontSize: 13, fontWeight: 600, color: C.textDark, margin: "0 0 2px" }}>
+                              {item.productName}
+                            </p>
+                            <p style={{ fontSize: 11, color: C.textMuted, margin: 0 }}>
+                              Qty: {item.quantity} — tap to edit
+                            </p>
+                          </div>
+
+                          {/* Price */}
+                          <span style={{ fontSize: 13, fontWeight: 700, color: C.textDark, flexShrink: 0 }}>
                             ₹{item.subtotal.toFixed(2)}
                           </span>
-                        </div>
-                      </div>
-                    ))
+                        </Link>
+                      ))}
+                    </>
                   ) : (
-                    <p
-                      style={{
-                        textAlign: "center",
-                        color: C.textMuted,
-                        fontSize: 13,
-                        padding: "16px 0",
-                      }}
-                    >
+                    <p style={{ textAlign: "center", color: C.textMuted, fontSize: 13, padding: "16px 0" }}>
                       No items in cart
                     </p>
                   )}

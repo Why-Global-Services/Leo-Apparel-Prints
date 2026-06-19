@@ -41,19 +41,19 @@ import { useEffect } from "react";
 export default function LayoutWrapper({ children }) {
   const pathname = usePathname();
   const token = useSelector((state) => state.auth.token);
-const dispatch = useDispatch();
+  const dispatch = useDispatch();
 
-useEffect(() => {
-  if (token) {
-    dispatch(fetchProfile());
-  }
-}, [token]);
+  useEffect(() => {
+    if (token) {
+      dispatch(fetchProfile());
+    }
+  }, [token]);
 
   const isAuthPage = pathname.startsWith("/auth");
-  
+
   // Check if we're on a product detail page (any /products/:id)
-  const isProductDetailPage = pathname?.match(/^\/products\/[^\/]+$/) && 
-    !pathname?.includes('/page') && 
+  const isProductDetailPage = pathname?.match(/^\/products\/[^\/]+$/) &&
+    !pathname?.includes('/page') &&
     pathname !== '/products';
 
   return (

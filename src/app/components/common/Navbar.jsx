@@ -141,10 +141,12 @@ const SPORTS_INDIA_MENU = [
 
 const RESOURCES_MENU = [
   { name: "Size Guide", href: "/size-guide" },
+  { name: "Shipping Info", href: "/shipping-info" },
+  { name: "Affiliates", href: "/affiliates" },
   { name: "FAQ", href: "/faq" },
   { name: "Price Estimator", href: "/price-estimator" },
   { name: "Catalog", href: "/catalog" },
-  { name: "Bulk Orders", href: "/bulk-orders" },
+  { name: "Bulk Orders", href: "/bulk-enquiry" },
 ];
 
 const NAV_ITEMS = [

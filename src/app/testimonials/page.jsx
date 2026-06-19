@@ -30,15 +30,28 @@ export default function TestimonialsPage() {
           >
             Don't just take our word for it. Read what our satisfied customers have to say about their custom apparel experience with Leo Cult.
           </motion.p>
-          <motion.button
+          <motion.a
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ delay: 0.2 }}
             onClick={() => setIsModalOpen(true)}
-            className="bg-primary text-white font-bold py-3 px-8 rounded-full shadow-lg hover:shadow-xl hover:bg-yellow-500 transition-all"
+            className="btn btn-gradient btn-md btn-shine inline-flex cursor-pointer"
           >
             Drop Testimonial
-          </motion.button>
+            <svg
+              className="w-4 h-4 transition-all duration-300 group-hover:translate-x-2"
+              viewBox="0 0 14 14"
+              fill="none"
+            >
+              <path
+                d="M2 7h10M8 3.5L11.5 7 8 10.5"
+                stroke="white"
+                strokeWidth="1.8"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
+          </motion.a>
         </div>
 
         {/* Full Width Layout: List */}
