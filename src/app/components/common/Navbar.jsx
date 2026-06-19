@@ -50,8 +50,8 @@ const CRICKET_MENU = {
     {
       title: "CUSTOM SERVICES",
       links: [
-        { name: "Upload Your Design", href: "/upload-design" },
-        { name: "Large Squad Orders", href: "/contact-sales" },
+        { name: "Upload Your Design", href: "/bulk-enquiry" },
+        { name: "Large Squad Orders", href: "/bulk-enquiry" },
       ],
     },
   ],
@@ -157,11 +157,9 @@ const SPORTS_INDIA_MENU = [
 const RESOURCES_MENU = [
   { name: "Size Guide", href: "/size-guide" },
   { name: "Shipping Info", href: "/shipping-info" },
-  { name: "Affiliates", href: "/affiliates" },
   { name: "FAQ", href: "/faq" },
   { name: "Price Estimator", href: "/price-estimator" },
   { name: "Catalog", href: "/catalog" },
-  { name: "Bulk Orders", href: "/bulk-enquiry" },
   { name: "Bulk Orders", href: "/bulk-enquiry" },
 ];
 

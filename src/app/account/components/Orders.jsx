@@ -69,6 +69,7 @@ function parseItems(order) {
         subtotal:    p.subtotal || p.price * totalQty || 0,
         orderStatus: p.orderStatus || order.orderStatus,
         productId:   p.productId,
+        selectedSize: p.selectedSize,
       });
     });
   });
@@ -217,6 +218,13 @@ function OrderDetail({ order, onBack }) {
                     {item.name}
                   </p>
                   {/* Sizes breakdown */}
+                  {item.selectedSize && (
+                    <div className="mt-1.5">
+                      <span className="text-xs font-medium px-2 py-0.5 rounded-full" style={{ background: "#f1f5f9", color: "#475569" }}>
+                        Size: {item.selectedSize}
+                      </span>
+                    </div>
+                  )}
                   {item.sizes?.length > 0 && (
                     <div className="flex flex-wrap gap-1.5 mt-1.5">
                       {item.sizes.map((s, si) => (
@@ -438,6 +446,13 @@ export default function Orders() {
                         >
                           {item.name}
                         </p>
+                        {item.selectedSize && (
+                          <div className="mt-1">
+                            <span className="text-xs font-medium px-1.5 py-0.5 rounded" style={{ background: "#f1f5f9", color: "#475569" }}>
+                              Size: {item.selectedSize}
+                            </span>
+                          </div>
+                        )}
                         {item.sizes?.length > 0 && (
                           <div className="flex flex-wrap gap-1 mt-1">
                             {item.sizes.slice(0, 3).map((s, si) => (
@@ -449,14 +464,17 @@ export default function Orders() {
                         )}
                       </div>
 
-                      {/* Price */}
-                      <div className="text-right shrink-0">
-                        <p className="text-sm font-bold" style={{ color: "var(--primary-blue)" }}>
-                          ₹{(item.subtotal || item.price * item.quantity || 0).toLocaleString("en-IN")}
-                        </p>
-                        <p className="text-xs" style={{ color: "#94a3b8" }}>
-                          {new Date(order.createdAt).toLocaleDateString("en-IN", { day: "2-digit", month: "short" })}
-                        </p>
+                      {/* Price & Status */}
+                      <div className="flex flex-col items-end shrink-0 gap-1.5">
+                        <StatusBadge status={item.orderStatus} />
+                        <div className="text-right">
+                          <p className="text-sm font-bold" style={{ color: "var(--primary-blue)" }}>
+                            ₹{(item.subtotal || item.price * item.quantity || 0).toLocaleString("en-IN")}
+                          </p>
+                          <p className="text-xs" style={{ color: "#94a3b8" }}>
+                            {new Date(order.createdAt).toLocaleDateString("en-IN", { day: "2-digit", month: "short" })}
+                          </p>
+                        </div>
                       </div>
                     </div>
                   ))}

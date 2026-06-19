@@ -37,16 +37,13 @@ export default function BulkEnquiry() {
     firstName: '', lastName: '', phone: '', email: '',
     orgName: '', uniformFor: [], products: [],
     hasDesign: null, message: '', agreeTerms: false,
-    frontImage: null,
-    backImage: null
+    designFile: null
   });
 
   const [fileName, setFileName] = useState('');
   const [dragActive, setDragActive] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [frontPreview, setFrontPreview] = useState(null);
-  const [backPreview, setBackPreview] = useState(null);
 
   const uniformOptions = [
     { id: 'academy', label: 'Academy', icon: Users },
@@ -92,35 +89,7 @@ export default function BulkEnquiry() {
     }
   };
 
-  const handleImageChange = (e, type) => {
-  const file = e.target.files?.[0];
 
-  if (!file) return;
-
-  const validTypes = [
-    "image/jpeg",
-    "image/jpg",
-    "image/png",
-    "image/webp"
-  ];
-
-  if (!validTypes.includes(file.type)) {
-    alert("Please upload JPG, PNG or WEBP images only.");
-    return;
-  }
-
-  const previewUrl = URL.createObjectURL(file);
-
-  if (type === "front") {
-    setFormData(prev => ({ ...prev, frontImage: file }));
-    setFrontPreview(previewUrl);
-  }
-
-  if (type === "back") {
-    setFormData(prev => ({ ...prev, backImage: file }));
-    setBackPreview(previewUrl);
-  }
-};
 
   const handleDrag = (e) => {
     e.preventDefault();
@@ -185,11 +154,9 @@ export default function BulkEnquiry() {
         firstName: '', lastName: '', phone: '', email: '',
         orgName: '', uniformFor: [], products: [],
         hasDesign: null, message: '', agreeTerms: false,
-        frontImage: null, backImage: null, designFile: null
+        designFile: null
       });
       setFileName('');
-      setFrontPreview(null);
-      setBackPreview(null);
     } catch (error) {
       alert('Failed to submit enquiry. Please try again.');
     } finally {
@@ -319,79 +286,47 @@ export default function BulkEnquiry() {
           </div>
 
           {/* Section 6: File Upload */}
-          {/* Section 6: Front & Back Image Upload */}
           {formData.hasDesign === true && (
-            <div className="space-y-6">
+            <div className="space-y-3">
               <h3 className="text-sm font-semibold text-gray-700 border-l-4 border-primary pl-3 font-primary">
-                Upload Jersey Images
+                Upload Design/Logo
               </h3>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-
-                {/* Front Image */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Front Image *
-                  </label>
-
-                  <div className="relative border-2 border-dashed border-gray-300 rounded-xl p-6 text-center hover:border-primary transition-all">
-                    <input
-                      type="file"
-                      accept="image/*"
-                      onChange={(e) => handleImageChange(e, "front")}
-                      className="absolute inset-0 opacity-0 cursor-pointer"
-                    />
-
-                    <Upload className="w-8 h-8 mx-auto text-gray-400 mb-2" />
-
-                    <p className="text-sm text-gray-600">
-                      Upload Front Design
-                    </p>
+              <div
+                className={`relative border-2 border-dashed rounded-xl p-8 text-center transition-all ${dragActive ? 'border-primary bg-primary/5' : 'border-gray-300 hover:border-primary/50 bg-white'
+                  }`}
+                onDragEnter={handleDrag}
+                onDragLeave={handleDrag}
+                onDragOver={handleDrag}
+                onDrop={handleDrop}
+              >
+                <input
+                  type="file"
+                  onChange={handleFileChange}
+                  accept=".jpg,.jpeg,.png,.pdf,.psd"
+                  className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                />
+                <div className="flex flex-col items-center gap-3">
+                  <div className={`p-3 rounded-full ${fileName ? 'bg-green-50' : 'bg-gray-50'}`}>
+                    {fileName ? (
+                      <CheckCircle className="text-green-500" size={24} />
+                    ) : (
+                      <Upload className="text-gray-400" size={24} />
+                    )}
                   </div>
-
-                  {frontPreview && (
-                    <div className="mt-4">
-                      <img
-                        src={frontPreview}
-                        alt="Front Preview"
-                        className="w-full h-64 object-contain border rounded-xl"
-                      />
+                  {fileName ? (
+                    <div className="space-y-1">
+                      <p className="text-sm font-medium text-gray-700">{fileName}</p>
+                      <p className="text-xs text-green-600">Ready to submit</p>
+                    </div>
+                  ) : (
+                    <div className="space-y-1">
+                      <p className="text-sm font-medium text-gray-700 font-secondary">
+                        Drag & drop or <span className="text-primary hover:underline">browse</span>
+                      </p>
+                      <p className="text-xs text-gray-500">Supports JPG, PNG, PDF, PSD (Max 18MB)</p>
                     </div>
                   )}
                 </div>
-
-                {/* Back Image */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Back Image *
-                  </label>
-
-                  <div className="relative border-2 border-dashed border-gray-300 rounded-xl p-6 text-center hover:border-primary transition-all">
-                    <input
-                      type="file"
-                      accept="image/*"
-                      onChange={(e) => handleImageChange(e, "back")}
-                      className="absolute inset-0 opacity-0 cursor-pointer"
-                    />
-
-                    <Upload className="w-8 h-8 mx-auto text-gray-400 mb-2" />
-
-                    <p className="text-sm text-gray-600">
-                      Upload Back Design
-                    </p>
-                  </div>
-
-                  {backPreview && (
-                    <div className="mt-4">
-                      <img
-                        src={backPreview}
-                        alt="Back Preview"
-                        className="w-full h-64 object-contain border rounded-xl"
-                      />
-                    </div>
-                  )}
-                </div>
-
               </div>
             </div>
           )}

@@ -217,7 +217,7 @@
 //               </Link>
 
 //               <Link
-//                 href="/upload-design"
+//                 href="/bulk-enquiry"
 //                 className="inline-flex items-center justify-center gap-2
 //                            bg-white hover:bg-gray-50 text-gray-700 font-bold
 //                            text-xs sm:text-sm px-6 py-3 rounded-xl
@@ -467,7 +467,7 @@ export default function HowItWorks() {
               </Link>
               
               <Link
-                href="/upload-design"
+                href="/bulk-enquiry"
                 className="btn btn-outline btn-md text-center inline-flex items-center justify-center gap-2 group"
               >
                 <span>Upload Design</span>
