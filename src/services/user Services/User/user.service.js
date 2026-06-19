@@ -41,9 +41,9 @@ const refreshAccessToken = async (req) => {
 const createUser = async (req) => {
   const { name, password, phone,email } = req.body;
 console.log("req body:", req.body);
-  const existing = await User.findOne({ $or: [{phone}]});
-  console.log(existing,"this is the existinf gaga");
+  const existing = await User.findOne({ phoneNumber: phone });
   
+
   if (existing) {
     throw new ApiError(httpStatus.BAD_REQUEST, "User already exists");
   }

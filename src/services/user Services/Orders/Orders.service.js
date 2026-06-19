@@ -124,6 +124,7 @@
           amount: pricing.finalTotal,
           order,
           userId,
+          session,
         });
 
         await session.commitTransaction();
@@ -539,7 +540,7 @@
     /**
      * Enhanced payment processing with retry mechanism
      */
-    async processPaymentWithRetry({ paymentMethod, amount, order, userId }) {
+    async processPaymentWithRetry({ paymentMethod, amount, order, userId, session }) {
       const maxRetries = 3;
       let lastError;
 
@@ -556,6 +557,7 @@
             amount,
             order,
             userId,
+            session,
           });
 
           return result;
@@ -582,7 +584,7 @@
     /**
      * Original payment processing (kept for compatibility)
      */
-    async processPayment({ paymentMethod, amount, order, userId }) {
+    async processPayment({ paymentMethod, amount, order, userId, session }) {
       const paymentData = {
         userId,
         orderId: order._id,
@@ -606,7 +608,7 @@
 
       order.expiresAt = new Date(Date.now() + 15 * 60 * 1000);
 
-      await order.save();
+      await order.save({ session });
 
       const razorpayOrder = await this.razorpayInstance.orders.create({
         amount: Math.round(amount * 100),
@@ -620,7 +622,7 @@
         Date.now() + 30 * 60 * 1000
       );
 
-      await paymentDetailsModel.create(paymentData);
+      await paymentDetailsModel.create([paymentData], { session });
 
       return { razorpayOrder };
 
@@ -635,7 +637,7 @@
 
       paymentData.stripePayOrderId = order.orderId;
 
-      await paymentDetailsModel.create(paymentData);
+      await paymentDetailsModel.create([paymentData], { session });
 
       return { stripeUrl };
 
@@ -647,15 +649,15 @@
 
       order.expiresAt = null;
 
-      await order.save();
+      await order.save({ session });
 
       paymentData.paymentStatus = "pending";
 
       paymentData.pendingPaymentExpiry = null;
 
-      await paymentDetailsModel.create(paymentData);
+      await paymentDetailsModel.create([paymentData], { session });
 
-      await cart.findOneAndDelete({ userId });
+      await cart.findOneAndDelete({ userId }).session(session);
 
       return {};
 
