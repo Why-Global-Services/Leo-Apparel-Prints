@@ -1,7 +1,7 @@
 const httpStatus = require("http-status");
 const BulkEnquiry = require("../models/bulkEnquiry.model");
 const NewsletterOffer = require("../models/newsletterOffer.model");
-const ApiError = require("../utils/ApiError");
+const ApiError = require("../utils/apiError");
 const { uploadToCloud } = require("../utils/uploadFileToS3");
 
 const createBulkEnquiry = async (req) => {

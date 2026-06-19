@@ -1,6 +1,6 @@
 const httpStatus = require("http-status");
 const NewsletterOffer = require("../models/newsletterOffer.model");
-const ApiError = require("../utils/ApiError");
+const ApiError = require("../utils/apiError");
 const sendmail = require("../utils/sendmail");
 
 const claimOffer = async (email) => {
