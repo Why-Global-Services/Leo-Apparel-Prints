@@ -48,6 +48,7 @@ export default function BulkEnquiriesPage() {
           <table className="w-full text-left border-collapse">
             <thead>
               <tr className="bg-gray-50/50 border-b border-gray-100">
+                <th className="p-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">S.No</th>
                 <th className="p-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">Date</th>
                 <th className="p-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">Contact Name</th>
                 <th className="p-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">Organization</th>
@@ -58,8 +59,11 @@ export default function BulkEnquiriesPage() {
             </thead>
             <tbody className="divide-y divide-gray-100">
               {enquiries.length > 0 ? (
-                enquiries.map((enq) => (
+                enquiries.map((enq, index) => (
                   <tr key={enq._id} className="hover:bg-gray-50/30 transition-colors">
+                    <td className="p-4 text-sm text-gray-600 align-top">
+                      {index + 1}
+                    </td>
                     <td className="p-4 text-sm text-gray-600 align-top">
                       {new Date(enq.createdAt).toLocaleString('en-US', { 
                         day: '2-digit', month: 'short', year: 'numeric', 

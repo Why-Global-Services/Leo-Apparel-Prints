@@ -38,11 +38,14 @@ export default function AdminLayout() {
 
                 <main
                     style={{
-                        padding: '24px',
+                        padding: '0',
                         marginTop: '64px',
-                        overflowX: 'auto',
-                        background: '#ffffff',
+                        overflowX: 'hidden',
+                        overflowY: 'auto',
+                        background: '#f8fafc',
                         minHeight: 'calc(100vh - 64px)',
+                        width: '100%',
+                        boxSizing: 'border-box',
                     }}
                 >
                     <Outlet />

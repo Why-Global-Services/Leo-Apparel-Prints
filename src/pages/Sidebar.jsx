@@ -13,6 +13,7 @@ import {
   IoChevronBackOutline,
   IoChevronForwardOutline,
   IoReceiptOutline,
+  IoImageOutline,
 } from "react-icons/io5";
 
 export default function Sidebar({ collapsed, setCollapsed }) {
@@ -31,6 +32,7 @@ export default function Sidebar({ collapsed, setCollapsed }) {
     { path: "/orderspage", name: "orders", icon: <IoSettingsOutline size={20} /> },
     { path: "/bulkenquiries", name: "Bulk Enquiries", icon: <IoPeopleOutline size={20} /> },
     { path: "/testimonials", name: "Testimonials", icon: <IoStatsChartOutline size={20} /> },
+    { path: "/banners", name: "Banners", icon: <IoImageOutline size={20} /> },
   ];
 
   const handleLogout = async () => {
@@ -96,7 +98,20 @@ export default function Sidebar({ collapsed, setCollapsed }) {
       </div>
 
       {/* Navigation Menu */}
-      <nav style={{ flex: 1, padding: '20px 12px' }}>
+      <nav style={{
+        flex: 1,
+        padding: '20px 12px',
+        overflowY: 'auto',
+        overflowX: 'hidden',
+        scrollbarWidth: 'thin',
+        scrollbarColor: 'rgba(245,184,0,0.4) transparent',
+      }}>
+        <style>{`
+          nav::-webkit-scrollbar { width: 4px; }
+          nav::-webkit-scrollbar-track { background: transparent; }
+          nav::-webkit-scrollbar-thumb { background: rgba(245,184,0,0.4); border-radius: 4px; }
+          nav::-webkit-scrollbar-thumb:hover { background: rgba(245,184,0,0.7); }
+        `}</style>
         {menuItems.map((item) => (
           <NavLink
             key={item.path}

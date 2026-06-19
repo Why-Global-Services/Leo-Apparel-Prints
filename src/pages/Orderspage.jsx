@@ -1,5 +1,6 @@
 // OrdersPage.jsx - Fixed Version (Exact Same UI, No Redux)
 import { useState, useEffect } from "react";
+import { toast } from "react-toastify";
 import {
     IoEye,
     IoCreate,
@@ -194,7 +195,7 @@ export default function Orderspage() {
         }
     };
     const handleExportOrders = () => {
-        alert("Orders exported successfully!");
+        toast.success("Orders exported successfully! 📥");
     };
 
     const getTabCount = (status) => {
@@ -316,7 +317,16 @@ export default function Orderspage() {
 
 
     return (
-        <div style={{ padding: '24px', background: bgColor, minHeight: '100vh', transition: 'all 0.3s ease' }}>
+        <div style={{
+          padding: '24px',
+          background: bgColor,
+          minHeight: '100vh',
+          transition: 'all 0.3s ease',
+          width: '100%',
+          maxWidth: '100%',
+          overflowX: 'hidden',
+          boxSizing: 'border-box',
+        }}>
             {/* Inject CSS variables */}
             <style>{`
                 :root {
@@ -362,10 +372,11 @@ export default function Orderspage() {
             </div>
 
             {/* Table */}
-            <div style={tableStyle}>
+            <div style={{ ...tableStyle, overflowX: 'auto', maxWidth: '100%', width: '100%' }}>
                 <table style={{ width: '100%', borderCollapse: 'collapse' }}>
                     <thead>
                         <tr style={{ borderBottom: `1px solid ${borderColor}`, background: headerBg }}>
+                            <th style={{ textAlign: 'left', padding: '16px', color: textSecondary, fontSize: '13px', fontWeight: 600 }}>S.No</th>
                             <th style={{ textAlign: 'left', padding: '16px', color: textSecondary, fontSize: '13px', fontWeight: 600 }}>Order ID</th>
                             <th style={{ textAlign: 'left', padding: '16px', color: textSecondary, fontSize: '13px', fontWeight: 600 }}>Product</th>
                             <th style={{ textAlign: 'left', padding: '16px', color: textSecondary, fontSize: '13px', fontWeight: 600 }}>Customer</th>
@@ -392,6 +403,7 @@ export default function Orderspage() {
                                 };
                             return (
                                 <tr key={order.id} style={{ borderBottom: `1px solid ${borderColor}`, transition: 'all 0.2s', background: index % 2 === 0 ? rowEvenBg : rowOddBg }} onMouseEnter={(e) => e.currentTarget.style.background = hoverBg} onMouseLeave={(e) => { e.currentTarget.style.background = index % 2 === 0 ? rowEvenBg : rowOddBg; }}>
+                                    <td style={{ padding: '16px', fontSize: '14px', color: textSecondary }}>{startIndex + index + 1}</td>
                                     <td style={{ padding: '16px' }}>
                                         <span style={{ color: '#0EA5E9', fontWeight: 700, fontSize: '12px', fontFamily: 'monospace' }}>{order.id}</span>
                                     </td>

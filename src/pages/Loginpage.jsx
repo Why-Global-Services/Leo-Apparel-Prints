@@ -2,6 +2,7 @@
 import { useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
+import { toast } from 'react-toastify';
 import { loginThunk } from "../store/slices/authSlice";  // ← Fixed path
 import { IoMail, IoLockClosed, IoEye, IoEyeOff } from "react-icons/io5";
 // ... rest of your code
@@ -20,17 +21,17 @@ export default function LoginPage() {
     e.preventDefault();
     
     if (!formData.email || !formData.password) {
-      alert("Please fill in all fields");
+      toast.error("Please fill in all fields");
       return;
     }
 
     const result = await dispatch(loginThunk(formData));
     
-    if (loginThunk.fulfilled.match(result)) {
-      alert("Login successful! Welcome back!");
-      navigate("/dashboard");
+    if (result.success) {
+      toast.success("Login successful! Welcome back!");
+      navigate("/category");
     } else {
-      alert(result.payload || "Login failed. Please check your credentials.");
+      toast.error(result.payload || "Login failed. Please check your credentials.");
     }
   };
 

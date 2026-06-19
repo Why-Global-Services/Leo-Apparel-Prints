@@ -240,7 +240,8 @@ export default function CategoryPage() {
         /* Table card */
         .table-card { background: #fff; border-radius: 12px; border: 1px solid #e2e8f0; overflow: hidden; }
         .data-table { width: 100%; border-collapse: collapse; table-layout: fixed; }
-        .data-table col.col-name    { width: 44%; }
+        .data-table col.col-sno     { width: 10%; }
+        .data-table col.col-name    { width: 34%; }
         .data-table col.col-parent  { width: 22%; }
         .data-table col.col-status  { width: 16%; }
         .data-table col.col-actions { width: 18%; }
@@ -412,6 +413,7 @@ export default function CategoryPage() {
                     <div className="table-card">
                         <table className="data-table">
                             <colgroup>
+                                <col className="col-sno" />
                                 <col className="col-name" />
                                 <col className="col-parent" />
                                 <col className="col-status" />
@@ -419,6 +421,7 @@ export default function CategoryPage() {
                             </colgroup>
                             <thead>
                                 <tr>
+                                    <th>S.No</th>
                                     <th>Name</th>
                                     <th>Parent</th>
                                     <th>Status</th>
@@ -426,8 +429,11 @@ export default function CategoryPage() {
                                 </tr>
                             </thead>
                             <tbody>
-                                {currentCategories.map((category) => (
+                                {currentCategories.map((category, index) => (
                                     <tr key={category.id}>
+                                        <td style={{ padding: '18px 24px', fontSize: '14px', color: '#1e293b' }}>
+                                            {startIndex + index + 1}
+                                        </td>
                                         {/* Name */}
                                         <td style={{
                                             paddingLeft: category.level > 0 ? `${24 + category.level * 32}px` : '24px'

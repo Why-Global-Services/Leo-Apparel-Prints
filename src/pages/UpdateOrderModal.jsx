@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { orderService } from "../services/order.service";
+import { toast } from "react-toastify";
 
 export default function UpdateOrderModal({
     order,
@@ -63,7 +64,7 @@ export default function UpdateOrderModal({
             );
 
             if (response?.data?.success) {
-                alert("Order updated successfully");
+                toast.success("Order updated successfully! ✅");
 
                 if (refreshOrders) {
                     await refreshOrders();
@@ -77,7 +78,7 @@ export default function UpdateOrderModal({
                 error?.response?.data || error
             );
 
-            alert(
+            toast.error(
                 error?.response?.data?.message ||
                 "Failed to update order"
             );
@@ -110,6 +111,32 @@ export default function UpdateOrderModal({
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
 
                     
+                    {/* Order Status */}
+                    <div>
+                        <label className="block mb-2 font-medium">
+                            Order Status
+                        </label>
+                        <select
+                            value={formData.orderStatus}
+                            onChange={(e) =>
+                                setFormData({
+                                    ...formData,
+                                    orderStatus: e.target.value,
+                                })
+                            }
+                            className="w-full border p-2 rounded"
+                        >
+                            <option value="Pending">Pending</option>
+                            <option value="Ordered">Ordered</option>
+                            <option value="Processing">Processing</option>
+                            <option value="Shipped">Shipped</option>
+                            <option value="Delivered">Delivered</option>
+                            <option value="Cancelled">Cancelled</option>
+                            <option value="Return Request">Return Request</option>
+                            <option value="Returned">Returned</option>
+                        </select>
+                    </div>
+
                     {/* Payment Status */}
 
                     <div>
