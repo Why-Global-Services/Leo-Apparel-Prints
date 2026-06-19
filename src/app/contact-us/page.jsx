@@ -90,20 +90,54 @@ const ContactUs = () => {
               </div>
 
               {/* Office */}
-              <div className="group cursor-pointer">
-                <div className="flex items-start space-x-3 sm:space-x-5">
-                  <div className="flex-shrink-0 w-10 h-10 sm:w-12 sm:h-12 md:w-14 md:h-14 rounded-xl sm:rounded-2xl flex items-center justify-center transition-all duration-300 group-hover:scale-110" style={{ background: 'linear-gradient(135deg, var(--gradient-start), var(--gradient-mid), var(--gradient-end))', boxShadow: '0 10px 25px -5px rgba(14, 165, 233, 0.2)' }}>
-                    <MdLocationOn className="w-5 h-5 sm:w-6 sm:h-6 md:w-7 md:h-7 text-white" />
-                  </div>
-                  <div className="flex-1">
-                    <h3 className="text-base sm:text-lg md:text-xl font-semibold mb-1 sm:mb-2" style={{ color: '#020617' }}>Office</h3>
-                    <p className="text-sm sm:text-base md:text-lg" style={{ color: '#4A5568' }}>44A, Chettiyar veethi,</p>
-                    <p className="text-sm sm:text-base md:text-lg" style={{ color: '#4A5568' }}>Kariyakaliyamman kovil street,</p>
-                    <p className="text-sm sm:text-base md:text-lg" style={{ color: '#4A5568' }}>15-Velampalayam, Tirupur – 641652</p>
-                    <p className="text-xs sm:text-sm mt-1" style={{ color: '#A0AEC0' }}>GST: 33BRVPP8688J2ZK</p>
-                  </div>
-                </div>
-              </div>
+        <div className="group cursor-pointer">
+  <div className="flex items-start space-x-3 sm:space-x-5">
+    <div
+      className="flex-shrink-0 w-10 h-10 sm:w-12 sm:h-12 md:w-14 md:h-14 rounded-xl sm:rounded-2xl flex items-center justify-center transition-all duration-300 group-hover:scale-110"
+      style={{
+        background:
+          "linear-gradient(135deg, var(--gradient-start), var(--gradient-mid), var(--gradient-end))",
+        boxShadow: "0 10px 25px -5px rgba(14, 165, 233, 0.2)",
+      }}
+    >
+      <MdLocationOn className="w-5 h-5 sm:w-6 sm:h-6 md:w-7 md:h-7 text-white" />
+    </div>
+
+    <div className="flex-1">
+      <h3
+        className="text-base sm:text-lg md:text-xl font-semibold mb-2"
+        style={{ color: "#020617" }}
+      >
+        Office
+      </h3>
+
+      <div
+        className="space-y-1 text-sm sm:text-base md:text-lg"
+        style={{ color: "#4A5568" }}
+      >
+        <p>44A, Chettiyar Veethi,</p>
+        <p>Kariyakaliyamman Kovil Street,</p>
+        <p>15-Velampalayam, Tirupur – 641652</p>
+      </div>
+
+      <p
+        className="text-xs sm:text-sm mt-3"
+        style={{ color: "#A0AEC0" }}
+      >
+        GST: 33BRVPP8688J2ZK
+      </p>
+
+      <div
+        className="text-xs sm:text-sm mt-3 leading-6"
+        style={{ color: "#A0AEC0" }}
+      >
+        <p className="font-medium">Bank: HDFC Bank</p>
+        <p>Account No: 9999 9843 80 9843</p>
+        <p>IFSC: HDFC0007447</p>
+      </div>
+    </div>
+  </div>
+</div>
             </div>
           </div>
 
