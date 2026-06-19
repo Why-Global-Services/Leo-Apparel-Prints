@@ -17,20 +17,20 @@ const initialState = {
 };
 
 const calculateTotals = (items) => {
- const totalQuantity = items.reduce(
-  (sum, item) =>
-    sum +
+  const totalQuantity = items.reduce(
+    (sum, item) =>
+      sum +
+      (item.sizes || []).reduce(
+        (s, size) => s + size.quantity,
+        0
+      ),
+    0
+  );
+  const totalPrice = items.reduce((sum, item) => sum + ((item.basePrice || item.price || 0) *
     (item.sizes || []).reduce(
       (s, size) => s + size.quantity,
       0
-    ),
-  0
-);
-  const totalPrice = items.reduce((sum, item) => sum + ((item.basePrice || item.price || 0) *
-(item.sizes || []).reduce(
-  (s, size) => s + size.quantity,
-  0
-)), 0);
+    )), 0);
   return { totalQuantity, totalPrice };
 };
 
@@ -59,7 +59,7 @@ const cartSlice = createSlice({
       .addCase(fetchCart.fulfilled, (state, action) => {
         state.loading = false;
         const { data, isAuthenticated } = action.payload;
-        
+
         let items = [];
         if (data?.items) {
           items = data.items;
@@ -68,10 +68,10 @@ const cartSlice = createSlice({
         } else if (data?.cart?.items) {
           items = data.cart.items;
         }
-        
+
         state.items = items;
         state.isGuest = !isAuthenticated;
-        
+
         const { totalQuantity, totalPrice } = calculateTotals(items);
         state.totalQuantity = totalQuantity;
         state.totalPrice = totalPrice;
@@ -84,79 +84,82 @@ const cartSlice = createSlice({
       // Add to Cart
       .addCase(addToCart.fulfilled, (state, action) => {
         const { data, isAuthenticated } = action.payload;
-        
+
         let items = [];
-        if (data?.items) {
+
+        if (data?.data?.items) {
+          items = data.data.items;
+        } else if (data?.items) {
           items = data.items;
         } else if (Array.isArray(data)) {
           items = data;
         }
-        
+
         state.items = items;
         state.isGuest = !isAuthenticated;
-        
+
         const { totalQuantity, totalPrice } = calculateTotals(items);
         state.totalQuantity = totalQuantity;
         state.totalPrice = totalPrice;
       })
 
       // Edit Cart Item
-    .addCase(editCartItem.fulfilled, (state, action) => {
-  const { data, isAuthenticated } = action.payload;
+      .addCase(editCartItem.fulfilled, (state, action) => {
+        const { data, isAuthenticated } = action.payload;
 
-  let items = [];
+        let items = [];
 
-  if (data?.items) {
-    items = data.items;
-  } else {
-    // 🔥 manually update item
-    items = state.items.map((item) => {
-      if (item.customizationId === action.meta.arg.customizationId) {
-        return {
-          ...item,
-          sizes:action.meta.arg.sizes,
-        };
-      }
-      return item;
-    });
-  }
+        if (data?.items) {
+          items = data.items;
+        } else {
+          // 🔥 manually update item
+          items = state.items.map((item) => {
+            if (item.customizationId === action.meta.arg.customizationId) {
+              return {
+                ...item,
+                sizes: action.meta.arg.sizes,
+              };
+            }
+            return item;
+          });
+        }
 
-  state.items = items;
-  state.isGuest = !isAuthenticated;
+        state.items = items;
+        state.isGuest = !isAuthenticated;
 
-  const { totalQuantity, totalPrice } = calculateTotals(items);
-  state.totalQuantity = totalQuantity;
-  state.totalPrice = totalPrice;
-})
+        const { totalQuantity, totalPrice } = calculateTotals(items);
+        state.totalQuantity = totalQuantity;
+        state.totalPrice = totalPrice;
+      })
 
       // Remove from Cart
-     .addCase(removeFromCart.fulfilled, (state, action) => {
-  const { data, isAuthenticated, customizationId } = action.payload;
+      .addCase(removeFromCart.fulfilled, (state, action) => {
+        const { data, isAuthenticated, customizationId } = action.payload;
 
-  let items = [];
+        let items = [];
 
-  if (data?.items) {
-    items = data.items;
-  } else if (Array.isArray(data)) {
-    items = data;
-  } else {
-    // 🔥 manually remove item
-    items = state.items.filter((item) => {
-      return !(
-        item.customizationId === customizationId ||
-        item.id === customizationId ||
-        item._id === customizationId
-      );
-    });
-  }
+        if (data?.items) {
+          items = data.items;
+        } else if (Array.isArray(data)) {
+          items = data;
+        } else {
+          // 🔥 manually remove item
+          items = state.items.filter((item) => {
+            return !(
+              item.customizationId === customizationId ||
+              item.id === customizationId ||
+              item._id === customizationId
+            );
+          });
+        }
 
-  state.items = items;
-  state.isGuest = !isAuthenticated;
+        state.items = items;
+        state.isGuest = !isAuthenticated;
 
-  const { totalQuantity, totalPrice } = calculateTotals(items);
-  state.totalQuantity = totalQuantity;
-  state.totalPrice = totalPrice;
-})
+        const { totalQuantity, totalPrice } = calculateTotals(items);
+        state.totalQuantity = totalQuantity;
+        state.totalPrice = totalPrice;
+      })
 
 
 

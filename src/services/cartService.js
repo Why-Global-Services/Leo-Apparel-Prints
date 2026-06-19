@@ -34,6 +34,6 @@ export const mergeCartAPI = async (items) => {
 
 // Clear cart after checkout
 export const clearCartAPI = async () => {
-  const res = await axiosClient.delete("/v1/user/clearCart");
+  const res = await axiosClient.delete("/v1/user/removeCart");
   return res.data;
 };

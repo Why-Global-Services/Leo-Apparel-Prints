@@ -2,8 +2,8 @@
 
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { 
-  Upload, CheckCircle, Users, Trophy, 
+import {
+  Upload, CheckCircle, Users, Trophy,
   Calendar, Shield, ArrowRight, Globe, Phone, User, Mail, MessageSquare, X,
   Clock, Headphones, MapPin, Send
 } from 'lucide-react';
@@ -36,7 +36,9 @@ export default function BulkEnquiry() {
   const [formData, setFormData] = useState({
     firstName: '', lastName: '', phone: '', email: '',
     orgName: '', uniformFor: [], products: [],
-    hasDesign: null, message: '', agreeTerms: false
+    hasDesign: null, message: '', agreeTerms: false,
+    frontImage: null,
+    backImage: null
   });
 
   const [fileName, setFileName] = useState('');
@@ -59,7 +61,7 @@ export default function BulkEnquiry() {
   const handleToggle = (category, value) => {
     setFormData(prev => {
       const current = prev[category];
-      const updated = current.includes(value) 
+      const updated = current.includes(value)
         ? current.filter(v => v !== value)
         : [...current, value];
       return { ...prev, [category]: updated };
@@ -87,6 +89,36 @@ export default function BulkEnquiry() {
       alert('File size must be less than 18MB.');
     }
   };
+
+  const handleImageChange = (e, type) => {
+  const file = e.target.files?.[0];
+
+  if (!file) return;
+
+  const validTypes = [
+    "image/jpeg",
+    "image/jpg",
+    "image/png",
+    "image/webp"
+  ];
+
+  if (!validTypes.includes(file.type)) {
+    alert("Please upload JPG, PNG or WEBP images only.");
+    return;
+  }
+
+  const previewUrl = URL.createObjectURL(file);
+
+  if (type === "front") {
+    setFrontImage(file);
+    setFrontPreview(previewUrl);
+  }
+
+  if (type === "back") {
+    setBackImage(file);
+    setBackPreview(previewUrl);
+  }
+};
 
   const handleDrag = (e) => {
     e.preventDefault();
@@ -177,7 +209,7 @@ export default function BulkEnquiry() {
   return (
     <div className="min-h-screen bg-white relative pb-20">
       <div className="max-w-5xl mx-auto px-6 py-4">
-        
+
         {/* Header */}
         <header className="mb-12">
           <span className="text-primary text-xs font-semibold uppercase tracking-wide font-secondary">Direct Inquiry</span>
@@ -188,22 +220,22 @@ export default function BulkEnquiry() {
         </header>
 
         <form onSubmit={handleSubmit} className="space-y-10">
-          
+
           {/* Section 1: Contact */}
           <div className="space-y-5">
             <h3 className="text-sm font-semibold text-gray-700 border-l-4 border-primary pl-3 font-primary">Contact Details</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-              <FloatingInput id="firstName" label="First Name" icon={User} value={formData.firstName} onChange={(e) => setFormData({...formData, firstName: e.target.value})} required />
-              <FloatingInput id="lastName" label="Last Name" icon={User} value={formData.lastName} onChange={(e) => setFormData({...formData, lastName: e.target.value})} required />
-              <FloatingInput id="phone" label="Phone" icon={Phone} type="tel" value={formData.phone} onChange={(e) => setFormData({...formData, phone: e.target.value})} required />
-              <FloatingInput id="email" label="Email Address" icon={Mail} type="email" value={formData.email} onChange={(e) => setFormData({...formData, email: e.target.value})} required />
+              <FloatingInput id="firstName" label="First Name" icon={User} value={formData.firstName} onChange={(e) => setFormData({ ...formData, firstName: e.target.value })} required />
+              <FloatingInput id="lastName" label="Last Name" icon={User} value={formData.lastName} onChange={(e) => setFormData({ ...formData, lastName: e.target.value })} required />
+              <FloatingInput id="phone" label="Phone" icon={Phone} type="tel" value={formData.phone} onChange={(e) => setFormData({ ...formData, phone: e.target.value })} required />
+              <FloatingInput id="email" label="Email Address" icon={Mail} type="email" value={formData.email} onChange={(e) => setFormData({ ...formData, email: e.target.value })} required />
             </div>
           </div>
 
           {/* Section 2: Organization */}
           <div className="space-y-5">
             <h3 className="text-sm font-semibold text-gray-700 border-l-4 border-primary pl-3 font-primary">Organization Details</h3>
-            <FloatingInput id="orgName" label="Academy / League / Team Name" icon={Globe} value={formData.orgName} onChange={(e) => setFormData({...formData, orgName: e.target.value})} required />
+            <FloatingInput id="orgName" label="Academy / League / Team Name" icon={Globe} value={formData.orgName} onChange={(e) => setFormData({ ...formData, orgName: e.target.value })} required />
           </div>
 
           {/* Section 3: Uniform For */}
@@ -217,11 +249,10 @@ export default function BulkEnquiry() {
                   key={opt.id}
                   type="button"
                   onClick={() => handleToggle('uniformFor', opt.id)}
-                  className={`flex items-center justify-center gap-3 py-3 rounded-xl border transition-all ${
-                    formData.uniformFor.includes(opt.id)
-                      ? 'bg-primary border-primary text-white'
-                      : 'bg-white border-gray-200 text-gray-600 hover:border-primary/50'
-                  }`}
+                  className={`flex items-center justify-center gap-3 py-3 rounded-xl border transition-all ${formData.uniformFor.includes(opt.id)
+                    ? 'bg-primary border-primary text-white'
+                    : 'bg-white border-gray-200 text-gray-600 hover:border-primary/50'
+                    }`}
                 >
                   <opt.icon size={16} />
                   <span className="text-sm font-medium font-secondary">{opt.label}</span>
@@ -239,11 +270,10 @@ export default function BulkEnquiry() {
               {productOptions.map((item) => (
                 <label
                   key={item}
-                  className={`flex items-center gap-3 p-3 rounded-xl border transition-all cursor-pointer ${
-                    formData.products.includes(item)
-                      ? 'bg-primary/5 border-primary'
-                      : 'bg-white border-gray-200 hover:border-primary/50'
-                  }`}
+                  className={`flex items-center gap-3 p-3 rounded-xl border transition-all cursor-pointer ${formData.products.includes(item)
+                    ? 'bg-primary/5 border-primary'
+                    : 'bg-white border-gray-200 hover:border-primary/50'
+                    }`}
                 >
                   <input
                     type="checkbox"
@@ -251,9 +281,8 @@ export default function BulkEnquiry() {
                     checked={formData.products.includes(item)}
                     onChange={() => handleToggle('products', item)}
                   />
-                  <div className={`w-4 h-4 rounded border flex items-center justify-center ${
-                    formData.products.includes(item) ? 'bg-primary border-primary' : 'border-gray-300'
-                  }`}>
+                  <div className={`w-4 h-4 rounded border flex items-center justify-center ${formData.products.includes(item) ? 'bg-primary border-primary' : 'border-gray-300'
+                    }`}>
                     {formData.products.includes(item) && <CheckCircle size={10} className="text-white" />}
                   </div>
                   <span className="text-sm text-gray-700 font-secondary">{item}</span>
@@ -273,11 +302,10 @@ export default function BulkEnquiry() {
                   key={option}
                   type="button"
                   onClick={() => handleDesignToggle(option === 'Yes')}
-                  className={`px-6 py-2 rounded-lg font-medium transition-all font-secondary ${
-                    formData.hasDesign === (option === 'Yes')
-                      ? 'bg-primary text-white'
-                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                  }`}
+                  className={`px-6 py-2 rounded-lg font-medium transition-all font-secondary ${formData.hasDesign === (option === 'Yes')
+                    ? 'bg-primary text-white'
+                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                    }`}
                 >
                   {option}
                 </button>
@@ -286,32 +314,79 @@ export default function BulkEnquiry() {
           </div>
 
           {/* Section 6: File Upload */}
+          {/* Section 6: Front & Back Image Upload */}
           {formData.hasDesign === true && (
-            <div className="space-y-3">
-              <h3 className="text-sm font-semibold text-gray-700 border-l-4 border-primary pl-3 font-primary">Upload Design Reference</h3>
-              <div
-                className={`relative border-2 border-dashed rounded-xl p-8 text-center transition-all ${
-                  dragActive ? 'border-primary bg-primary/5' : 'border-gray-300 bg-gray-50'
-                }`}
-                onDragEnter={handleDrag}
-                onDragLeave={handleDrag}
-                onDragOver={handleDrag}
-                onDrop={handleDrop}
-              >
-                <input
-                  type="file"
-                  id="file-upload"
-                  className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-                  onChange={handleFileChange}
-                  accept=".jpg,.jpeg,.png,.pdf,.psd"
-                />
-                <Upload className="w-10 h-10 text-gray-400 mx-auto mb-3" />
-                <p className="text-gray-700 mb-2 font-secondary">
-                  {fileName ? fileName : 'Drop files here or click to select'}
-                </p>
-                <p className="text-gray-400 text-sm font-secondary">
-                  Accepted: jpg, png, pdf, psd. Max size: 18 MB
-                </p>
+            <div className="space-y-6">
+              <h3 className="text-sm font-semibold text-gray-700 border-l-4 border-primary pl-3 font-primary">
+                Upload Jersey Images
+              </h3>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+                {/* Front Image */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Front Image *
+                  </label>
+
+                  <div className="relative border-2 border-dashed border-gray-300 rounded-xl p-6 text-center hover:border-primary transition-all">
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={(e) => handleImageChange(e, "front")}
+                      className="absolute inset-0 opacity-0 cursor-pointer"
+                    />
+
+                    <Upload className="w-8 h-8 mx-auto text-gray-400 mb-2" />
+
+                    <p className="text-sm text-gray-600">
+                      Upload Front Design
+                    </p>
+                  </div>
+
+                  {frontPreview && (
+                    <div className="mt-4">
+                      <img
+                        src={frontPreview}
+                        alt="Front Preview"
+                        className="w-full h-64 object-contain border rounded-xl"
+                      />
+                    </div>
+                  )}
+                </div>
+
+                {/* Back Image */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Back Image *
+                  </label>
+
+                  <div className="relative border-2 border-dashed border-gray-300 rounded-xl p-6 text-center hover:border-primary transition-all">
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={(e) => handleImageChange(e, "back")}
+                      className="absolute inset-0 opacity-0 cursor-pointer"
+                    />
+
+                    <Upload className="w-8 h-8 mx-auto text-gray-400 mb-2" />
+
+                    <p className="text-sm text-gray-600">
+                      Upload Back Design
+                    </p>
+                  </div>
+
+                  {backPreview && (
+                    <div className="mt-4">
+                      <img
+                        src={backPreview}
+                        alt="Back Preview"
+                        className="w-full h-64 object-contain border rounded-xl"
+                      />
+                    </div>
+                  )}
+                </div>
+
               </div>
             </div>
           )}
@@ -322,7 +397,7 @@ export default function BulkEnquiry() {
             <div className="relative">
               <textarea
                 value={formData.message}
-                onChange={(e) => setFormData({...formData, message: e.target.value})}
+                onChange={(e) => setFormData({ ...formData, message: e.target.value })}
                 placeholder=" "
                 rows="4"
                 className="peer w-full px-5 py-4 bg-white border border-gray-200 rounded-xl focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all outline-none text-gray-800 placeholder-transparent font-secondary"
@@ -339,7 +414,7 @@ export default function BulkEnquiry() {
               <input
                 type="checkbox"
                 checked={formData.agreeTerms}
-                onChange={(e) => setFormData({...formData, agreeTerms: e.target.checked})}
+                onChange={(e) => setFormData({ ...formData, agreeTerms: e.target.checked })}
                 required
                 className="mt-1 w-4 h-4 text-primary rounded border-gray-300 focus:ring-primary"
               />
@@ -374,7 +449,7 @@ export default function BulkEnquiry() {
           {/* Contact Cards Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
             {/* Sales Card */}
-            <motion.div 
+            <motion.div
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5 }}
@@ -406,7 +481,7 @@ export default function BulkEnquiry() {
             </motion.div>
 
             {/* Customer Service Card */}
-            <motion.div 
+            <motion.div
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.1 }}
@@ -439,7 +514,7 @@ export default function BulkEnquiry() {
           </div>
 
           {/* Office Hours Card */}
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.2 }}
@@ -457,7 +532,7 @@ export default function BulkEnquiry() {
             </p>
           </motion.div>
         </div>
-      </div>
-    </div>
+      </div >
+    </div >
   );
 }
