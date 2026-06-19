@@ -224,7 +224,7 @@ const handleGoogleLogin = () => {
     }
   }, [defaultMode, isOpen]);
 
-  const showLeftPanel = windowWidth > 900;
+  const showLeftPanel = windowWidth > 1024;
   const isMobile = windowWidth <= 768;
 
   function handleForgotPasswordClick() {
@@ -543,10 +543,34 @@ const handleGoogleLogin = () => {
           .am-switch-link:hover { opacity:0.75; }
           .am-promo { text-align:center;margin-top:4px;font-size:9.5px;color:rgba(255,255,255,0.28);font-family:'Inter',sans-serif;flex-shrink:0; }
 
-          /* ── Tablet & below: hide left panel via CSS (JS also hides it but this prevents hydration flash) ── */
-          @media (max-width: 900px) {
-            .am-shell { width: 460px !important; height: auto !important; min-height: 0; }
+          /* ── Tablet & below: hide left panel via CSS ── */
+          @media (max-width: 1024px) {
+            .am-shell { 
+              width: 460px !important; 
+              height: max-content !important; 
+              min-height: 0 !important; 
+              align-items: flex-start !important;
+            }
             .am-left { display: none !important; }
+            
+            /* Remove decorative elements on small screens */
+            .am-right-blob { display: none !important; }
+            .am-mobile-brand { display: none !important; }
+            
+            /* Remove vertical stretching to fix empty space */
+            .am-right {
+              flex: 1 1 auto !important;
+              padding: 40px 28px 28px !important; /* give top space for close button */
+              height: max-content !important;
+              min-height: 0 !important;
+              justify-content: flex-start !important;
+            }
+            .am-form {
+              flex: 0 0 auto !important;
+              height: max-content !important;
+              justify-content: flex-start !important;
+            }
+            .am-form-register { flex: 0 0 auto !important; }
           }
 
           /* ── Mobile: compact bottom-sheet — no empty space ── */
@@ -554,12 +578,14 @@ const handleGoogleLogin = () => {
             .am-shell {
               width: 100vw !important;
               max-width: 100vw !important;
-              height: auto !important;       /* override desktop 570px */
+              height: max-content !important;       /* override desktop 570px */
+              min-height: 0 !important;
               max-height: 92dvh !important;
               border-radius: 20px 20px 0 0 !important;
               overflow-y: auto !important;
               flex-direction: column !important;
               box-shadow: 0 -12px 40px rgba(0,0,0,0.5) !important;
+              align-items: stretch !important;
             }
             /* Internal close button — visible top-right */
             .am-close {
@@ -573,18 +599,22 @@ const handleGoogleLogin = () => {
             }
             /* am-right must NOT flex-grow — shrink to content only */
             .am-right {
-              flex: none !important;
-              padding: 48px 20px 28px !important;   /* top pad = space for the close btn */
-              height: auto !important;
+              flex: 0 0 auto !important;
+              padding: 40px 20px 28px !important;   /* top pad = space for the close btn */
+              height: max-content !important;
+              min-height: 0 !important;
+              justify-content: flex-start !important;
             }
             /* am-form must NOT flex-grow or centre — stack from top */
             .am-form {
-              flex: none !important;
+              flex: 0 0 auto !important;
+              height: max-content !important;
               gap: 10px !important;
               justify-content: flex-start !important;
             }
-            .am-form-register { flex: none !important; gap: 8px !important; }
-            .am-mobile-brand { margin-bottom: 6px !important; }
+            .am-form-register { flex: 0 0 auto !important; gap: 8px !important; }
+            .am-mobile-brand { display: none !important; }
+            .am-right-blob { display: none !important; }
             .am-tabs { margin-bottom: 4px !important; }
             .am-title { font-size: 19px !important; }
             .am-sub { font-size: 10.5px !important; }

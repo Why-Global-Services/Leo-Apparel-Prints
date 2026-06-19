@@ -45,6 +45,8 @@ export default function BulkEnquiry() {
   const [dragActive, setDragActive] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [frontPreview, setFrontPreview] = useState(null);
+  const [backPreview, setBackPreview] = useState(null);
 
   const uniformOptions = [
     { id: 'academy', label: 'Academy', icon: Users },
@@ -110,12 +112,12 @@ export default function BulkEnquiry() {
   const previewUrl = URL.createObjectURL(file);
 
   if (type === "front") {
-    setFrontImage(file);
+    setFormData(prev => ({ ...prev, frontImage: file }));
     setFrontPreview(previewUrl);
   }
 
   if (type === "back") {
-    setBackImage(file);
+    setFormData(prev => ({ ...prev, backImage: file }));
     setBackPreview(previewUrl);
   }
 };
@@ -182,9 +184,12 @@ export default function BulkEnquiry() {
       setFormData({
         firstName: '', lastName: '', phone: '', email: '',
         orgName: '', uniformFor: [], products: [],
-        hasDesign: null, message: '', agreeTerms: false
+        hasDesign: null, message: '', agreeTerms: false,
+        frontImage: null, backImage: null, designFile: null
       });
       setFileName('');
+      setFrontPreview(null);
+      setBackPreview(null);
     } catch (error) {
       alert('Failed to submit enquiry. Please try again.');
     } finally {

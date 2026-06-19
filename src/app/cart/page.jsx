@@ -1013,37 +1013,27 @@ export default function CartPage() {
                                   <span className="text-sm font-bold text-primary-blue">
                                     ₹{item.basePrice || item.price}
                                   </span>
-                                  <div className="flex items-center gap-2">
-                                    <button
-                                      onClick={() =>
-                                        handleUpdateQuantity(
-                                          item,
-                                          item.sizes[0]?.size,
-                                          "decrease",
-                                        )
-                                      }
-                                      className="w-5 h-5 rounded-md bg-primary-blue text-white active:bg-primary-blue-dark transition-all duration-200 flex items-center justify-center"
-                                    >
-                                      <Minus size={12} />
-                                    </button>
-                                    <span className="font-semibold text-gray-800 w-6 text-center text-sm">
-                                      {(item.sizes || []).reduce(
-                                        (sum, size) => sum + size.quantity,
-                                        0,
-                                      )}
-                                    </span>
-                                    <button
-                                      onClick={() =>
-                                        handleUpdateQuantity(
-                                          item,
-                                          item.sizes[0]?.size,
-                                          "increase",
-                                        )
-                                      }
-                                      className="w-5 h-5 rounded-md bg-primary-blue text-white active:bg-primary-blue-dark transition-all duration-200 flex items-center justify-center"
-                                    >
-                                      <Plus size={12} />
-                                    </button>
+                                  <div className="flex flex-col gap-1.5">
+                                    {(item.sizes || []).map((s) => (
+                                      <div key={s.size} className="flex items-center gap-2">
+                                        <span className="text-[11px] font-medium text-gray-500 w-5">{s.size}</span>
+                                        <button
+                                          onClick={() => handleUpdateQuantity(item, s.size, "decrease")}
+                                          className="w-5 h-5 rounded-md bg-primary-blue text-white active:bg-primary-blue-dark transition-all duration-200 flex items-center justify-center"
+                                        >
+                                          <Minus size={12} />
+                                        </button>
+                                        <span className="font-semibold text-gray-800 w-5 text-center text-sm">
+                                          {s.quantity}
+                                        </span>
+                                        <button
+                                          onClick={() => handleUpdateQuantity(item, s.size, "increase")}
+                                          className="w-5 h-5 rounded-md bg-primary-blue text-white active:bg-primary-blue-dark transition-all duration-200 flex items-center justify-center"
+                                        >
+                                          <Plus size={12} />
+                                        </button>
+                                      </div>
+                                    ))}
                                   </div>
                                   <span className="text-xs font-semibold text-gray-700">
                                     ₹
@@ -1111,37 +1101,27 @@ export default function CartPage() {
                             </span>
                           </div>
                           <div className="col-span-2">
-                            <div className="flex items-center justify-center gap-2">
-                              <button
-                                onClick={() =>
-                                  handleUpdateQuantity(
-                                    item,
-                                    item.sizes[0]?.size,
-                                    "decrease",
-                                  )
-                                }
-                                className="w-7 h-7 rounded-lg bg-primary-blue text-white hover:bg-primary-blue-dark transition-all duration-300 flex items-center justify-center"
-                              >
-                                <Minus size={12} />
-                              </button>
-                              <span className="font-semibold text-gray-800 w-7 text-center text-sm">
-                                {(item.sizes || []).reduce(
-                                  (sum, size) => sum + size.quantity,
-                                  0,
-                                )}
-                              </span>
-                              <button
-                                onClick={() =>
-                                  handleUpdateQuantity(
-                                    item,
-                                    item.sizes[0]?.size,
-                                    "increase",
-                                  )
-                                }
-                                className="w-7 h-7 rounded-lg bg-primary-blue text-white hover:bg-primary-blue-dark transition-all duration-300 flex items-center justify-center"
-                              >
-                                <Plus size={12} />
-                              </button>
+                            <div className="flex flex-col items-center justify-center gap-2">
+                              {(item.sizes || []).map((s) => (
+                                <div key={s.size} className="flex items-center justify-center gap-2">
+                                  <span className="text-xs font-medium text-gray-500 w-6 text-right">{s.size}</span>
+                                  <button
+                                    onClick={() => handleUpdateQuantity(item, s.size, "decrease")}
+                                    className="w-6 h-6 rounded-lg bg-primary-blue text-white hover:bg-primary-blue-dark transition-all duration-300 flex items-center justify-center"
+                                  >
+                                    <Minus size={12} />
+                                  </button>
+                                  <span className="font-semibold text-gray-800 w-6 text-center text-sm">
+                                    {s.quantity}
+                                  </span>
+                                  <button
+                                    onClick={() => handleUpdateQuantity(item, s.size, "increase")}
+                                    className="w-6 h-6 rounded-lg bg-primary-blue text-white hover:bg-primary-blue-dark transition-all duration-300 flex items-center justify-center"
+                                  >
+                                    <Plus size={12} />
+                                  </button>
+                                </div>
+                              ))}
                             </div>
                           </div>
                           <div className="col-span-1 text-center">
