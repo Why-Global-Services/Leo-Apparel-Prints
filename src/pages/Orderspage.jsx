@@ -323,7 +323,7 @@ export default function Orderspage() {
           minHeight: '100vh',
           transition: 'all 0.3s ease',
           width: '100%',
-          maxWidth: '100%',
+          maxWidth: '100vw',
           overflowX: 'hidden',
           boxSizing: 'border-box',
         }}>

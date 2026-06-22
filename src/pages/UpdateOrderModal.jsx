@@ -90,8 +90,8 @@ export default function UpdateOrderModal({
     if (!isOpen || !order) return null;
 
     return (
-        <div className="fixed inset-0 bg-black/50 flex justify-center items-center z-50">
-            <div className="bg-white rounded-xl w-full max-w-4xl max-h-[90vh] overflow-y-auto p-6">
+        <div className="fixed inset-0 bg-black/50 flex justify-center items-center z-50 px-4">
+            <div className="bg-white rounded-xl w-full max-w-4xl max-h-[90vh] overflow-y-auto overflow-x-hidden p-6">
 
                 <div className="flex justify-between items-center mb-6">
                     <h2 className="text-xl font-semibold">

@@ -10,7 +10,7 @@ import {
   IoReorderFourOutline,
 } from "react-icons/io5";
 
-const BASE_URL = "http://localhost:5001/v1/admin";
+const BASE_URL = "https://leocult.whydev.in/v1/admin";
 
 export default function BannerPage() {
   const [banners, setBanners] = useState([]);

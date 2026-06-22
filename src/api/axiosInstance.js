@@ -2,8 +2,8 @@
 import axios from "axios";
 
 const axiosInstance = axios.create({
-  // baseURL: "https://leocult.whydev.in/v1/admin",
-   baseURL: "http://localhost:5001/v1/admin",
+  baseURL: "https://leocult.whydev.in/v1/admin",
+  //  baseURL: "http://localhost:5001/v1/admin",
   timeout: 10000,
 });
 
