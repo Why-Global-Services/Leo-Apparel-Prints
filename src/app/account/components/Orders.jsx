@@ -21,6 +21,25 @@ const STATUS_CONFIG = {
   Approved:       { bg: "#dbeafe", text: "#2563eb", icon: CheckCircle2,   label: "Approved" },
 };
 
+
+const PAYMENT_STATUS_CONFIG = {
+  Completed: {
+    bg: "#dcfce7",
+    text: "#16a34a",
+    label: "Paid",
+  },
+  Pending: {
+    bg: "#fef9c3",
+    text: "#ca8a04",
+    label: "Pending",
+  },
+  Failed: {
+    bg: "#fee2e2",
+    text: "#dc2626",
+    label: "Failed",
+  },
+};
+
 const getStatusConfig = (status) =>
   STATUS_CONFIG[status] || { bg: "#f1f5f9", text: "#64748b", icon: Package, label: status || "Unknown" };
 
@@ -34,6 +53,27 @@ function StatusBadge({ status }) {
       style={{ background: cfg.bg, color: cfg.text }}
     >
       <Icon size={12} />
+      {cfg.label}
+    </span>
+  );
+}
+
+function PaymentBadge({ status }) {
+  const cfg =
+    PAYMENT_STATUS_CONFIG[status] || {
+      bg: "#f1f5f9",
+      text: "#475569",
+      label: status,
+    };
+
+  return (
+    <span
+      className="inline-flex items-center gap-1 text-xs font-semibold px-3 py-1 rounded-full"
+      style={{
+        background: cfg.bg,
+        color: cfg.text,
+      }}
+    >
       {cfg.label}
     </span>
   );
@@ -67,7 +107,8 @@ function parseItems(order) {
         quantity:    totalQty,
         price:       p.price || pd.finalPrice || pd.basePrice || 0,
         subtotal:    p.subtotal || p.price * totalQty || 0,
-        orderStatus: p.orderStatus || order.orderStatus,
+        orderStatus:  order.orderStatus,
+        paymentStatus: order.paymentStatus,
         productId:   p.productId,
         selectedSize: p.selectedSize,
       });
@@ -241,7 +282,7 @@ function OrderDetail({ order, onBack }) {
 
                 {/* Status & Review */}
                 <div className="flex flex-col items-end gap-2 shrink-0">
-                  <StatusBadge status={item.orderStatus} />
+                  <PaymentBadge status={item.paymentStatus} />
                   {item.orderStatus === "Delivered" && (
                     <button
                       className="flex items-center gap-1 text-xs font-semibold text-white px-3 py-1.5 rounded-lg transition-all"
@@ -326,7 +367,7 @@ export default function Orders() {
         <button
           onClick={fetchOrders}
           className="flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-lg transition-all hover:opacity-80"
-          style={{ color: "var(--primary-blue)", border: "1px solid var(--primary-blue-light)", background: "var(--primary-blue-light)" }}
+          style={{ color: "var(--primary)",}}
         >
           <RefreshCw size={12} /> Refresh
         </button>
@@ -466,7 +507,7 @@ export default function Orders() {
 
                       {/* Price & Status */}
                       <div className="flex flex-col items-end shrink-0 gap-1.5">
-                        <StatusBadge status={item.orderStatus} />
+                        <PaymentBadge status={item.paymentStatus} />
                         <div className="text-right">
                           <p className="text-sm font-bold" style={{ color: "var(--primary-blue)" }}>
                             ₹{(item.subtotal || item.price * item.quantity || 0).toLocaleString("en-IN")}

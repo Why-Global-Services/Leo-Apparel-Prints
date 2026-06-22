@@ -394,6 +394,8 @@ export default function CheckoutPage() {
             await axiosClient.put(`/v1/user/editOrders/${userOrder.orderId}`,{status:"Ordered"})
             toast.success("Payment Successful!");
 
+            router.push(`/payment-status?status=success&orderId=${userOrder.orderId}`);
+
           } catch (err) {
 
             console.error("VERIFY ERROR:", err.response?.data || err);

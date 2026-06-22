@@ -827,19 +827,17 @@ useEffect(() => {
       );
     }
 
-    if (appliedCategories.length > 0 && !appliedCategories.includes("all")) {
-      filtered = filtered.filter((p) =>
-        appliedCategories.includes(p.categoryName?.toLowerCase())
-      );
-    }
 
-    if (appliedSubCategories.length > 0) {
-      filtered = filtered.filter((p) =>
-        appliedSubCategories.some(
-          (sub) => p.subCategoryName?.toLowerCase() === sub.toLowerCase()
-        )
-      );
-    }
+   if (
+  appliedSubCategories.length > 0 &&
+  !appliedSubCategories.includes("Fabric")
+) {
+  filtered = filtered.filter((p) =>
+    appliedSubCategories.some(
+      (sub) => p.sport?.toLowerCase() === sub.toLowerCase()
+    )
+  );
+} 
 
     return filtered;
   }, [allProducts, searchTerm, appliedCategories, appliedSubCategories, mounted]);

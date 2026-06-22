@@ -159,7 +159,7 @@ export default function PaymentStatusPage() {
 
             <>
               <button
-                onClick={() => router.push("/orders")}
+                onClick={() => router.push("/account/orders")}
                 className="flex-1 bg-[#003E9B] hover:bg-[#002d70] text-white py-3 rounded-xl font-semibold flex items-center justify-center gap-2 transition"
               >
                 <ShoppingBag size={18} />
@@ -167,7 +167,7 @@ export default function PaymentStatusPage() {
               </button>
 
               <button
-                onClick={() => router.push("/")}
+                onClick={() => router.push("/products")}
                 className="flex-1 border border-gray-300 hover:bg-gray-100 py-3 rounded-xl font-semibold flex items-center justify-center gap-2 transition"
               >
                 Continue Shopping
