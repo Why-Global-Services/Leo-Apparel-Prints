@@ -871,7 +871,7 @@ export default function CartPage() {
     }
 
     router.push(
-      `/products/${item.productId}?customizationId=${item.customizationId}`,
+      `/product?id=${item.productId}&customizationId=${item.customizationId}`,
     );
   };
 

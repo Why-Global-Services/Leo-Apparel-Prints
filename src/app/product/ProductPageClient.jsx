@@ -1,13 +1,14 @@
 'use client';
 
 import JerseyCustomizer from '@/app/components/products/JersyCustomizer';
-import { useParams } from 'next/navigation';
+import { useSearchParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { fetchProductById } from '@/features/products/productThunks';
 
 export default function ProductPageClient() {
-  const params = useParams();
+  const searchParams = useSearchParams();
+  const id = searchParams.get('id');
   const dispatch = useDispatch();
   const { selectedProduct: product, selectedProductLoading, selectedProductError } = useSelector(
     (state) => state.products
@@ -15,13 +16,15 @@ export default function ProductPageClient() {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    if (params?.id) {
-      dispatch(fetchProductById(params.id))
+    if (id) {
+      dispatch(fetchProductById(id))
         .unwrap()
         .then(() => setIsLoading(false))
         .catch(() => setIsLoading(false));
+    } else {
+      setIsLoading(false);
     }
-  }, [dispatch, params?.id]);
+  }, [dispatch, id]);
 
   if (isLoading || selectedProductLoading) {
     return (
@@ -32,7 +35,7 @@ export default function ProductPageClient() {
     );
   }
 
-  if (selectedProductError || !product) {
+  if (selectedProductError || !product || !id) {
     return (
       <div style={{ height: '100dvh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 16 }}>
         <h2>Product not found</h2>

@@ -531,9 +531,8 @@ export default function ProductCard({ product }) {
     Array.isArray(product.templates) &&
     product.templates.length > 0;
 
-  // Direct navigation to customizer
   const handleCardClick = () => {
-    router.push(`/products/${productId}`);
+    router.push(`/product?id=${productId}`);
   };
 
   const handleCustomizeNow = (e) => {
@@ -541,7 +540,7 @@ export default function ProductCard({ product }) {
     e.stopPropagation();
     setIsCustomizing(true);
     setTimeout(() => {
-      router.push(`/products/${productId}`);
+      router.push(`/product?id=${productId}`);
     }, 200);
   };
 
@@ -655,11 +654,23 @@ export default function ProductCard({ product }) {
             {productSubCategory}
           </span>
           <div className="flex items-center gap-1 text-[8px] sm:text-[9px] lg:text-[8px] font-black text-gray-400 uppercase tracking-tighter hover:text-primary transition-all group-hover:text-primary">
-            CUSTOMIZE
-            <Palette
-              size={10}
-              className="transition-transform duration-200 group-hover:scale-110"
-            />
+            {isCustomizable ? (
+              <>
+                CUSTOMIZE
+                <Palette
+                  size={10}
+                  className="transition-transform duration-200 group-hover:scale-110"
+                />
+              </>
+            ) : (
+              <>
+                DETAILS
+                <ArrowRight
+                  size={10}
+                  className="transition-transform duration-200 group-hover:translate-x-1"
+                />
+              </>
+            )}
           </div>
         </div>
       </div>

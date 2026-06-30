@@ -51,10 +51,8 @@ export default function LayoutWrapper({ children }) {
 
   const isAuthPage = pathname.startsWith("/auth");
 
-  // Check if we're on a product detail page (any /products/:id)
-  const isProductDetailPage = pathname?.match(/^\/products\/[^\/]+$/) &&
-    !pathname?.includes('/page') &&
-    pathname !== '/products';
+  // Check if we're on a product detail page (any /product with query params)
+  const isProductDetailPage = pathname === '/product';
 
   return (
     <>

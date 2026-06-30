@@ -88,10 +88,11 @@ axiosClient.interceptors.response.use(
       originalRequest._retry = true;
 
       try {
+        const refreshToken = localStorage.getItem("refreshToken");
 
         const response = await axios.post(
           `${process.env.NEXT_PUBLIC_API_URL}/v1/user/refresh-token`,
-          {},
+          { refreshToken },
           {
             withCredentials: true,
           }

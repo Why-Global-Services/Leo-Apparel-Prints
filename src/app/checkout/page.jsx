@@ -181,7 +181,7 @@ export default function CheckoutPage() {
   const [useSameAsBilling, setUseSameAsBilling] = useState(true);
   const [showDeliveryList, setShowDeliveryList] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState("RazorPay");
-  const [deliveryDays, setDeliveryDays] = useState(10);
+  const [deliveryDays, setDeliveryDays] = useState(7);
 
   // Get data from Redux
   const user = useSelector((state) => state.auth?.user);
