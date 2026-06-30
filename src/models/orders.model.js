@@ -65,6 +65,13 @@ const orderDetailsSchema = new mongoose.Schema(
               type: Number,
               required: true,
             },
+            sizes: [
+              {
+                size: { type: String },
+                quantity: { type: Number },
+                _id: false
+              }
+            ],
             price: {
               type: Number,
               required: true,

@@ -21,7 +21,7 @@ const generateRefreshToken = (id) => {
 };
 
 const refreshAccessToken = async (req) => {
-  const token = req.cookies.refreshToken;
+  const token = req.cookies.refreshToken || req.body.refreshToken;
 
   if (!token) throw new ApiError(401, "No refresh token");
 

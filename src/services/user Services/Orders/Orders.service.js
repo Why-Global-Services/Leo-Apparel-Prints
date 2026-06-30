@@ -357,12 +357,12 @@
           return await this.createOrderTransaction(orderData, session);
         }
 
-        // Log validation errors in detail
         if (error.name === "ValidationError") {
           console.error("📋 Validation errors:", error.errors);
+          require('fs').writeFileSync('error_log.txt', JSON.stringify(error.errors, null, 2));
         }
 
-        throw new ApiError(500, "Failed to create order", error.message);
+        throw new ApiError(500, "Failed to create order: " + (error.name === "ValidationError" ? Object.keys(error.errors).join(', ') : error.message), error.message);
       }
     }
 
@@ -440,6 +440,8 @@
     productType: item.productType,
 
     quantity: item.quantity,
+
+    sizes: Array.isArray(item.sizes) ? item.sizes.map(s => ({ size: s.size, quantity: s.quantity })) : [],
 
     price: item.price,
 

@@ -517,8 +517,8 @@ const addToCart = async (req) => {
       for (const guestItem of guestCart.items) {
         const existingIndex = userCart.items.findIndex(
           (item) =>
-            String(item.productId) ===
-            String(guestItem.productId)
+            String(item.customizationId) ===
+            String(guestItem.customizationId)
         );
 
         if (existingIndex !== -1) {
@@ -617,8 +617,8 @@ const addToCart = async (req) => {
   const existingIndex =
     userCart.items.findIndex(
       (item) =>
-        String(item.productId) ===
-        String(product._id)
+        String(item.customizationId) ===
+        String(customizationId)
     );
 
   // ==========================================
