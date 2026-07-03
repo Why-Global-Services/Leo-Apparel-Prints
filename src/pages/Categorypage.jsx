@@ -385,9 +385,9 @@ export default function CategoryPage() {
                         <button className="btn btn-add-cat" onClick={openCategoryModal}>
                             <IoAdd size={15} /> Add Category
                         </button>
-                        <button className="btn btn-add-sub" onClick={openSubcategoryModal}>
+                        {/* <button className="btn btn-add-sub" onClick={openSubcategoryModal}>
                             <IoFolderOpen size={15} /> Add Subcategory
-                        </button>
+                        </button> */}
                     </div>
                 </div>
 
