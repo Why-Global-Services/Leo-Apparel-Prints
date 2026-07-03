@@ -172,6 +172,11 @@ const deleteProducts = catchAsync(async (req, res) => {
   res.status(200).send(data);
 });
 
+const getFilterOptions = catchAsync(async (req, res) => {
+  const data = await adminService.getFilterOptions(req);
+  res.status(200).send(data);
+});
+
 const createPattern = catchAsync(async (req, res) => {
   const result = await patternService.createPattern(req);
 
@@ -894,5 +899,7 @@ module.exports = {
   getPatternsByIds,
 
   getUsersWithCustomizations,
-  getBulkEnquiries
+  getBulkEnquiries,
+  getFilterOptions
+
 };

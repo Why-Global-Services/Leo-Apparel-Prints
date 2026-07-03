@@ -1125,6 +1125,18 @@ const deleteProducts = async (req, res) => {
   };
 }
 
+const  getFilterOptions = async(req,res) => {
+  const sports = await Product.distinct("sport");
+  const apparels = await Product.distinct("apparel");
+  const segments = await Product.distinct("segment");
+
+  return {
+    sports: sports.filter(Boolean),
+    apparels: apparels.filter(Boolean),
+    segments: segments.filter(Boolean),
+  };
+}
+
 
 const editProducts = async (req, res) => {
   const { _id } = req.params;
@@ -5336,5 +5348,6 @@ module.exports = {
   getOneProducts,
   deleteProducts,
 
-  getUsersWithCustomizations
+  getUsersWithCustomizations,
+  getFilterOptions
 };

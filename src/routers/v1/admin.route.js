@@ -126,6 +126,8 @@ AdminRouter.route("/deleteproducts/:_id").delete(
   adminController.deleteProducts,
 );
 
+AdminRouter.route("/filter-options").get(adminController.getFilterOptions)
+
 AdminRouter.post(
   "/createpattern",
   uploads.fields([
