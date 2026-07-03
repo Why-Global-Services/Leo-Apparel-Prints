@@ -950,9 +950,10 @@ const getAllProducts = async (req) => {
       isActive: true,
     };
 
-    if (segment) {
-      matchFilter.segment = segment;
-    }
+   if (segment) {
+  const segments = segment.split(",").map((s) => s.trim());
+  matchFilter.segment = { $in: segments };
+}
 
     if (sport) {
       matchFilter.sport = sport;
