@@ -508,22 +508,8 @@ import {
   Upload,
 } from "lucide-react";
 import Link from "next/link";
+import { fetchFilterOptions } from "@/features/products/productThunks";
 
-const menuStructure = [
-  { id: "all", label: "All Gear", icon: <Activity size={15} />, subs: [] },
-  {
-    id: "sports",
-    label: "Sports",
-    icon: <Target size={15} />,
-    subs: ["Football", "Cricket", "Tennis", "Basketball"],
-  },
-  {
-    id: "clothes",
-    label: "Clothes",
-    icon: <Activity size={15} />,
-    subs: ["Fabric"],
-  },
-];
 
 function SidebarContent({
   searchTerm,
@@ -533,6 +519,7 @@ function SidebarContent({
   selectedSubCategories,
   onSubCategoryChange,
   onApplyFilters,
+  menuStructure
 }) {
   return (
     <div className="flex flex-col gap-4">
@@ -721,6 +708,7 @@ export default function ProductGrid() {
     items: allProducts,
     loading,
     error,
+    filterOptions
   } = useSelector((state) => state.products);
 
   // ── Local UI state ──
@@ -731,17 +719,45 @@ export default function ProductGrid() {
   const [appliedCategories, setAppliedCategories] = useState([]);
   const [appliedSubCategories, setAppliedSubCategories] = useState([]);
 
+
   
+  const menuStructure = useMemo(
+  () => [
+    {
+      id: "all",
+      label: "All Gear",
+      icon: <Activity size={15} />,
+      subs: [],
+    },
+    {
+      id: "sports",
+      label: "Sports",
+      icon: <Target size={15} />,
+      subs: filterOptions?.sports || [],
+    },
+    {
+      id: "apparels",
+      label: "Apparels",
+      icon: <Activity size={15} />,
+      subs: filterOptions?.apparels || [],
+    },
+  ],
+  [filterOptions]
+);
 
   // Set mounted state to avoid hydration mismatch
   useEffect(() => {
     setMounted(true);
   }, []);
 
+    useEffect(() => {
+      console.log("Calling filter options API...");
+  dispatch(fetchFilterOptions());
+}, [dispatch]);
   // ── Fetch on mount - only on client side ──
 useEffect(() => {
 
-  if (!mounted) return;
+  if (!mounted) return
 
   const segment = searchParams.get("segment");
   const sport = searchParams.get("sport");
@@ -777,7 +793,7 @@ useEffect(() => {
         }
       }
     },
-    []
+    [menuStructure]
   );
 
   const handleSubCategoryChange = useCallback(
@@ -815,6 +831,9 @@ useEffect(() => {
     setAppliedSubCategories([]);
   }, []);
 
+  console.log("Filter Options:", filterOptions);
+console.log("Menu Structure:", menuStructure);
+
   // ── Filter logic ──
   const filteredProducts = useMemo(() => {
     if (!mounted) return [];
@@ -827,18 +846,33 @@ useEffect(() => {
       );
     }
 
+const selectedSports = appliedSubCategories.filter((sub) =>
+  filterOptions.sports.includes(sub)
+);
 
-   if (
-  appliedSubCategories.length > 0 &&
-  !appliedSubCategories.includes("Fabric")
-) {
+const selectedApparels = appliedSubCategories.filter((sub) =>
+  filterOptions.apparels.includes(sub)
+);
+
+if (selectedSports.length > 0) {
   filtered = filtered.filter((p) =>
-    appliedSubCategories.some(
-      (sub) => p.sport?.toLowerCase() === sub.toLowerCase()
+    selectedSports.some(
+      (sport) =>
+        p.sport?.trim().toLowerCase() ===
+        sport.trim().toLowerCase()
     )
   );
-} 
+}
 
+if (selectedApparels.length > 0) {
+  filtered = filtered.filter((p) =>
+    selectedApparels.some(
+      (apparel) =>
+        p.apparel?.trim().toLowerCase() ===
+        apparel.trim().toLowerCase()
+    )
+  );
+}
     return filtered;
   }, [allProducts, searchTerm, appliedCategories, appliedSubCategories, mounted]);
 
@@ -946,7 +980,9 @@ useEffect(() => {
               }}
             >
               <div className="flex-1 overflow-y-auto sidebar-scroll min-h-0">
-                <SidebarContent {...sidebarProps} />
+                <SidebarContent
+                menuStructure={menuStructure}
+                 {...sidebarProps} />
               </div>
             </aside>
 
@@ -1041,7 +1077,9 @@ useEffect(() => {
               </button>
             </div>
             <div className="flex-1 overflow-y-auto p-4 sidebar-scroll min-h-0">
-              <SidebarContent {...sidebarProps} />
+              <SidebarContent 
+              menuStructure={menuStructure}
+              {...sidebarProps} />
             </div>
             <div className="px-5 py-3 border-t border-gray-100 bg-gray-50 flex-shrink-0">
               <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest text-center font-secondary">

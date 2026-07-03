@@ -251,16 +251,16 @@ export default function JerseyCustomizer({ product }) {
   // printZones — logos/name/number are rendered directly on the 3D model.
   const hasGlb = !!product?.glbUrl;
 
-  const visibleTabs = (hasPrintZones || hasGlb)
+  const visibleTabs = (isCustomizable || hasGlb)
     ? MAIN_TABS_FULL
-    : MAIN_TABS_FULL.filter(t => t.id !== 'logos' && t.id !== 'nameNumber');
+    : MAIN_TABS_FULL.filter(t => t.id !== 'logos');
 
   // If the active tab becomes unavailable, fall back to Style.
   useEffect(() => {
-    if (!hasPrintZones && !hasGlb && (activeTab === 'logos' || activeTab === 'nameNumber')) {
+    if (!isCustomizable && !hasGlb && activeTab === 'logos') {
       setActiveTab('style');
     }
-  }, [hasPrintZones, hasGlb, activeTab]);
+  }, [isCustomizable, hasGlb, activeTab]);
 
   const [jerseyColor, setJerseyColor] = useState('#1E40AF');
   const [sleeveColor, setSleeveColor] = useState('#111111');
@@ -730,6 +730,10 @@ export default function JerseyCustomizer({ product }) {
                 <TextColorGrid colors={TEXT_COLORS} selected={nameColor} onSelect={handleNameColorChange} pickerId="name-cp" />
               </div>
               <div>
+                <div style={{ fontSize: 10, fontWeight: 700, color: '#64748B', marginBottom: 7 }}>Number Color</div>
+                <TextColorGrid colors={TEXT_COLORS} selected={numberColor} onSelect={handleNumberColorChange} pickerId="number-cp" />
+              </div>
+              <div>
                 <div style={{ fontSize: 10, fontWeight: 700, color: '#64748B', marginBottom: 7 }}>Text Effect</div>
                 <TextEffectSelect selected={textEffect} onSelect={handleTextEffectChange} />
               </div>
@@ -751,7 +755,8 @@ export default function JerseyCustomizer({ product }) {
     const summaryRows = [
       ['Fabric', FABRIC_TYPES.find(f => f.id === fabric)?.label],
       ['Base Color', JERSEY_COLORS.find(c => c.code === jerseyColor)?.name || jerseyColor],
-      ['Sizes', Object.entries(aggregatedSizes).map(([size, qty]) => `${size} × ${qty}`).join(', ') || '—'],
+      ['Player Name', showName ? (playerName || '—') : 'Hidden'],
+      ['Player Number', showNumber ? (playerNumber || '—') : 'Hidden'],      ['Sizes', Object.entries(aggregatedSizes).map(([size, qty]) => `${size} × ${qty}`).join(', ') || '—'],
     ];
 
     return (

@@ -71,7 +71,7 @@
 
 
 import { createSlice } from "@reduxjs/toolkit";
-import { fetchAllProducts, fetchProductById } from "./productThunks";
+import { fetchAllProducts, fetchProductById ,fetchFilterOptions} from "./productThunks";
 
 const initialState = {
   items: [],
@@ -80,6 +80,11 @@ const initialState = {
   selectedProduct: null,
   selectedProductLoading: false,
   selectedProductError: null,
+  filterOptions: {
+    sports: [],
+    apparels: [],
+    segments: [],
+  },
 };
 
 const productSlice = createSlice({
@@ -122,7 +127,12 @@ const productSlice = createSlice({
       .addCase(fetchProductById.rejected, (state, action) => {
         state.selectedProductLoading = false;
         state.selectedProductError = action.payload;
-      });
+      })
+
+      .addCase(fetchFilterOptions.fulfilled, (state, action) => {
+          console.log("Filter API Error:", action.payload);
+      state.filterOptions = action.payload;
+    })
   },
 });
 

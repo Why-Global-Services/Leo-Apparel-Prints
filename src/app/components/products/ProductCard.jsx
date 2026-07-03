@@ -558,7 +558,7 @@ export default function ProductCard({ product }) {
         {/* Category Badge */}
         <div className="absolute top-2 left-2 sm:top-3 sm:left-3 z-10">
           <span className="bg-primary backdrop-blur-sm text-white px-1.5 py-0.5 sm:px-2 sm:py-0.5 rounded text-[8px] sm:text-[9px] font-black uppercase tracking-widest shadow-sm">
-            {productCategory}
+            {product.sport}
           </span>
         </div>
 

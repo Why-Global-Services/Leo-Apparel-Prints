@@ -95,3 +95,16 @@ export const getProductByIdAPI = async (id) => {
 
   } 
 };
+
+
+export const getFilterOptions = async() => {
+  try {
+    
+    const res = await axiosClient.get("/v1/admin/filter-options");
+    console.log("service filter",res.data)
+
+    return res.data
+  } catch (error) {
+    throw error
+  }
+};

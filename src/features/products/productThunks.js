@@ -37,6 +37,7 @@ import { createAsyncThunk } from "@reduxjs/toolkit";
 import {
   getAllProductsAPI,
   getProductByIdAPI,
+  getFilterOptions,
 } from "@/services/productService";
 
 // export const fetchAllProducts = createAsyncThunk(
@@ -90,6 +91,29 @@ export const fetchProductById = createAsyncThunk(
     } catch (err) {
       console.error("Error fetching product:", err);
       return rejectWithValue(err.response?.data || "Product not found");
+    }
+  }
+);
+
+
+
+
+export const fetchFilterOptions = createAsyncThunk(
+  "products/fetchFilterOptions",
+  async (_, thunkAPI) => {
+    try {
+      console.log("Calling API...");
+      const response = await getFilterOptions();
+      console.log("Response:", response);
+
+      return response;
+    } catch (error) {
+      console.log("Error:", error);
+
+      return thunkAPI.rejectWithValue(
+        error.response?.data?.message ||
+          "Failed to fetch filter options"
+      );
     }
   }
 );
