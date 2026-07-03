@@ -393,6 +393,16 @@ export default function CustomizationList() {
             (f) => f.fieldName?.toLowerCase() === "playernumber"
         )?.value || "—";
 
+    const getPlayerSize = (item) =>
+        item.customization?.find(
+            (f) => f.fieldName?.toLowerCase().includes("size")
+        )?.value || "—";
+
+    const getPlayerSleeve = (item) =>
+        item.customization?.find(
+            (f) => f.fieldName?.toLowerCase().includes("sleeve")
+        )?.value || "—";
+
     const getJerseyColor = (item) =>
         item.customization?.find(
             (f) => f.fieldName?.toLowerCase() === "jerseycolor"
@@ -442,7 +452,7 @@ export default function CustomizationList() {
                     <table style={styles.table}>
                         <thead>
                             <tr>
-                                {["#", "Product", "Customer", "Player", "Number", "Color", "Date", "Preview"].map(
+                                {["#", "Product", "Customer", "Player", "Number", "Size", "Sleeve", "Color", "Date", "Preview"].map(
                                     (h) => (
                                         <th key={h} style={styles.th}>
                                             {h}
@@ -508,6 +518,16 @@ export default function CustomizationList() {
                                         {/* Number */}
                                         <td style={styles.td}>
                                             <span style={styles.numberBadge}>{getPlayerNumber(item)}</span>
+                                        </td>
+
+                                        {/* Size */}
+                                        <td style={styles.td}>
+                                            <span style={styles.pill}>{getPlayerSize(item)}</span>
+                                        </td>
+
+                                        {/* Sleeve */}
+                                        <td style={styles.td}>
+                                            <span style={styles.pill}>{getPlayerSleeve(item)}</span>
                                         </td>
 
                                         {/* Jersey Color */}

@@ -28,6 +28,7 @@ export default function AdminLayout() {
                     marginLeft: collapsed ? '80px' : '260px',
                     minHeight: '100vh',
                     transition: 'all 0.3s ease',
+                    minWidth: 0,
                 }}
             >
                 <TopNav

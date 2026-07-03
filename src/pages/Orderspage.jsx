@@ -195,12 +195,45 @@ export default function Orderspage() {
         }
     };
     const handleExportOrders = () => {
+        if (!orders || orders.length === 0) {
+            toast.error("No orders to export!");
+            return;
+        }
+
+        const headers = ["Order ID", "Customer", "Email", "Phone", "Date", "Status", "Payment Status", "Total Price", "Products"];
+
+        const csvData = orders.map(order => {
+            const productNames = order.products?.map(p => `${p.productName} (Qty: ${p.quantity})`).join("; ") || "";
+            return [
+                order.id,
+                `"${order.customer || ""}"`,
+                `"${order.email || ""}"`,
+                order.phone,
+                `"${order.date || ""}"`,
+                order.orderStatus,
+                order.paymentStatus,
+                order.total,
+                `"${productNames}"`
+            ].join(",");
+        });
+
+        const csvContent = [headers.join(","), ...csvData].join("\n");
+        const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+        const url = URL.createObjectURL(blob);
+        
+        const link = document.createElement("a");
+        link.setAttribute("href", url);
+        link.setAttribute("download", `Orders_Export_${new Date().toISOString().split('T')[0]}.csv`);
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+
         toast.success("Orders exported successfully! 📥");
     };
 
     const getTabCount = (status) => {
         if (status === 'all') return orders.length;
-        return orders.filter(o => o.status === status).length;
+        return orders.filter(o => o.orderStatus === status).length;
     };
 
     const filteredOrders = orders.filter(order => {
@@ -275,6 +308,9 @@ export default function Orderspage() {
                 email:
                     order?.userDetails?.email || "N/A",
 
+                phone:
+                    order?.userDetails?.phoneNumber || order?.userDetails?.phone || order?.deliveryAddress?.phone || "N/A",
+
                 date:
                     new Date(order.createdAt)
                         .toLocaleDateString(),
@@ -323,7 +359,6 @@ export default function Orderspage() {
           minHeight: '100vh',
           transition: 'all 0.3s ease',
           width: '100%',
-          maxWidth: '100vw',
           overflowX: 'hidden',
           boxSizing: 'border-box',
         }}>
@@ -455,6 +490,30 @@ export default function Orderspage() {
                                                     >
                                                         Qty : {product.quantity}
                                                     </div>
+                                                    
+                                                    {(product.size || product.sleeve || product.color || product.customization?.length > 0) && (
+                                                        <div style={{ marginTop: '4px', display: 'flex', gap: '4px', flexWrap: 'wrap' }}>
+                                                            {(product.size || product.customization?.find(c => c.fieldName?.toLowerCase().includes("size"))?.value) && (
+                                                                <span style={{ fontSize: '10px', background: '#F1F5F9', padding: '2px 6px', borderRadius: '4px', color: '#64748B' }}>Size: {product.size || product.customization?.find(c => c.fieldName?.toLowerCase().includes("size"))?.value}</span>
+                                                            )}
+                                                            {(product.sleeve || product.customization?.find(c => c.fieldName?.toLowerCase().includes("sleeve"))?.value) && (
+                                                                <span style={{ fontSize: '10px', background: '#F1F5F9', padding: '2px 6px', borderRadius: '4px', color: '#64748B' }}>Sleeve: {product.sleeve || product.customization?.find(c => c.fieldName?.toLowerCase().includes("sleeve"))?.value}</span>
+                                                            )}
+                                                            {(() => {
+                                                                const colorVal = product.color || product.customization?.find(c => c.fieldName?.toLowerCase().includes("color") || /^#[0-9a-fA-F]{3,6}$/.test(c.value || ""))?.value;
+                                                                if (!colorVal) return null;
+                                                                return (
+                                                                    <span style={{ fontSize: '10px', background: '#F1F5F9', padding: '2px 6px', borderRadius: '4px', color: '#64748B', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                                                                        <div style={{ width: '10px', height: '10px', borderRadius: '50%', background: colorVal, border: '1px solid #cbd5e1' }} />
+                                                                        {colorVal.toUpperCase()}
+                                                                    </span>
+                                                                );
+                                                            })()}
+                                                            {product.customization?.find(c => c.fieldName?.toLowerCase() === "playernumber")?.value && (
+                                                                <span style={{ fontSize: '10px', background: '#F1F5F9', padding: '2px 6px', borderRadius: '4px', color: '#64748B' }}>No: {product.customization?.find(c => c.fieldName?.toLowerCase() === "playernumber")?.value}</span>
+                                                            )}
+                                                        </div>
+                                                    )}
 
                                                     <div
                                                         style={{
@@ -474,6 +533,9 @@ export default function Orderspage() {
                                             {order.customer}
                                         </div>
                                         <div style={{ fontSize: '11px', color: textMuted, marginTop: '2px' }}>{order.email}</div>
+                                        {order.phone !== "N/A" && (
+                                            <div style={{ fontSize: '11px', color: textMuted, marginTop: '2px' }}>📞 {order.phone}</div>
+                                        )}
                                     </td>
                                     <td style={{ padding: '16px' }}>
                                         <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>

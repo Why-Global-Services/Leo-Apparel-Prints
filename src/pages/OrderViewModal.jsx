@@ -200,7 +200,7 @@ function buildProductView(product) {
 
   const getCV = (field) => customization.find((c) => c.fieldName === field)?.value;
 
-  const jerseyColor = getCV("jerseyColor");
+  const jerseyColor = product.color || getCV("jerseyColor") || customization.find(c => c.fieldName?.toLowerCase().includes("color") || /^#[0-9a-fA-F]{3,6}$/.test(c.value || ""))?.value;
   const patternFront = getCV("patternFront");
   const patternBack = getCV("patternBack");
   const clubLogo = getCV("logo");
@@ -210,6 +210,41 @@ function buildProductView(product) {
   const nameFont = getCV("nameFont") || "default";
   const numberColor = getCV("numberColor") || "#222222";
   const numberFont = getCV("numberFont") || "sport";
+  
+  const singleSize = getCV("size") || customization.find(c => c.fieldName?.toLowerCase().includes("size") && !c.fieldName.includes("_"))?.value;
+  const singleSleeve = getCV("sleeve") || customization.find(c => c.fieldName?.toLowerCase().includes("sleeve") && !c.fieldName.includes("_"))?.value;
+
+  const rosterItems = [];
+  customization.forEach((c) => {
+    const match = c.fieldName?.match(/^player(Name|Number|Size|Sleeve|Color)_(\d+)$/i);
+    if (match) {
+      const type = match[1].toLowerCase();
+      const idx = parseInt(match[2], 10);
+      if (!rosterItems[idx]) rosterItems[idx] = {};
+      rosterItems[idx][type] = c.value;
+    }
+  });
+  let validRoster = rosterItems.filter(Boolean);
+
+  if (product.sizes && product.sizes.length > 0) {
+    const expandedRoster = [];
+    product.sizes.forEach(s => {
+      for (let i = 0; i < s.quantity; i++) {
+        expandedRoster.push({ size: s.size, sleeve: "Half", name: "-", number: "-", color: "-" });
+      }
+    });
+    validRoster.forEach((vr, i) => {
+      if (expandedRoster[i]) {
+        expandedRoster[i] = { ...expandedRoster[i], ...vr };
+      }
+    });
+    validRoster = expandedRoster;
+  } else if (product.quantity > validRoster.length) {
+    const padCount = product.quantity - validRoster.length;
+    for (let i = 0; i < padCount; i++) {
+      validRoster.push({ name: "-", number: "-", size: "-", sleeve: "-", color: "-" });
+    }
+  }
 
   const zoneById = (id) => frontZones.find((z) => z.id === id);
 
@@ -237,6 +272,8 @@ function buildProductView(product) {
     clubLogo && { kind: "img", value: clubLogo, label: "Logo" },
     playerName && { kind: "text", value: playerName, color: nameColor, label: "Player name" },
     playerNumber && { kind: "text", value: playerNumber, color: numberColor, label: "Number" },
+    singleSize && { kind: "text", value: singleSize, color: "#3B82F6", label: "Size" },
+    singleSleeve && { kind: "text", value: singleSleeve, color: "#3B82F6", label: "Sleeve" },
   ].filter(Boolean);
 
   return {
@@ -247,6 +284,7 @@ function buildProductView(product) {
     frontOverlays,
     layerChips,
     hasCustomization: customization.length > 0,
+    roster: validRoster,
   };
 }
 
@@ -264,7 +302,7 @@ export default function OrderViewModal({ order, onClose }) {
   const tabs = [
     { key: "canvas", label: "Canvas preview" },
     { key: "info", label: "Order info" },
-    { key: "custom", label: "Customization" },
+    // { key: "custom", label: "Customization" },
   ];
 
   const s = {
@@ -453,15 +491,18 @@ export default function OrderViewModal({ order, onClose }) {
                       {pv.layerChips.map((l, i) => (
                         <div key={i} style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "4px" }}>
                           {l.kind === "color" && (
-                            <div
-                              style={{
-                                width: "28px",
-                                height: "28px",
-                                borderRadius: "6px",
-                                background: l.value,
-                                border: "1px solid #E2E8F0",
-                              }}
-                            />
+                            <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "2px" }}>
+                              <div
+                                style={{
+                                  width: "28px",
+                                  height: "28px",
+                                  borderRadius: "6px",
+                                  background: l.value,
+                                  border: "1px solid #E2E8F0",
+                                }}
+                              />
+                              <span style={{ fontSize: "10px", fontWeight: 700, color: "#475569" }}>{l.value.toUpperCase()}</span>
+                            </div>
                           )}
                           {l.kind === "img" && (
                             <img
@@ -489,6 +530,41 @@ export default function OrderViewModal({ order, onClose }) {
                           <span style={{ fontSize: "10px", color: "#94A3B8", whiteSpace: "nowrap" }}>{l.label}</span>
                         </div>
                       ))}
+                    </div>
+                  )}
+
+                  {pv.roster && pv.roster.length > 0 && (
+                    <div style={{ padding: "0 24px 20px" }}>
+                      <p style={{
+                        fontSize: "11px", color: "#94A3B8", fontWeight: 600,
+                        textTransform: "uppercase", letterSpacing: ".5px", marginBottom: "12px"
+                      }}>
+                        Player Variations (Roster)
+                      </p>
+                      <div style={{ overflowX: 'auto', border: "1px solid #E2E8F0", borderRadius: "8px" }}>
+                        <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "12px", minWidth: "400px" }}>
+                          <thead style={{ background: "#F8FAFC", borderBottom: "1px solid #E2E8F0" }}>
+                            <tr>
+                              <th style={{ padding: "10px 12px", textAlign: "left", color: "#64748B", fontWeight: 600 }}>#</th>
+                              <th style={{ padding: "10px 12px", textAlign: "left", color: "#64748B", fontWeight: 600 }}>Name</th>
+                              <th style={{ padding: "10px 12px", textAlign: "left", color: "#64748B", fontWeight: 600 }}>Number</th>
+                              <th style={{ padding: "10px 12px", textAlign: "left", color: "#64748B", fontWeight: 600 }}>Size</th>
+                              <th style={{ padding: "10px 12px", textAlign: "left", color: "#64748B", fontWeight: 600 }}>Sleeve</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {pv.roster.map((r, i) => (
+                              <tr key={i} style={{ borderBottom: i < pv.roster.length - 1 ? "1px solid #F1F5F9" : "none" }}>
+                                <td style={{ padding: "10px 12px", color: "#94A3B8" }}>{i + 1}</td>
+                                <td style={{ padding: "10px 12px", color: "#0F172A", fontWeight: 500 }}>{r.name || "—"}</td>
+                                <td style={{ padding: "10px 12px", color: "#0F172A", fontWeight: 500 }}>{r.number || "—"}</td>
+                                <td style={{ padding: "10px 12px" }}><span style={{ background: "#EFF6FF", color: "#3B82F6", padding: "2px 8px", borderRadius: "4px", fontWeight: 600 }}>{r.size || "—"}</span></td>
+                                <td style={{ padding: "10px 12px" }}><span style={{ background: "#F1F5F9", color: "#64748B", padding: "2px 8px", borderRadius: "4px", fontWeight: 600 }}>{r.sleeve || "—"}</span></td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
                     </div>
                   )}
                 </div>
@@ -547,7 +623,7 @@ export default function OrderViewModal({ order, onClose }) {
         )}
 
         {/* === CUSTOMIZATION TAB === */}
-        {activeTab === "custom" && (
+        {/* activeTab === "custom" && (
           <>
             {products.length === 0 && (
               <p style={{ padding: "24px", fontSize: "14px", color: "#94A3B8" }}>No products in this order</p>
@@ -582,43 +658,70 @@ export default function OrderViewModal({ order, onClose }) {
                   {customization.length === 0 ? (
                     <p style={{ fontSize: "14px", color: "#94A3B8" }}>No customization data</p>
                   ) : (
-                    customization.map((c, i) => {
-                      const isImg = c.value?.startsWith("http") && /\.(png|jpg|jpeg|webp|gif)/i.test(c.value);
-                      const isColor = /^#[0-9a-fA-F]{3,6}$/.test(c.value || "");
-                      return (
-                        <div key={i} style={s.custRow}>
-                          <span style={{ color: "#64748B", minWidth: "60px" }}>{c.zoneKey}</span>
-                          <span style={{ flex: 1, padding: "0 16px", color: "#64748B" }}>{c.fieldName}</span>
-                          <span style={{ fontWeight: 500, color: "#0F172A", textAlign: "right" }}>
-                            {isImg ? (
-                              <img src={c.value} style={s.thumb} alt={c.fieldName} />
-                            ) : isColor ? (
-                              <span style={{ display: "inline-flex", alignItems: "center", gap: "6px" }}>
-                                <span
-                                  style={{
-                                    display: "inline-block",
-                                    width: "16px",
-                                    height: "16px",
-                                    borderRadius: "4px",
-                                    background: c.value,
-                                    border: "1px solid #E2E8F0",
-                                  }}
-                                />
-                                {c.value}
-                              </span>
-                            ) : (
-                              c.value
-                            )}
-                          </span>
-                        </div>
-                      );
-                    })
+                    <div style={{ overflowX: "auto", borderRadius: "10px", border: "1px solid #E2E8F0", boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03)", background: "#FFF" }}>
+                      <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "14px" }}>
+                        <thead>
+                          <tr>
+                            <th style={{ textAlign: "left", padding: "14px 20px", borderBottom: "1px solid #E2E8F0", background: "#F8FAFC", color: "#64748B", fontWeight: 600, fontSize: "11px", textTransform: "uppercase", letterSpacing: "0.5px" }}>Zone</th>
+                            <th style={{ textAlign: "left", padding: "14px 20px", borderBottom: "1px solid #E2E8F0", background: "#F8FAFC", color: "#64748B", fontWeight: 600, fontSize: "11px", textTransform: "uppercase", letterSpacing: "0.5px" }}>Field Name</th>
+                            <th style={{ textAlign: "right", padding: "14px 20px", borderBottom: "1px solid #E2E8F0", background: "#F8FAFC", color: "#64748B", fontWeight: 600, fontSize: "11px", textTransform: "uppercase", letterSpacing: "0.5px" }}>Value</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {customization.map((c, i) => {
+                            const isImg = c.value?.startsWith("http") && /\.(png|jpg|jpeg|webp|gif)/i.test(c.value);
+                            const isColor = /^#[0-9a-fA-F]{3,6}$/.test(c.value || "");
+                            
+                            // Format camelCase and _1 to human readable
+                            const formattedField = (c.fieldName || "")
+                              .replace(/([A-Z])/g, ' $1')
+                              .replace(/_(\d+)/g, ' $1')
+                              .replace(/^./, str => str.toUpperCase());
+                              
+                            const formattedZone = (c.zoneKey || "").charAt(0).toUpperCase() + (c.zoneKey || "").slice(1);
+
+                            return (
+                              <tr key={i} style={{ borderBottom: i < customization.length - 1 ? "1px solid #F1F5F9" : "none", transition: "background-color 0.2s" }}>
+                                <td style={{ padding: "14px 20px", color: "#94A3B8", fontWeight: 500 }}>
+                                  <span style={{ background: "#F1F5F9", padding: "4px 8px", borderRadius: "6px", fontSize: "12px" }}>
+                                    {formattedZone}
+                                  </span>
+                                </td>
+                                <td style={{ padding: "14px 20px", color: "#334155", fontWeight: 500 }}>{formattedField}</td>
+                                <td style={{ padding: "14px 20px", fontWeight: 600, color: "#0F172A", textAlign: "right" }}>
+                                  {isImg ? (
+                                    <img src={c.value} style={{ ...s.thumb, boxShadow: "0 2px 4px rgba(0,0,0,0.1)" }} alt={c.fieldName} />
+                                  ) : isColor ? (
+                                    <span style={{ display: "inline-flex", alignItems: "center", gap: "8px", justifyContent: "flex-end", width: "100%" }}>
+                                      <span
+                                        style={{
+                                          display: "inline-block",
+                                          width: "20px",
+                                          height: "20px",
+                                          borderRadius: "50%",
+                                          background: c.value,
+                                          border: "2px solid #FFF",
+                                          boxShadow: "0 0 0 1px #E2E8F0, 0 2px 4px rgba(0,0,0,0.1)"
+                                        }}
+                                      />
+                                      <span style={{ fontFamily: "monospace", fontSize: "13px", color: "#475569" }}>{c.value.toUpperCase()}</span>
+                                    </span>
+                                  ) : (
+                                    c.value
+                                  )}
+                                </td>
+                              </tr>
+                            );
+                          })}
+                        </tbody>
+                      </table>
+                    </div>
                   )}
                 </div>
               );
             })}
           </>
-        )}
+        ) */}
       </div>
     </div>
   );
