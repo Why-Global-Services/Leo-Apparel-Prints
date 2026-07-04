@@ -1592,10 +1592,10 @@ export default function ProductPage() {
 
   const SPORTS = [
     "Cricket",
-    "Tennis",
-    "Football",
-    "Basketball",
-    "Badminton",
+    "Soccer",
+    "Kabbadi",
+    "Volleyball",
+    "Athletes",
   ];
 
   const APPAREL = [
