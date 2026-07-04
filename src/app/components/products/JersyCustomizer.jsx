@@ -56,11 +56,64 @@ const NAME_STYLES = [
   { id: 'curved', label: 'Curved' },
 ];
 
+// const FABRIC_TYPES = [
+//   { id: 'climatech', label: 'ClimateTech Pro', desc: 'UV protection & elite moisture management' },
+//   { id: 'coolweave', label: 'CoolWeave Lite', desc: 'Lightweight breathable performance fabric' },
+//   { id: 'dryfit', label: 'DriFit Ultra', desc: 'Maximum sweat-wicking & comfort' },
+//   { id: 'interlock', label: 'Interlock Knit', desc: 'Durable two-layer knit for heavy use' },
+// ];
+
 const FABRIC_TYPES = [
-  { id: 'climatech', label: 'ClimateTech Pro', desc: 'UV protection & elite moisture management' },
-  { id: 'coolweave', label: 'CoolWeave Lite', desc: 'Lightweight breathable performance fabric' },
-  { id: 'dryfit', label: 'DriFit Ultra', desc: 'Maximum sweat-wicking & comfort' },
-  { id: 'interlock', label: 'Interlock Knit', desc: 'Durable two-layer knit for heavy use' },
+  {
+    id: 'boxer-knit',
+    label: 'Boxer Knit',
+    desc: 'Soft knitted fabric with excellent comfort and durability.',
+  },
+  {
+    id: 'dot-knit',
+    label: 'Dot Knit',
+    desc: 'Breathable dot-textured fabric for enhanced airflow.',
+  },
+  {
+    id: 'small-reebok',
+    label: 'Small Reebok',
+    desc: 'Lightweight performance knit with a smooth finish.',
+  },
+  {
+    id: 'polo-knit',
+    label: 'Polo Knit',
+    desc: 'Premium polo fabric offering comfort and a refined look.',
+  },
+  {
+    id: 'salina',
+    label: 'Salina',
+    desc: 'Soft, lightweight fabric with excellent moisture control.',
+  },
+  {
+    id: 'nirmal-knit',
+    label: 'Nirmal Knit',
+    desc: 'Comfortable knitted fabric designed for everyday sportswear.',
+  },
+  {
+    id: 'fourway-stretch-lycra',
+    label: 'Fourway Stretch Lycra',
+    desc: 'Four-way stretch fabric for maximum flexibility and movement.',
+  },
+  {
+    id: 'soft-lycra',
+    label: 'Soft Lycra',
+    desc: 'Ultra-soft stretch fabric for superior comfort and fit.',
+  },
+  {
+    id: 'breza-200',
+    label: 'Breza 200',
+    desc: 'High-performance breathable fabric with lasting durability.',
+  },
+  {
+    id: 'super-feel',
+    label: 'Super Feel',
+    desc: 'Premium smooth fabric with a soft touch and all-day comfort.',
+  },
 ];
 
 const SIZES = ['XS', 'S', 'M', 'L', 'XL', 'XXL', '3XL', '4XL'];

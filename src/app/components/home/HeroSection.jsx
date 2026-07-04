@@ -428,7 +428,7 @@ import Link from "next/link";
 import axiosClient from "@/lib/axios";
 
 const SEGMENTS = ["Custom Sportswear", "Uniforms"];
-const SPORTS   = ["Cricket", "Soccer", "Tennis", "Badminton", "Basketball", "Hockey", "Pickleball"];
+const SPORTS   = ["Cricket", "Soccer", "Kabbadi", "Badminton", "Volleyball", "Athletes"];
 const APPAREL  = ["Jersey / T-Shirt", "Shorts", "Track Pants"];
 
 // Fallback banners used when API is unavailable
@@ -549,13 +549,16 @@ function AutoScrollCarousel({ banners }) {
       onMouseEnter={() => setPaused(true)}
       onMouseLeave={() => setPaused(false)}
     >
-      <AnimatePresence mode="wait">
+      <AnimatePresence initial={false}>
         <motion.div
           key={current?._id || currentIndex}
-          initial={{ opacity: 0, scale: 1.05 }}
-          animate={{ opacity: 1, scale: 1 }}
-          exit={{ opacity: 0 }}
-          transition={{ duration: 0.8, ease: "easeOut" }}
+          initial={{ x: "100%" }}
+          animate={{ x: "0%" }}
+          exit={{ x: "-100%" }}
+          transition={{
+            duration: 0.8,
+            ease: "easeInOut",
+          }}
           className="absolute inset-0"
         >
           {/* picture tag: mobile image on small screens, desktop image on md+ */}

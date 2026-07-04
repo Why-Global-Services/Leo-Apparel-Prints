@@ -774,6 +774,155 @@ import { fetchCart } from "@/features/cart/cartThunks";
 
 // ─── Data ───────────────────────────────────────────────────────────────────
 
+// const CRICKET_MENU = {
+//   columns: [
+//     {
+//       title: "BUILD YOUR KIT",
+//       links: [
+//         {
+//           name: "Playing Jersey",
+//           href: "/products?segment=Uniforms&sport=Cricket&apparel=Jersey%20%2F%20T-Shirt",
+//         },
+//         {
+//           name: "Playing Shorts",
+//           href: "/products?segment=Uniforms&sport=Cricket&apparel=Shorts",
+//         },
+//         {
+//           name: "Playing Trousers",
+//           href: "/products?segment=Uniforms&sport=Cricket&apparel=Track%20Pants",
+//         },
+//       ],
+//     },
+//     {
+//       title: "TRAINING WEAR",
+//       links: [
+//         {
+//           name: "Training Jersey",
+//           href: "/products?segment=Uniforms&sport=Cricket&apparel=Jersey%20%2F%20T-Shirt",
+//         },
+//         {
+//           name: "Training Shorts",
+//           href: "/products?segment=Uniforms&sport=Cricket&apparel=Shorts",
+//         },
+//         {
+//           name: "Training Trousers",
+//           href: "/products?segment=Uniforms&sport=Cricket&apparel=Track%20Pants",
+//         },
+//       ],
+//     },
+//     {
+//       title: "CUSTOM SERVICES",
+//       links: [
+//         { name: "Upload Your Design", href: "/bulk-enquiry" },
+//         { name: "Large Squad Orders", href: "/bulk-enquiry" },
+//       ],
+//     },
+//   ],
+// };
+
+// NOTE: each sport's top-level `href` now points at the real, working
+// `/products?...` filter page (the same page the individual "accessories"
+// links below already use) instead of a `/sports/:sport` route that was
+// never built as a page — that mismatch was the source of the 404 when
+// clicking the sport name or "View all".
+// const SPORTS_INDIA_MENU = [
+//   {
+//     name: "Cricket",
+//     href: "/products?segment=Uniforms&sport=Cricket",
+//     accessories: [
+//       {
+//         name: "Cricket Jersey",
+//         href: "/products?segment=Uniforms&sport=Cricket&apparel=Jersey%20%2F%20T-Shirt",
+//       },
+//       {
+//         name: "Cricket Trousers",
+//         href: "/products?segment=Uniforms&sport=Cricket&apparel=Track%20Pants",
+//       },
+//       {
+//         name: "Cricket Shorts",
+//         href: "/products?segment=Uniforms&sport=Cricket&apparel=Shorts",
+//       },
+//     ],
+//   },
+
+//   {
+//     name: "Soccer",
+//     href: "/products?segment=Uniforms&sport=Soccer",
+//     accessories: [
+//       {
+//         name: "Soccer Jersey",
+//         href: "/products?segment=Uniforms&sport=Soccer&apparel=Jersey%20%2F%20T-Shirt",
+//       },
+//       {
+//         name: "Soccer Trousers",
+//         href: "/products?segment=Uniforms&sport=Soccer&apparel=Track%20Pants",
+//       },
+//       {
+//         name: "Soccer Shorts",
+//         href: "/products?segment=Uniforms&sport=Soccer&apparel=Shorts",
+//       },
+//     ],
+//   },
+
+//   {
+//     name: "Tennis",
+//     href: "/products?segment=Uniforms&sport=Tennis",
+//     accessories: [
+//       {
+//         name: "Tennis Jersey",
+//         href: "/products?segment=Uniforms&sport=Tennis&apparel=Jersey%20%2F%20T-Shirt",
+//       },
+//       {
+//         name: "Tennis Trousers",
+//         href: "/products?segment=Uniforms&sport=Tennis&apparel=Track%20Pants",
+//       },
+//       {
+//         name: "Tennis Shorts",
+//         href: "/products?segment=Uniforms&sport=Tennis&apparel=Shorts",
+//       },
+//     ],
+//   },
+
+//   {
+//     name: "Badminton",
+//     href: "/products?segment=Uniforms&sport=Badminton",
+//     accessories: [
+//       {
+//         name: "Badminton Jersey",
+//         href: "/products?segment=Uniforms&sport=Badminton&apparel=Jersey%20%2F%20T-Shirt",
+//       },
+//       {
+//         name: "Badminton Trousers",
+//         href: "/products?segment=Uniforms&sport=Badminton&apparel=Track%20Pants",
+//       },
+//       {
+//         name: "Badminton Shorts",
+//         href: "/products?segment=Uniforms&sport=Badminton&apparel=Shorts",
+//       },
+//     ],
+//   },
+
+//   {
+//     name: "Pickleball",
+//     href: "/products?segment=Uniforms&sport=Pickleball",
+//     accessories: [
+//       {
+//         name: "Pickleball Jersey",
+//         href: "/products?segment=Uniforms&sport=Pickleball&apparel=Jersey%20%2F%20T-Shirt",
+//       },
+//       {
+//         name: "Pickleball Trousers",
+//         href: "/products?segment=Uniforms&sport=Pickleball&apparel=Track%20Pants",
+//       },
+//       {
+//         name: "Pickleball Shorts",
+//         href: "/products?segment=Uniforms&sport=Pickleball&apparel=Shorts",
+//       },
+//     ],
+//   },
+// ];
+
+
 const CRICKET_MENU = {
   columns: [
     {
@@ -781,15 +930,15 @@ const CRICKET_MENU = {
       links: [
         {
           name: "Playing Jersey",
-          href: "/products?segment=Uniforms&sport=Cricket&apparel=Jersey%20%2F%20T-Shirt",
+          href: "/products?segment=Uniforms%2CCustom%20Sportswear&sport=Cricket&apparel=Jersey%20%2F%20T-Shirt",
         },
         {
           name: "Playing Shorts",
-          href: "/products?segment=Uniforms&sport=Cricket&apparel=Shorts",
+          href: "/products?segment=Uniforms%2CCustom%20Sportswear&sport=Cricket&apparel=Shorts",
         },
         {
-          name: "Playing Trousers",
-          href: "/products?segment=Uniforms&sport=Cricket&apparel=Track%20Pants",
+          name: "Playing Pants",
+          href: "/products?segment=Uniforms%2CCustom%20Sportswear&sport=Cricket&apparel=Track%20Pants",
         },
       ],
     },
@@ -798,15 +947,15 @@ const CRICKET_MENU = {
       links: [
         {
           name: "Training Jersey",
-          href: "/products?segment=Uniforms&sport=Cricket&apparel=Jersey%20%2F%20T-Shirt",
+          href: "/products?segment=Uniforms%2CCustom%20Sportswear&sport=Cricket&apparel=Jersey%20%2F%20T-Shirt",
         },
         {
           name: "Training Shorts",
-          href: "/products?segment=Uniforms&sport=Cricket&apparel=Shorts",
+          href: "/products?segment=Uniforms%2CCustom%20Sportswear&sport=Cricket&apparel=Shorts",
         },
         {
-          name: "Training Trousers",
-          href: "/products?segment=Uniforms&sport=Cricket&apparel=Track%20Pants",
+          name: "Training Pants",
+          href: "/products?segment=Uniforms%2CCustom%20Sportswear&sport=Cricket&apparel=Track%20Pants",
         },
       ],
     },
@@ -820,103 +969,195 @@ const CRICKET_MENU = {
   ],
 };
 
-// NOTE: each sport's top-level `href` now points at the real, working
-// `/products?...` filter page (the same page the individual "accessories"
-// links below already use) instead of a `/sports/:sport` route that was
-// never built as a page — that mismatch was the source of the 404 when
-// clicking the sport name or "View all".
+// const SPORTS_INDIA_MENU = [
+//   {
+//     name: "Cricket",
+//     href: "/products?segment=Uniforms%2CCustom%20Sportswear&sport=Cricket",
+//     accessories: [
+//       {
+//         name: "Cricket Jersey",
+//         href: "/products?segment=Uniforms%2CCustom%20Sportswear&sport=Cricket&apparel=Jersey%20%2F%20T-Shirt",
+//       },
+//       {
+//         name: "Cricket Pants",
+//         href: "/products?segment=Uniforms%2CCustom%20Sportswear&sport=Cricket&apparel=Track%20Pants",
+//       },
+//       {
+//         name: "Cricket Shorts",
+//         href: "/products?segment=Uniforms%2CCustom%20Sportswear&sport=Cricket&apparel=Shorts",
+//       },
+//     ],
+//   },
+
+//   {
+//     name: "Soccer",
+//     href: "/products?segment=Uniforms%2CCustom%20Sportswear&sport=Soccer",
+//     accessories: [
+//       {
+//         name: "Soccer Jersey",
+//         href: "/products?segment=Uniforms%2CCustom%20Sportswear&sport=Soccer&apparel=Jersey%20%2F%20T-Shirt",
+//       },
+//       {
+//         name: "Soccer Pants",
+//         href: "/products?segment=Uniforms%2CCustom%20Sportswear&sport=Soccer&apparel=Track%20Pants",
+//       },
+//       {
+//         name: "Soccer Shorts",
+//         href: "/products?segment=Uniforms%2CCustom%20Sportswear&sport=Soccer&apparel=Shorts",
+//       },
+//     ],
+//   },
+
+//   {
+//     name: "Tennis",
+//     href: "/products?segment=Uniforms%2CCustom%20Sportswear&sport=Tennis",
+//     accessories: [
+//       {
+//         name: "Tennis Jersey",
+//         href: "/products?segment=Uniforms%2CCustom%20Sportswear&sport=Tennis&apparel=Jersey%20%2F%20T-Shirt",
+//       },
+//       {
+//         name: "Tennis Pants",
+//         href: "/products?segment=Uniforms%2CCustom%20Sportswear&sport=Tennis&apparel=Track%20Pants",
+//       },
+//       {
+//         name: "Tennis Shorts",
+//         href: "/products?segment=Uniforms%2CCustom%20Sportswear&sport=Tennis&apparel=Shorts",
+//       },
+//     ],
+//   },
+
+//   {
+//     name: "Badminton",
+//     href: "/products?segment=Uniforms%2CCustom%20Sportswear&sport=Badminton",
+//     accessories: [
+//       {
+//         name: "Badminton Jersey",
+//         href: "/products?segment=Uniforms%2CCustom%20Sportswear&sport=Badminton&apparel=Jersey%20%2F%20T-Shirt",
+//       },
+//       {
+//         name: "Badminton Pants",
+//         href: "/products?segment=Uniforms%2CCustom%20Sportswear&sport=Badminton&apparel=Track%20Pants",
+//       },
+//       {
+//         name: "Badminton Shorts",
+//         href: "/products?segment=Uniforms%2CCustom%20Sportswear&sport=Badminton&apparel=Shorts",
+//       },
+//     ],
+//   },
+
+//   {
+//     name: "Pickleball",
+//     href: "/products?segment=Uniforms%2CCustom%20Sportswear&sport=Pickleball",
+//     accessories: [
+//       {
+//         name: "Pickleball Jersey",
+//         href: "/products?segment=Uniforms%2CCustom%20Sportswear&sport=Pickleball&apparel=Jersey%20%2F%20T-Shirt",
+//       },
+//       {
+//         name: "Pickleball Pants",
+//         href: "/products?segment=Uniforms%2CCustom%20Sportswear&sport=Pickleball&apparel=Track%20Pants",
+//       },
+//       {
+//         name: "Pickleball Shorts",
+//         href: "/products?segment=Uniforms%2CCustom%20Sportswear&sport=Pickleball&apparel=Shorts",
+//       },
+//     ],
+//   },
+// ];
+
 const SPORTS_INDIA_MENU = [
   {
     name: "Cricket",
-    href: "/products?segment=Uniforms&sport=Cricket",
+    href: "/products?segment=Uniforms%2CCustom%20Sportswear&sport=Cricket",
     accessories: [
       {
         name: "Cricket Jersey",
-        href: "/products?segment=Uniforms&sport=Cricket&apparel=Jersey%20%2F%20T-Shirt",
+        href: "/products?segment=Uniforms%2CCustom%20Sportswear&sport=Cricket&apparel=Jersey%20%2F%20T-Shirt",
       },
       {
-        name: "Cricket Trousers",
-        href: "/products?segment=Uniforms&sport=Cricket&apparel=Track%20Pants",
+        name: "Cricket Pants",
+        href: "/products?segment=Uniforms%2CCustom%20Sportswear&sport=Cricket&apparel=Track%20Pants",
       },
       {
         name: "Cricket Shorts",
-        href: "/products?segment=Uniforms&sport=Cricket&apparel=Shorts",
+        href: "/products?segment=Uniforms%2CCustom%20Sportswear&sport=Cricket&apparel=Shorts",
       },
     ],
   },
 
   {
     name: "Soccer",
-    href: "/products?segment=Uniforms&sport=Soccer",
+    href: "/products?segment=Uniforms%2CCustom%20Sportswear&sport=Soccer",
     accessories: [
       {
         name: "Soccer Jersey",
-        href: "/products?segment=Uniforms&sport=Soccer&apparel=Jersey%20%2F%20T-Shirt",
+        href: "/products?segment=Uniforms%2CCustom%20Sportswear&sport=Soccer&apparel=Jersey%20%2F%20T-Shirt",
       },
       {
-        name: "Soccer Trousers",
-        href: "/products?segment=Uniforms&sport=Soccer&apparel=Track%20Pants",
+        name: "Soccer Pants",
+        href: "/products?segment=Uniforms%2CCustom%20Sportswear&sport=Soccer&apparel=Track%20Pants",
       },
       {
         name: "Soccer Shorts",
-        href: "/products?segment=Uniforms&sport=Soccer&apparel=Shorts",
+        href: "/products?segment=Uniforms%2CCustom%20Sportswear&sport=Soccer&apparel=Shorts",
       },
     ],
   },
 
   {
-    name: "Tennis",
-    href: "/products?segment=Uniforms&sport=Tennis",
+    name: "Kabbadi",
+    href: "/products?segment=Uniforms%2CCustom%20Sportswear&sport=Kabbadi",
     accessories: [
       {
-        name: "Tennis Jersey",
-        href: "/products?segment=Uniforms&sport=Tennis&apparel=Jersey%20%2F%20T-Shirt",
+        name: "Kabbadi Jersey",
+        href: "/products?segment=Uniforms%2CCustom%20Sportswear&sport=Kabbadi&apparel=Jersey%20%2F%20T-Shirt",
       },
       {
-        name: "Tennis Trousers",
-        href: "/products?segment=Uniforms&sport=Tennis&apparel=Track%20Pants",
+        name: "Kabbadi Pants",
+        href: "/products?segment=Uniforms%2CCustom%20Sportswear&sport=Kabbadi&apparel=Track%20Pants",
       },
       {
-        name: "Tennis Shorts",
-        href: "/products?segment=Uniforms&sport=Tennis&apparel=Shorts",
+        name: "Kabbadi Shorts",
+        href: "/products?segment=Uniforms%2CCustom%20Sportswear&sport=Kabbadi&apparel=Shorts",
       },
     ],
   },
 
   {
-    name: "Badminton",
-    href: "/products?segment=Uniforms&sport=Badminton",
+    name: "Volleyball",
+    href: "/products?segment=Uniforms%2CCustom%20Sportswear&sport=Volleyball",
     accessories: [
       {
-        name: "Badminton Jersey",
-        href: "/products?segment=Uniforms&sport=Badminton&apparel=Jersey%20%2F%20T-Shirt",
+        name: "Volleyball Jersey",
+        href: "/products?segment=Uniforms%2CCustom%20Sportswear&sport=Volleyball&apparel=Jersey%20%2F%20T-Shirt",
       },
       {
-        name: "Badminton Trousers",
-        href: "/products?segment=Uniforms&sport=Badminton&apparel=Track%20Pants",
+        name: "Volleyball Pants",
+        href: "/products?segment=Uniforms%2CCustom%20Sportswear&sport=Volleyball&apparel=Track%20Pants",
       },
       {
-        name: "Badminton Shorts",
-        href: "/products?segment=Uniforms&sport=Badminton&apparel=Shorts",
+        name: "Volleyball Shorts",
+        href: "/products?segment=Uniforms%2CCustom%20Sportswear&sport=Volleyball&apparel=Shorts",
       },
     ],
   },
 
   {
-    name: "Pickleball",
-    href: "/products?segment=Uniforms&sport=Pickleball",
+    name: "Athletes",
+    href: "/products?segment=Uniforms%2CCustom%20Sportswear&sport=Athletes",
     accessories: [
       {
-        name: "Pickleball Jersey",
-        href: "/products?segment=Uniforms&sport=Pickleball&apparel=Jersey%20%2F%20T-Shirt",
+        name: "Athletes Jersey",
+        href: "/products?segment=Uniforms%2CCustom%20Sportswear&sport=Athletes&apparel=Jersey%20%2F%20T-Shirt",
       },
       {
-        name: "Pickleball Trousers",
-        href: "/products?segment=Uniforms&sport=Pickleball&apparel=Track%20Pants",
+        name: "Athletes Pants",
+        href: "/products?segment=Uniforms%2CCustom%20Sportswear&sport=Athletes&apparel=Track%20Pants",
       },
       {
-        name: "Pickleball Shorts",
-        href: "/products?segment=Uniforms&sport=Pickleball&apparel=Shorts",
+        name: "Athletes Shorts",
+        href: "/products?segment=Uniforms%2CCustom%20Sportswear&sport=Athletes&apparel=Shorts",
       },
     ],
   },
