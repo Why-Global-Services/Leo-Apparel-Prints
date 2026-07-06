@@ -61,7 +61,7 @@ export default function LayoutWrapper({ children }) {
       {!isAuthPage && !isProductDetailPage && <Navbar />}
 
       <RouteLoader>
-        <main className={`flex-1 w-full ${isProductDetailPage ? 'p-0 m-0 overflow-hidden' : ''}`}>
+        <main className={`flex-1 w-full bg-white ${isProductDetailPage ? 'p-0 m-0 overflow-hidden' : ''}`}>
           {children}
         </main>
       </RouteLoader>

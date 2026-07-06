@@ -61,10 +61,10 @@ export default function PrivacyPolicyPage() {
         <div className="bg-gray-50 p-6 rounded-lg border border-gray-100">
           <ul className="list-none space-y-2 leading-relaxed text-gray-700">
             <li><strong>Company:</strong> Leo Apparel Prints</li>
-            <li><strong>Email:</strong> <a href="mailto:support@leoapparelprints.com" className="text-blue-600 hover:underline">support@leoapparelprints.com</a></li>
-            <li><strong>Phone:</strong> +1 (555) 123-4567</li>
-            <li><strong>Address:</strong> 123 Print Street, Creative City, CA 90210</li>
-            <li><strong>Website:</strong> www.leoapparelprints.com</li>
+            <li><strong>Email:</strong> <a href="mailto:leocult@gmail.com" className="text-blue-600 hover:underline">leocult@gmail.com</a></li>
+            <li><strong>Phone:</strong> +91 90871 49666</li>
+            <li><strong>Address:</strong> 44A, Chettiyar Veethi,Kariyakaliyamman Kovil Street,15-Velampalayam, Tirupur – 641652</li>
+            {/* <li><strong>Website:</strong> www.leoapparelprints.com</li> */}
           </ul>
         </div>
       </section>

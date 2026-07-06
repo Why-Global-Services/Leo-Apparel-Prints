@@ -63,7 +63,7 @@ export default function TermsAndConditionsPage() {
       <section className="mb-8">
         <h2 className="text-2xl font-semibold mb-4 text-gray-900">8. Contact Information</h2>
         <p className="mb-4 leading-relaxed">
-          Questions about the Terms and Conditions should be sent to us at <strong>support@leoapparelprints.com</strong> or via mail at our business address: 123 Print Street, Creative City, CA 90210.
+          Questions about the Terms and Conditions should be sent to us at <strong>leocult@gmail.com</strong> or via mail at our business address: 44A, Chettiyar Veethi,Kariyakaliyamman Kovil Street,15-Velampalayam, Tirupur – 641652.
         </p>
       </section>
     </div>

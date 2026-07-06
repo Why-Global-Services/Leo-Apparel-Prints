@@ -42,7 +42,7 @@ export default function ReturnRefundPolicyPage() {
       <section className="mb-8">
         <h2 className="text-2xl font-semibold mb-4 text-gray-900">5. Exchange Procedures</h2>
         <p className="mb-4 leading-relaxed">
-          We only replace items if they are defective or damaged upon arrival. If you need to exchange a defective product for the exact same item, please send us an email at support@leoapparelprints.com with photos of the defect, and we will guide you through the exchange process and arrange a replacement at no extra cost.
+          We only replace items if they are defective or damaged upon arrival. If you need to exchange a defective product for the exact same item, please send us an email at leocult@gmail.com with photos of the defect, and we will guide you through the exchange process and arrange a replacement at no extra cost.
         </p>
       </section>
 
@@ -60,8 +60,8 @@ export default function ReturnRefundPolicyPage() {
         </p>
         <div className="bg-gray-50 p-6 rounded-lg border border-gray-100">
           <ul className="list-none space-y-2 leading-relaxed text-gray-700">
-            <li><strong>Email:</strong> <a href="mailto:support@leoapparelprints.com" className="text-blue-600 hover:underline">support@leoapparelprints.com</a></li>
-            <li><strong>Phone:</strong> +1 (555) 123-4567</li>
+            <li><strong>Email:</strong> <a href="mailto:leocult@gmail.com" className="text-blue-600 hover:underline">leocult@gmail.com</a></li>
+            <li><strong>Phone:</strong> +91 90871 49666</li>
             <li><strong>Business Hours:</strong> Monday - Friday, 9:00 AM - 5:00 PM (PST)</li>
           </ul>
         </div>

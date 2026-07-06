@@ -497,6 +497,189 @@
 //   );
 // }
 
+// "use client";
+
+// import Link from "next/link";
+// import { motion } from "framer-motion";
+// import { ArrowRight, ShoppingBag, Palette } from "lucide-react";
+// import { useState } from "react";
+// import { useRouter } from "next/navigation";
+
+// export default function ProductCard({ product }) {
+//   const router = useRouter();
+//   const [imageError, setImageError] = useState(false);
+//   const [isHovered, setIsHovered] = useState(false);
+//   const [isCustomizing, setIsCustomizing] = useState(false);
+
+//   const fallbackImage =
+//     "https://placehold.co/400x400/e2e8f0/1e293b?text=Product+Image";
+
+//   const mainImageUrl =
+//     product?.viewImages?.front || product?.images?.[0] || fallbackImage;
+
+//   const hoverImageUrl =
+//     product?.viewImages?.back || product?.images?.[1] || mainImageUrl;
+
+//   const productId = product._id || product.id;
+//   const productPrice = product.basePrice ?? product.price ?? 0;
+//   const productCategory = product.categoryName || product.category || "";
+//   const productSubCategory =
+//     product.subCategoryName || product.sport || productCategory;
+
+//   const isCustomizable =
+//     product.templates &&
+//     Array.isArray(product.templates) &&
+//     product.templates.length > 0;
+
+//   const handleCardClick = () => {
+//     router.push(`/product?id=${productId}`);
+//   };
+
+//   const handleCustomizeNow = (e) => {
+//     e.preventDefault();
+//     e.stopPropagation();
+//     setIsCustomizing(true);
+//     setTimeout(() => {
+//       router.push(`/product?id=${productId}`);
+//     }, 200);
+//   };
+
+//   return (
+//     <motion.div
+//       initial={{ opacity: 0, y: 15 }}
+//       animate={{ opacity: 1, y: 0 }}
+//       onMouseEnter={() => setIsHovered(true)}
+//       onMouseLeave={() => setIsHovered(false)}
+//       onClick={handleCardClick}
+//       className="group bg-white rounded-xl overflow-hidden border border-gray-100 shadow-sm hover:shadow-xl transition-all duration-500 flex flex-col h-full cursor-pointer"
+//     >
+//       {/* IMAGE AREA */}
+//       <div className="relative h-48 xs:h-52 sm:h-56 md:h-60 lg:h-52 xl:h-56 bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center overflow-hidden shrink-0">
+//         {/* Category Badge */}
+//         <div className="absolute top-2 left-2 sm:top-3 sm:left-3 z-10">
+//           <span className="bg-primary backdrop-blur-sm text-white px-1.5 py-0.5 sm:px-2 sm:py-0.5 rounded text-[8px] sm:text-[9px] font-black uppercase tracking-widest shadow-sm">
+//             {product.sport}
+//           </span>
+//         </div>
+
+//         {product.discountValue > 0 && (
+//           <div className="absolute top-2 right-2 sm:top-3 sm:right-3 z-10">
+//             <span className="bg-gradient-mid text-white px-2 py-0.5 sm:px-2.5 sm:py-1 rounded text-[9px] sm:text-[10px] font-black shadow-md">
+//               {product.discountType === "percentage"
+//                 ? `${product.discountValue}% OFF`
+//                 : `₹ ${product.discountValue} OFF`}
+//             </span>
+//           </div>
+//         )}
+
+//         {/* Image */}
+//         <div className="w-full h-full transition-transform duration-700 group-hover:scale-110">
+//           {!imageError ? (
+//             <img
+//               src={isHovered ? hoverImageUrl : mainImageUrl}
+//               alt={product.name}
+//               className="absolute inset-0 w-full h-full object-cover transition-opacity duration-500 ease-in-out"
+//               onError={() => setImageError(true)}
+//               loading="lazy"
+//             />
+//           ) : (
+//             <div className="w-full h-full flex items-center justify-center bg-gray-100">
+//               <ShoppingBag
+//                 size={32}
+//                 className="sm:w-10 sm:h-10 text-gray-300"
+//               />
+//             </div>
+//           )}
+//         </div>
+
+//         {/* Customize Button */}
+//         {isCustomizable && (
+//           <div
+//             className={`absolute bottom-2 sm:bottom-3 left-0 right-0 flex justify-center px-2 sm:px-3 transition-all duration-300 ease-out z-20
+//             ${isHovered ? "sm:translate-y-0 sm:opacity-100" : "sm:translate-y-full sm:opacity-0"}
+//             translate-y-0 opacity-100`}
+//           >
+//             <button
+//               onClick={handleCustomizeNow}
+//               disabled={isCustomizing}
+//               className="bg-gradient-to-r from-[#0EA5E9] via-[#0284C7] to-[#1E3A8A] text-white py-1.5 sm:py-2 lg:py-1.5 px-3 sm:px-4 text-[10px] sm:text-[9px] font-black uppercase tracking-widest rounded-lg shadow-lg hover:shadow-md transition-all duration-200 flex items-center justify-center gap-1 sm:gap-2 disabled:opacity-50"
+//             >
+//               {isCustomizing ? (
+//                 <div className="w-3 h-3 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+//               ) : (
+//                 <>
+//                   <Palette size={12} className="hidden xs:block" />
+//                   <span className="whitespace-nowrap">CUSTOMIZE NOW</span>
+//                 </>
+//               )}
+//             </button>
+//           </div>
+//         )}
+//       </div>
+
+//       {/* INFO AREA */}
+//       <div className="p-3 sm:p-4 lg:p-3 flex flex-col flex-1 bg-white">
+//         <div className="flex justify-between items-start gap-2 mb-1 sm:mb-2">
+//           <h3 className="text-xs sm:text-sm lg:text-xs font-black text-gray-900 leading-tight uppercase flex-1 group-hover:text-primary transition-colors line-clamp-2">
+//             {product.name}
+//           </h3>
+//           <div className="flex items-center gap-2 justify-end">
+//             {product.discountValue > 0 ? (
+//               <>
+//                 <span className="text-[11px] sm:text-xs text-gray-400 line-through">
+//                   ₹{product.basePrice}
+//                 </span>
+//                 <span className="text-sm sm:text-base font-black text-primary">
+//                   ₹{product.finalPrice}
+//                 </span>
+//               </>
+//             ) : (
+//               <span className="text-sm sm:text-base font-black text-primary">
+//                 ₹{product.basePrice}
+//               </span>
+//             )}
+//           </div>
+//         </div>
+
+//         <div className="min-h-[24px] mb-2">
+//           <p className="text-[10px] sm:text-[11px] lg:text-[10px] text-gray-500 leading-relaxed line-clamp-2">
+//             {product.description
+//               ? product.description.substring(0, 80) + "..."
+//               : `${product.name} — Premium performance gear.`}
+//           </p>
+//         </div>
+
+//         <div className="mt-auto pt-2 sm:pt-3 lg:pt-2 border-t border-gray-100 flex justify-between items-center">
+//           <span className="text-[8px] sm:text-[9px] lg:text-[8px] text-gray-400 font-bold tracking-widest uppercase">
+//             {productSubCategory}
+//           </span>
+//           <div className="flex items-center gap-1 text-[8px] sm:text-[9px] lg:text-[8px] font-black text-gray-400 uppercase tracking-tighter hover:text-primary transition-all group-hover:text-primary">
+//             {isCustomizable ? (
+//               <>
+//                 CUSTOMIZE
+//                 <Palette
+//                   size={10}
+//                   className="transition-transform duration-200 group-hover:scale-110"
+//                 />
+//               </>
+//             ) : (
+//               <>
+//                 DETAILS
+//                 <ArrowRight
+//                   size={10}
+//                   className="transition-transform duration-200 group-hover:translate-x-1"
+//                 />
+//               </>
+//             )}
+//           </div>
+//         </div>
+//       </div>
+//     </motion.div>
+//   );
+// }
+
+
+
 "use client";
 
 import Link from "next/link";
@@ -554,7 +737,7 @@ export default function ProductCard({ product }) {
       className="group bg-white rounded-xl overflow-hidden border border-gray-100 shadow-sm hover:shadow-xl transition-all duration-500 flex flex-col h-full cursor-pointer"
     >
       {/* IMAGE AREA */}
-      <div className="relative h-48 xs:h-52 sm:h-56 md:h-60 lg:h-52 xl:h-56 bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center overflow-hidden shrink-0">
+      <div className="relative w-full aspect-[4/5] bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center overflow-hidden shrink-0">
         {/* Category Badge */}
         <div className="absolute top-2 left-2 sm:top-3 sm:left-3 z-10">
           <span className="bg-primary backdrop-blur-sm text-white px-1.5 py-0.5 sm:px-2 sm:py-0.5 rounded text-[8px] sm:text-[9px] font-black uppercase tracking-widest shadow-sm">
@@ -578,7 +761,7 @@ export default function ProductCard({ product }) {
             <img
               src={isHovered ? hoverImageUrl : mainImageUrl}
               alt={product.name}
-              className="absolute inset-0 w-full h-full object-cover transition-opacity duration-500 ease-in-out"
+              className="absolute inset-0 w-full h-full object-contain p-2 transition-opacity duration-500 ease-in-out"
               onError={() => setImageError(true)}
               loading="lazy"
             />
