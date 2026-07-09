@@ -755,29 +755,54 @@ export default function ProductGrid() {
   dispatch(fetchFilterOptions());
 }, [dispatch]);
   // ── Fetch on mount - only on client side ──
-useEffect(() => {
+// useEffect(() => {
 
-  if (!mounted) return
+//   if (!mounted) return
+
+//   const segment = searchParams.get("segment");
+//   const sport = searchParams.get("sport");
+//   const apparel = searchParams.get("apparel");
+
+//   console.log("FILTERS :", {
+//     segment,
+//     sport,
+//     apparel,
+//   });
+
+//   dispatch(
+//     fetchAllProducts({
+//       segment,
+//       sport,
+//       apparel,
+//     })
+//   );
+
+// }, [dispatch, mounted, searchParams]);
+useEffect(() => {
+  if (!mounted) return;
 
   const segment = searchParams.get("segment");
-  const sport = searchParams.get("sport");
-  const apparel = searchParams.get("apparel");
+  const urlSport = searchParams.get("sport");
+  const urlApparel = searchParams.get("apparel");
 
-  console.log("FILTERS :", {
-    segment,
-    sport,
-    apparel,
-  });
+  const selectedSports = appliedSubCategories.filter((sub) =>
+    filterOptions?.sports?.includes(sub)
+  );
+  const selectedApparels = appliedSubCategories.filter((sub) =>
+    filterOptions?.apparels?.includes(sub)
+  );
+
+  const sportParam = [...new Set([urlSport, ...selectedSports].filter(Boolean))].join(",");
+  const apparelParam = [...new Set([urlApparel, ...selectedApparels].filter(Boolean))].join(",");
 
   dispatch(
     fetchAllProducts({
       segment,
-      sport,
-      apparel,
+      sport: sportParam || undefined,
+      apparel: apparelParam || undefined,
     })
   );
-
-}, [dispatch, mounted, searchParams]);
+}, [dispatch, mounted, searchParams, appliedSubCategories, filterOptions]);
 
   const handleCategoryChange = useCallback(
     (categoryId, isChecked) => {
@@ -835,46 +860,58 @@ useEffect(() => {
 console.log("Menu Structure:", menuStructure);
 
   // ── Filter logic ──
-  const filteredProducts = useMemo(() => {
-    if (!mounted) return [];
+//   const filteredProducts = useMemo(() => {
+//     if (!mounted) return [];
     
-    let filtered = allProducts.filter((p) => p.isActive !== false);
+//     let filtered = allProducts.filter((p) => p.isActive !== false);
 
-    if (searchTerm.trim()) {
-      filtered = filtered.filter((p) =>
-        p.name?.toLowerCase().includes(searchTerm.toLowerCase().trim())
-      );
-    }
+//     if (searchTerm.trim()) {
+//       filtered = filtered.filter((p) =>
+//         p.name?.toLowerCase().includes(searchTerm.toLowerCase().trim())
+//       );
+//     }
 
-const selectedSports = appliedSubCategories.filter((sub) =>
-  filterOptions.sports.includes(sub)
-);
+// const selectedSports = appliedSubCategories.filter((sub) =>
+//   filterOptions.sports.includes(sub)
+// );
 
-const selectedApparels = appliedSubCategories.filter((sub) =>
-  filterOptions.apparels.includes(sub)
-);
+// const selectedApparels = appliedSubCategories.filter((sub) =>
+//   filterOptions.apparels.includes(sub)
+// );
 
-if (selectedSports.length > 0) {
-  filtered = filtered.filter((p) =>
-    selectedSports.some(
-      (sport) =>
-        p.sport?.trim().toLowerCase() ===
-        sport.trim().toLowerCase()
-    )
-  );
-}
+// if (selectedSports.length > 0) {
+//   filtered = filtered.filter((p) =>
+//     selectedSports.some(
+//       (sport) =>
+//         p.sport?.trim().toLowerCase() ===
+//         sport.trim().toLowerCase()
+//     )
+//   );
+// }
 
-if (selectedApparels.length > 0) {
-  filtered = filtered.filter((p) =>
-    selectedApparels.some(
-      (apparel) =>
-        p.apparel?.trim().toLowerCase() ===
-        apparel.trim().toLowerCase()
-    )
-  );
-}
-    return filtered;
-  }, [allProducts, searchTerm, appliedCategories, appliedSubCategories, mounted]);
+// if (selectedApparels.length > 0) {
+//   filtered = filtered.filter((p) =>
+//     selectedApparels.some(
+//       (apparel) =>
+//         p.apparel?.trim().toLowerCase() ===
+//         apparel.trim().toLowerCase()
+//     )
+//   );
+// }
+//     return filtered;
+//   }, [allProducts, searchTerm, appliedCategories, appliedSubCategories, mounted]);
+const filteredProducts = useMemo(() => {
+  if (!mounted) return [];
+  let filtered = allProducts.filter((p) => p.isActive !== false);
+
+  if (searchTerm.trim()) {
+    filtered = filtered.filter((p) =>
+      p.name?.toLowerCase().includes(searchTerm.toLowerCase().trim())
+    );
+  }
+
+  return filtered; // sport/apparel filtering now happens server-side
+}, [allProducts, searchTerm, mounted]);
 
   const sidebarProps = {
     searchTerm,

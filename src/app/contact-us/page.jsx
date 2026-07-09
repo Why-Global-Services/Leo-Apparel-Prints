@@ -83,7 +83,7 @@ const ContactUs = () => {
                   </div>
                   <div className="flex-1">
                     <h3 className="text-base sm:text-lg md:text-xl font-semibold mb-1 sm:mb-2" style={{ color: '#020617' }}>Email</h3>
-                    <p className="text-sm sm:text-base md:text-lg mb-1" style={{ color: '#4A5568' }}>leocult@gmail.com</p>
+                    <p className="text-sm sm:text-base md:text-lg mb-1" style={{ color: '#4A5568' }}>info@leocult.com</p>
                     <p className="text-xs sm:text-sm" style={{ color: '#A0AEC0' }}>We'll respond within 24 hours</p>
                   </div>
                 </div>
@@ -147,14 +147,15 @@ const ContactUs = () => {
               <div className="absolute -top-4 -left-4 w-20 h-20 sm:w-24 sm:h-24 rounded-full" style={{ background: 'linear-gradient(135deg, rgba(14, 165, 233, 0.1), rgba(30, 58, 138, 0.1))', filter: 'blur(20px)' }}></div>
               <div className="relative rounded-xl sm:rounded-2xl overflow-hidden shadow-2xl" style={{ boxShadow: '0 20px 40px -15px rgba(0, 0, 0, 0.2)' }}>
                 <iframe
-                  src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3916.2661967990077!2d77.33381!3d11.1085!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3ba907b0b2b7b0b1%3A0x0!2sVelampalayam%2C%20Tirupur%2C%20Tamil%20Nadu%20641652!5e0!3m2!1sen!2sin!4v1718779000000!5m2!1sen!2sin"
+                  src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d7829.448148146298!2d77.29044498553488!3d11.13391588310037!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3ba907027d841bb9%3A0x2452660b419d24ac!2sLEO%20CULT!5e0!3m2!1sen!2sin!4v1783600138533!5m2!1sen!2sin"
                   width="100%"
                   height="300"
-                  className="sm:h-[350px] md:h-[400px]"
+                  className="sm:h-[350px] md:h-[400px] rounded-xl"
                   style={{ border: 0 }}
-                  allowFullScreen=""
+                  allowFullScreen
                   loading="lazy"
-                  title="LEO CULT Office Location – Velampalayam, Tirupur"
+                  referrerPolicy="no-referrer-when-downgrade"
+                  title="LEO CULT Office Location"
                 ></iframe>
               </div>
               <div className="absolute -bottom-4 -right-4 w-24 h-24 sm:w-32 sm:h-32 rounded-full" style={{ background: 'linear-gradient(135deg, rgba(245, 184, 0, 0.1), rgba(232, 150, 10, 0.1))', filter: 'blur(25px)' }}></div>
@@ -180,7 +181,7 @@ const ContactUs = () => {
         <div className="flex flex-col space-y-2 sm:space-y-3">
           {/* WhatsApp */}
           <a
-            href="#"
+            href="https://wa.me/919087149666"
             className="relative w-10 h-10 sm:w-11 sm:h-11 md:w-12 md:h-12 rounded-full flex items-center justify-center transition-all duration-300 hover:scale-110 group overflow-hidden"
             style={{ 
               background: 'rgba(0, 0, 0, 0.4)',
@@ -207,7 +208,7 @@ const ContactUs = () => {
 
           {/* Instagram */}
           <a
-            href="#"
+            href="https://www.instagram.com/_leo_cult_/?fbclid=IwY2xjawS5p1tleHRuA2FlbQIxMQBicmlkETFaQjFzeW1tczZ6RmxIU3BQc3J0YwZhcHBfaWQBMAABHrzBnLnv4kTXFJEyildjjUOE8ZQ5QT77IiH4p3HbAHGYiPluoJV-YTS1sPY0_aem_L60h9F0eCS_p9vfZFW0vRg"
             className="relative w-10 h-10 sm:w-11 sm:h-11 md:w-12 md:h-12 rounded-full flex items-center justify-center transition-all duration-300 hover:scale-110 group overflow-hidden"
             style={{ 
               background: 'rgba(0, 0, 0, 0.4)',
@@ -234,7 +235,7 @@ const ContactUs = () => {
 
           {/* Facebook */}
           <a
-            href="#"
+            href="https://www.facebook.com/people/Leo-Cult/61589660526471/"
             className="relative w-10 h-10 sm:w-11 sm:h-11 md:w-12 md:h-12 rounded-full flex items-center justify-center transition-all duration-300 hover:scale-110 group overflow-hidden"
             style={{ 
               background: 'rgba(0, 0, 0, 0.4)',
@@ -256,33 +257,6 @@ const ContactUs = () => {
             <FaFacebook className="w-4 h-4 sm:w-5 sm:h-5 text-white transition-all duration-300 group-hover:scale-110" />
             <span className="absolute right-full mr-2 sm:mr-3 px-2 sm:px-3 py-1 bg-gradient-to-r from-[#1877F2] to-[#0E5BC9] text-white text-xs font-medium rounded-lg opacity-0 group-hover:opacity-100 transition-all duration-300 whitespace-nowrap pointer-events-none shadow-lg transform group-hover:translate-x-0 translate-x-2">
               Facebook
-            </span>
-          </a>
-
-          {/* Twitter */}
-          <a
-            href="#"
-            className="relative w-10 h-10 sm:w-11 sm:h-11 md:w-12 md:h-12 rounded-full flex items-center justify-center transition-all duration-300 hover:scale-110 group overflow-hidden"
-            style={{ 
-              background: 'rgba(0, 0, 0, 0.4)',
-              backdropFilter: 'blur(8px)',
-              border: '1px solid rgba(255, 255, 255, 0.2)',
-              boxShadow: '0 4px 15px rgba(0, 0, 0, 0.1)'
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.background = '#1DA1F2';
-              e.currentTarget.style.border = 'none';
-              e.currentTarget.style.boxShadow = '0 8px 25px rgba(29, 161, 242, 0.4)';
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.background = 'rgba(0, 0, 0, 0.4)';
-              e.currentTarget.style.border = '1px solid rgba(255, 255, 255, 0.2)';
-              e.currentTarget.style.boxShadow = '0 4px 15px rgba(0, 0, 0, 0.1)';
-            }}
-          >
-            <FaTwitter className="w-4 h-4 sm:w-5 sm:h-5 text-white transition-all duration-300 group-hover:scale-110" />
-            <span className="absolute right-full mr-2 sm:mr-3 px-2 sm:px-3 py-1 bg-gradient-to-r from-[#1DA1F2] to-[#0D8BD9] text-white text-xs font-medium rounded-lg opacity-0 group-hover:opacity-100 transition-all duration-300 whitespace-nowrap pointer-events-none shadow-lg transform group-hover:translate-x-0 translate-x-2">
-              Twitter
             </span>
           </a>
         </div>

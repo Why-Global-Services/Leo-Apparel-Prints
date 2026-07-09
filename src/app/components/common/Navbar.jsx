@@ -1294,7 +1294,7 @@ function ResourcesPanel() {
   );
 }
 
-function MobileItem({ item }) {
+function MobileItem({ item ,onNavigate}) {
   const [open, setOpen] = useState(false);
 
   const getLinks = () => {
@@ -1334,6 +1334,7 @@ function MobileItem({ item }) {
                 <Link
                   key={link.name}
                   href={link.href}
+                  onClick={onNavigate}
                   className="block text-sm text-gray-600 hover:text-primary py-1.5 transition-colors font-secondary"
                 >
                   {link.name}
@@ -1664,9 +1665,12 @@ useEffect(() => {
               className="lg:hidden bg-white border-t"
             >
               <div className="px-6 py-4">
-                {NAV_ITEMS.map((item) => (
+                {/* {NAV_ITEMS.map((item) => (
                   <MobileItem key={item.id} item={item} />
-                ))}
+                ))} */}
+                {NAV_ITEMS.map((item) => (
+  <MobileItem key={item.id} item={item} onNavigate={() => setMobileOpen(false)} />
+))}
                 <div className="pt-4 space-y-3">
                   {user ? (
                     <Link

@@ -9,15 +9,15 @@ const SPORTS = [
   {
     id: "soccer",
     name: "SOCCER",
-    href: "/sports/soccer",
-    src: "https://images.unsplash.com/photo-1575361204480-aadea25e6e68?w=800&h=500&fit=crop",
+    href: "/products/?segment=Uniforms%2CCustom%20Sportswear&sport=Soccer",
+    src: "/images/sport/soccer.jpeg",
     features: ["Breathable", "Lightweight", "Quick Dry"]
   },
   {
-    id: "badminton",
-    name: "BADMINTON",
-    href: "/sports/badminton",
-    src: "https://images.unsplash.com/photo-1626224583764-f87db24ac4ea?w=800&h=500&fit=crop",
+    id: "kabaddi",
+    name: "KABADDI",
+    href: "/products/?segment=Uniforms%2CCustom%20Sportswear&sport=Kabbadi",
+    src: "/images/sport/kabbadi.jpeg",
     features: ["Quick Dry", "Stretch Fit", "Lightweight"]
   },
   {
@@ -25,22 +25,22 @@ const SPORTS = [
     name: "CRICKET",
     desc: "Test whites to T20 kits. Full team customization with name & number printing.",
     cta: "Explore Cricket Collection",
-    href: "/sports/cricket",
-    src: "https://images.unsplash.com/photo-1531415074968-036ba1b575da?w=1200&h=800&fit=crop",
+    href: "/products/?segment=Uniforms%2CCustom%20Sportswear&sport=Cricket",
+    src: "/images/sport/cricket.jpeg",
     features: ["Custom Names", "Numbers", "Premium Fabrics"]
   },
   {
-    id: "tennis",
-    name: "TENNIS",
-    href: "/sports/tennis",
-    src: "https://images.unsplash.com/photo-1595435934249-5df7ed86e1c0?w=800&h=500&fit=crop",
+    id: "volleyball",
+    name: "VOLLEYBALL",
+    href: "/products/?segment=Uniforms%2CCustom%20Sportswear&sport=Volleyball",
+    src: "/images/sport/vollyball.jpeg",
     features: ["UV Protection", "Moisture Wicking", "Lightweight"]
   },
   {
-    id: "pickleball",
-    name: "PICKLEBALL",
-    href: "/sports/pickleball",
-    src: "https://images.unsplash.com/photo-1554068865-24cecd4e34b8?w=800&h=500&fit=crop",
+    id: "athletics",
+    name: "ATHLETICS",
+    href: "/products/?segment=Uniforms%2CCustom%20Sportswear&sport=Athletes",
+    src: "/images/sport/atheletics.jpeg",
     features: ["Durable", "Professional Grade", "Quick Dry"]
   },
 ];
@@ -54,9 +54,9 @@ export default function ShopBySport() {
 
   const y = useTransform(scrollYProgress, [0, 1], [0, 50]);
 
-  const leftSports = SPORTS.filter((s) => ["soccer", "badminton"].includes(s.id));
+  const leftSports = SPORTS.filter((s) => ["soccer", "kabaddi"].includes(s.id));
   const centerSport = SPORTS.find((s) => s.id === "cricket");
-  const rightSports = SPORTS.filter((s) => ["tennis", "pickleball"].includes(s.id));
+  const rightSports = SPORTS.filter((s) => ["volleyball", "athletics"].includes(s.id));
 
   return (
     <section ref={containerRef} className="relative w-full bg-gradient-to-b from-gray-50 to-white py-20 px-4 overflow-hidden">

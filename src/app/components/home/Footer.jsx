@@ -210,13 +210,20 @@ export default function Footer() {
 
   const socialLinks = [
     { name: "WhatsApp", icon: <FaWhatsapp size={20} />, url: "https://wa.me/919087149666" },
-    { name: "Facebook", icon: <FaFacebook size={20} />, url: "#" },
-    { name: "Instagram", icon: <FaInstagram size={20} />, url: "#" },
-    { name: "Twitter", icon: <FaTwitter size={20} />, url: "#" },
+    { name: "Facebook", icon: <FaFacebook size={20} />, url: "https://www.facebook.com/people/Leo-Cult/61589660526471/" },
+    { name: "Instagram", icon: <FaInstagram size={20} />, url: " https://www.instagram.com/_leo_cult_/?fbclid=IwY2xjawS5p1tleHRuA2FlbQIxMQBicmlkETFaQjFzeW1tczZ6RmxIU3BQc3J0YwZhcHBfaWQBMAABHrzBnLnv4kTXFJEyildjjUOE8ZQ5QT77IiH4p3HbAHGYiPluoJV-YTS1sPY0_aem_L60h9F0eCS_p9vfZFW0vRg" },
   ];
 
   return (
     <footer className="relative w-full bg-third overflow-hidden pt-3">
+      <a
+        href="https://whyglobalservices.com/"
+        target="_blank"
+        rel="noopener noreferrer"
+        className="absolute bottom-2 right-2 z-10 text-[0.35rem] sm:text-[0.45rem] font-medium uppercase tracking-[0.28em] text-white/70 hover:text-primary transition-colors duration-200 whitespace-nowrap"
+      >
+        Powered by Why Global Services
+      </a>
       
       {/* ── KINETIC TOP BAR ── */}
       <div className="absolute top-0 left-0 w-full overflow-hidden bg-primary py-2 select-none z-10">
