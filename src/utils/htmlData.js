@@ -1,234 +1,236 @@
 const sanitizeHtml = require("sanitize-html");
 
-// htmlData.js
 const currentYear = new Date().getFullYear();
 
 exports.sendUserOtp = (mailData) => {
-  const sanitizedOtp = sanitizeHtml(mailData.OTP.toString());
-  const userName = mailData.name ? sanitizeHtml(mailData.name) : "Valued Customer";
+  const otp = sanitizeHtml(mailData.OTP.toString());
+  const userName = mailData.name
+    ? sanitizeHtml(mailData.name)
+    : "Customer";
 
   return `
-    <!DOCTYPE html>
-    <html>
-    <head>
-      <meta charset="UTF-8">
-      <meta name="viewport" content="width=device-width, initial-scale=1.0">
-      <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
-    </head>
-    <body style="margin: 0; padding: 20px; background-color: #f8f7f5; font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;">
-      <div style="max-width: 480px; margin: 0 auto;">
-        <!-- Brand Header -->
-        <div style="text-align: center; margin-bottom: 24px;">
-          <div style="display: inline-flex; align-items: center; gap: 12px; padding: 12px 24px; color: #8b4513; font-family: 'Poppins', sans-serif;">
-            <img 
-              src="https://facesync.blr1.digitaloceanspaces.com/Websetting/NATURESHUNT_1770095195323_povi-logo.jpeg"
-              alt="Povi's Collections Logo"
-              style="height: 50px; width: auto; object-fit: contain; background: white; padding: 4px; border-radius: 6px;"
-            />
-            <h1 style="margin: 0; font-size: 24px; font-weight: 600; color: #d4af37;">Povi's Collections</h1>
-          </div>
-          <p style="color: #8b4513; margin: 8px 0 0; font-size: 14px;">Elegance. Craftsmanship. Heritage.</p>
-        </div>
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-        <!-- Main Card -->
-        <div style="background: white; border-radius: 20px; overflow: hidden; box-shadow: 0 8px 30px rgba(139, 69, 19, 0.1); border: 1px solid #f0e6d6;">
-          
-          <!-- Premium Gradient Header -->
-          <div style="background: linear-gradient(135deg, #d4af37 0%, #8b4513 100%); padding: 32px 24px; text-align: center;">
-            <h1 style="margin: 0; color: white; font-size: 24px; font-weight: 600; font-family: 'Poppins', sans-serif;">Secure Login Code</h1>
-            <p style="margin: 8px 0 0; color: rgba(255,255,255,0.9); font-size: 14px;">Your access to exquisite jewelry collections</p>
-          </div>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=Inter:wght@400;500&display=swap" rel="stylesheet">
 
-          <!-- Content Area -->
-          <div style="padding: 32px 24px; text-align: center;">
-            <div style="display: inline-flex; align-items: center; gap: 8px; background: #f9f3e9; padding: 8px 20px; border-radius: 50px; margin-bottom: 20px;">
-              <span style="color: #8b4513; font-size: 18px;">✨</span>
-              <p style="margin: 0; color: #8b4513; font-weight: 500;">Hello, ${userName}!</p>
-            </div>
+<title>Leo Cult OTP</title>
 
-            <p style="color: #8b4513; font-size: 16px; line-height: 1.6; margin: 0 0 24px;">
-              Use this one-time code to securely access your Povi's Collections account:
-            </p>
+</head>
 
-            <!-- OTP Display -->
-            <div style="background: linear-gradient(135deg, #f9f3e9 0%, #f5ebdc 100%); border: 2px dashed #d4af37; border-radius: 16px; padding: 28px; margin: 32px 0; position: relative;">
-              <div style="position: absolute; top: -12px; left: 50%; transform: translateX(-50%); background: white; padding: 0 16px; color: #8b4513; font-size: 13px; font-weight: 600; letter-spacing: 0.5px;">
-                VERIFICATION CODE
-              </div>
-              <div style="font-family: 'Poppins', monospace; font-size: 40px; font-weight: 700; letter-spacing: 10px; color: #8b4513; line-height: 1;">
-                ${sanitizedOtp}
-              </div>
-            </div>
+<body style="margin:0;padding:30px;background:#f5f5f5;font-family:'Inter',Arial,sans-serif;">
 
-            <!-- Info Box -->
-            <div style="background: #f8f7f5; border-radius: 12px; padding: 20px; margin: 32px 0;">
-              <div style="display: flex; align-items: flex-start; gap: 12px;">
-                <span style="color: #d4af37; font-size: 20px;">⏳</span>
-                <div style="text-align: left;">
-                  <p style="margin: 0 0 4px; color: #8b4513; font-weight: 600; font-size: 15px;">Expires in 10 minutes</p>
-                  <p style="margin: 0; color: #a67c52; font-size: 14px;">For security reasons, this code will automatically expire.</p>
-                </div>
-              </div>
-            </div>
+<table width="100%" cellpadding="0" cellspacing="0">
+<tr>
+<td align="center">
 
-            <div style="border-top: 1px solid #f0e6d6; padding-top: 24px;">
-              <p style="color: #a67c52; font-size: 14px; margin: 0;">
-                Didn't request this?<br>
-                <span style="color: #8b4513;">Your account may be secure - no action is needed.</span>
-              </p>
-            </div>
-          </div>
+<table width="600" cellpadding="0" cellspacing="0" style="background:#ffffff;border-radius:18px;overflow:hidden;box-shadow:0 8px 30px rgba(0,0,0,.08);">
 
-          <!-- Footer -->
-          <div style="background: #f9f3e9; padding: 24px; text-align: center; border-top: 1px solid #f0e6d6;">
-            <div style="display: flex; justify-content: center; gap: 20px; margin-bottom: 16px;">
-              <a href="#" style="color: #8b4513; text-decoration: none; font-size: 20px;">💎</a>
-              <a href="#" style="color: #8b4513; text-decoration: none; font-size: 20px;">✨</a>
-              <a href="#" style="color: #8b4513; text-decoration: none; font-size: 20px;">🔮</a>
-            </div>
-            <p style="margin: 0; color: #8b4513; font-size: 12px;">
-              © ${currentYear} Povi's Collections. Handcrafted with precision and passion.<br>
-              <span style="color: #a67c52;">Timeless jewelry for every occasion.</span>
-            </p>
-          </div>
-        </div>
-      </div>
-    </body>
-    </html>
-  `;
-};
+<!-- Header -->
 
-exports.notificationTemplate = (mailData) => {
-  const { email, title, message, imageURL } = mailData;
+<tr>
+<td align="center" style="background:#111111;padding:35px;">
 
-  const sanitizedTitle = title || "✨ Sparkling New Arrivals Have Arrived!";
-  const sanitizedMessage = 
-    message || 
-    "Discover our latest collection of exquisite jewelry pieces. Each design is crafted with precision and passion to celebrate your special moments.";
-  const sanitizedImage = 
-    imageURL || 
-    "https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?w=1200&h=600&fit=crop&q=80";
+<img
+src="https://leocult.whydev.co.in/logo.png"
+width="70"
+style="display:block;margin-bottom:15px;"
+>
 
-  return `
-    <!DOCTYPE html>
-    <html>
-    <head>
-      <meta charset="UTF-8">
-      <meta name="viewport" content="width=device-width, initial-scale=1.0">
-      <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
-    </head>
-    <body style="margin: 0; padding: 20px; background: linear-gradient(135deg, #f8f7f5 0%, #f9f3e9 100%); font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;">
-      <div style="max-width: 600px; margin: 0 auto;">
+<h1 style="margin:0;color:#ffffff;font-size:32px;font-family:'Poppins',sans-serif;">
+LEO CULT
+</h1>
 
-        <!-- Premium Header -->
-        <div style="background: white; border-radius: 20px 20px 0 0; padding: 24px; text-align: center; box-shadow: 0 4px 20px rgba(139, 69, 19, 0.08);">
-          <div style="display: inline-flex; align-items: center; gap: 12px; margin-bottom: 16px;">
-            <div style="width: 48px; height: 48px; background: linear-gradient(135deg, #d4af37 0%, #8b4513 100%); border-radius: 12px; display: flex; align-items: center; justify-content: center;">
-              <span style="font-size: 24px; color: white;">💎</span>
-            </div>
-            <div style="text-align: left;">
-              <h1 style="margin: 0; font-family: 'Poppins', sans-serif; color: #8b4513; font-size: 28px; font-weight: 800;">Povi's Collections</h1>
-              <p style="margin: 0; color: #d4af37; font-size: 14px;">Exquisite Jewelry & Accessories</p>
-            </div>
-          </div>
-          <div style="display: inline-flex; align-items: center; gap: 8px; background: #f9f3e9; padding: 8px 20px; border-radius: 50px;">
-            <span style="color: #8b4513;">✨</span>
-            <span style="color: #8b4513; font-weight: 600; font-size: 14px;">NEW COLLECTION • HANDCRAFTED • LIMITED EDITION</span>
-          </div>
-        </div>
+<p style="margin-top:8px;color:#cccccc;font-size:15px;">
+Premium Streetwear Brand
+</p>
 
-        <!-- Main Card -->
-        <div style="background: white; border-radius: 0 0 20px 20px; overflow: hidden; box-shadow: 0 10px 40px rgba(139, 69, 19, 0.15);">
+</td>
+</tr>
 
-          <!-- Hero Image -->
-          <div style="position: relative;">
-            <img src="${sanitizedImage}" alt="Povi's Collections New Arrivals" style="width: 100%; height: 320px; object-fit: cover; display: block;">
-            <div style="position: absolute; bottom: 0; left: 0; right: 0; background: linear-gradient(transparent, rgba(139, 69, 19, 0.9)); padding: 32px; text-align: left;">
-              <h2 style="margin: 0; color: white; font-family: 'Poppins', sans-serif; font-size: 32px; font-weight: 800; line-height: 1.2;">${sanitizedTitle}</h2>
-              <div style="display: flex; align-items: center; gap: 12px; margin-top: 12px;">
-                <span style="background: rgba(255,255,255,0.2); color: white; padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 600;">💎 Premium Quality</span>
-                <span style="background: rgba(255,255,255,0.2); color: white; padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 600;">✨ Handcrafted</span>
-                <span style="background: rgba(255,255,255,0.2); color: white; padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 600;">🔮 Certified Stones</span>
-              </div>
-            </div>
-          </div>
+<!-- Content -->
 
-          <!-- Content -->
-          <div style="padding: 40px 32px; text-align: center;">
-            <p style="color: #8b4513; font-size: 18px; line-height: 1.7; margin: 0 0 32px; font-family: 'Inter', sans-serif;">
-              ${sanitizedMessage}
-            </p>
+<tr>
+<td style="padding:45px;">
 
-            <!-- CTA Button -->
-            <a href="https://poviscollection.com/shoppage" style="display: inline-flex; align-items: center; gap: 10px; background: linear-gradient(135deg, #d4af37 0%, #8b4513 100%); color: white; padding: 18px 42px; border-radius: 50px; font-weight: 700; text-decoration: none; font-size: 18px; font-family: 'Poppins', sans-serif; box-shadow: 0 8px 25px rgba(139, 69, 19, 0.3); transition: all 0.3s; margin-bottom: 40px;">
-              <span>Explore Collection</span>
-              <span style="font-size: 20px;">→</span>
-            </a>
+<h2 style="margin:0;color:#111111;font-size:28px;font-family:'Poppins';">
+Verify Your Account
+</h2>
 
-            <!-- Social Proof -->
-            <div style="background: #f9f3e9; border-radius: 16px; padding: 24px; margin: 32px 0;">
-              <p style="color: #8b4513; font-weight: 600; margin: 0 0 16px; font-size: 16px;">💫 Trusted by Jewelry Lovers</p>
-              <div style="display: flex; align-items: center; justify-content: center; gap: 20px;">
-                <div style="text-align: center;">
-                  <div style="font-size: 28px; color: #8b4513; font-weight: 800;">5000+</div>
-                  <div style="color: #d4af37; font-size: 14px;">Satisfied Customers</div>
-                </div>
-                <div style="height: 40px; width: 1px; background: #e0c9a6;"></div>
-                <div style="text-align: center;">
-                  <div style="font-size: 28px; color: #8b4513; font-weight: 800;">4.9★</div>
-                  <div style="color: #d4af37; font-size: 14px;">Average Rating</div>
-                </div>
-                <div style="height: 40px; width: 1px; background: #e0c9a6;"></div>
-                <div style="text-align: center;">
-                  <div style="font-size: 28px; color: #8b4513; font-weight: 800;">48h</div>
-                  <div style="color: #d4af37; font-size: 14px;">Express Shipping</div>
-                </div>
-              </div>
-            </div>
+<p style="margin-top:25px;font-size:16px;color:#444;">
+Hello <strong>${userName}</strong>,
+</p>
 
-            <!-- Product Preview -->
-            <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; margin: 40px 0;">
-              <div style="background: linear-gradient(135deg, #f8f7f5 0%, #f9f3e9 100%); border-radius: 16px; padding: 20px; text-align: center; border: 1px solid #f0e6d6;">
-                <div style="height: 120px; background: #f9f3e9; border-radius: 12px; margin-bottom: 16px; display: flex; align-items: center; justify-content: center;">
-                  <span style="font-size: 40px; color: #8b4513;">💍</span>
-                </div>
-                <p style="margin: 0 0 8px; color: #8b4513; font-weight: 700; font-size: 16px;">Diamond Solitaire Ring</p>
-                <p style="margin: 0; color: #d4af37; font-size: 14px; font-weight: 600;">✨ Limited Stock</p>
-              </div>
-              <div style="background: linear-gradient(135deg, #f8f7f5 0%, #f9f3e9 100%); border-radius: 16px; padding: 20px; text-align: center; border: 1px solid #f0e6d6;">
-                <div style="height: 120px; background: #f9f3e9; border-radius: 12px; margin-bottom: 16px; display: flex; align-items: center; justify-content: center;">
-                  <span style="font-size: 40px; color: #8b4513;">📿</span>
-                </div>
-                <p style="margin: 0 0 8px; color: #8b4513; font-weight: 700; font-size: 16px;">Gold Pearl Necklace</p>
-                <p style="margin: 0; color: #d4af37; font-size: 14px; font-weight: 600;">💎 68% claimed</p>
-              </div>
-            </div>
-          </div>
+<p style="color:#666;font-size:15px;line-height:28px;">
+Use the verification code below to securely access your Leo Cult account.
+</p>
 
-          <!-- Premium Footer -->
-          <div style="background: linear-gradient(135deg, #8b4513 0%, #5d2906 100%); padding: 32px; text-align: center; color: white; border-top: 1px solid rgba(255,255,255,0.1);">
-            <div style="display: flex; justify-content: center; gap: 24px; margin-bottom: 24px;">
-              <a href="#" style="color: #d4af37; text-decoration: none; font-size: 20px; opacity: 0.8;">💎</a>
-              <a href="#" style="color: #d4af37; text-decoration: none; font-size: 20px; opacity: 0.8;">✨</a>
-              <a href="#" style="color: #d4af37; text-decoration: none; font-size: 20px; opacity: 0.8;">🔮</a>
-              <a href="#" style="color: #d4af37; text-decoration: none; font-size: 20px; opacity: 0.8;">💍</a>
-            </div>
-            <p style="margin: 0 0 16px; font-size: 14px; opacity: 0.9;">
-              Every piece comes with <strong>Lifetime Quality Assurance</strong> and certification
-            </p>
-            <div style="display: flex; justify-content: center; gap: 20px; margin-bottom: 20px;">
-              <a href="#" style="color: rgba(212, 175, 55, 0.8); text-decoration: none; font-size: 14px; font-weight: 500;">Instagram</a>
-              <a href="#" style="color: rgba(212, 175, 55, 0.8); text-decoration: none; font-size: 14px; font-weight: 500;">Facebook</a>
-              <a href="#" style="color: rgba(212, 175, 55, 0.8); text-decoration: none; font-size: 14px; font-weight: 500;">Pinterest</a>
-            </div>
-            <p style="margin: 0; font-size: 12px; opacity: 0.7;">
-              © ${currentYear} Povi's Collections • Timeless jewelry for every occasion<br>
-              <a href="#" style="color: rgba(212, 175, 55, 0.7); text-decoration: underline;">Unsubscribe</a> from promotional emails
-            </p>
-          </div>
-        </div>
-      </div>
-    </body>
-    </html>
-  `;
+<!-- OTP -->
+
+<table width="100%" cellpadding="0" cellspacing="0" style="margin:40px 0;">
+<tr>
+<td align="center">
+
+<div style="
+display:inline-block;
+background:#FFF4EB;
+border:2px dashed #FF6B00;
+padding:22px 45px;
+border-radius:12px;
+">
+
+<span style="
+font-size:42px;
+font-family:monospace;
+font-weight:bold;
+letter-spacing:10px;
+color:#111111;
+">
+${otp}
+</span>
+
+</div>
+
+</td>
+</tr>
+</table>
+
+<p style="
+text-align:center;
+color:#888;
+font-size:14px;
+margin-top:-10px;
+">
+⏳ Expires in 10 Minutes
+</p>
+
+<!-- Button -->
+
+<table width="100%" cellpadding="0" cellspacing="0" style="margin:35px 0;">
+<tr>
+<td align="center">
+
+<a href="#"
+style="
+background:#111111;
+color:#ffffff;
+text-decoration:none;
+padding:15px 40px;
+border-radius:50px;
+display:inline-block;
+font-weight:600;
+font-size:16px;
+">
+Verify Account
+</a>
+
+</td>
+</tr>
+</table>
+
+<hr style="border:none;border-top:1px solid #eeeeee;margin:35px 0;">
+
+<p style="
+text-align:center;
+font-size:14px;
+color:#777;
+line-height:26px;
+">
+If you didn't request this verification code,
+you can safely ignore this email.
+</p>
+
+</td>
+</tr>
+
+<!-- Footer -->
+
+<tr>
+<td align="center"
+style="
+background:#111111;
+padding:35px;
+">
+
+<p style="
+margin:0 0 18px;
+color:#ffffff;
+font-size:15px;
+font-weight:600;
+">
+
+LEO CULT
+
+</p>
+
+<p style="
+margin:0 0 20px;
+color:#bbbbbb;
+font-size:14px;
+">
+
+Premium collections for Everyone
+
+</p>
+
+<p style="margin-bottom:18px;">
+
+<a href="https://www.instagram.com/_leo_cult_/?fbclid=IwY2xjawS5p1tleHRuA2FlbQIxMQBicmlkETFaQjFzeW1tczZ6RmxIU3BQc3J0YwZhcHBfaWQBMAABHrzBnLnv4kTXFJEyildjjUOE8ZQ5QT77IiH4p3HbAHGYiPluoJV-YTS1sPY0_aem_L60h9F0eCS_p9vfZFW0vRg"
+style="
+color:#ffffff;
+text-decoration:none;
+margin:0 12px;
+">
+Instagram
+</a>
+
+|
+
+<a href="https://leocult.whydev.co.in/"
+style="
+color:#ffffff;
+text-decoration:none;
+margin:0 12px;
+">
+Website
+</a>
+
+|
+
+<a href="mailto:info@leocult.com"
+style="
+color:#ffffff;
+text-decoration:none;
+margin:0 12px;
+">
+Support
+</a>
+
+</p>
+
+<p style="
+margin:0;
+font-size:12px;
+color:#888888;
+">
+
+© ${currentYear} Leo Cult. All Rights Reserved.
+
+</p>
+
+</td>
+</tr>
+
+</table>
+
+</td>
+</tr>
+</table>
+
+</body>
+</html>
+`;
 };
