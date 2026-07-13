@@ -14,132 +14,74 @@ exports.sendUserOtp = (mailData) => {
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=Inter:wght@400;500&display=swap" rel="stylesheet">
-
 <title>Leo Cult OTP</title>
-
 </head>
 
-<body style="margin:0;padding:30px;background:#f5f5f5;font-family:'Inter',Arial,sans-serif;">
+<body style="margin:0;padding:30px;background:#eef2f7;font-family:Arial,Helvetica,sans-serif;">
 
-<table width="100%" cellpadding="0" cellspacing="0">
+<table width="100%" cellpadding="0" cellspacing="0" border="0">
 <tr>
 <td align="center">
 
-<table width="600" cellpadding="0" cellspacing="0" style="background:#ffffff;border-radius:18px;overflow:hidden;box-shadow:0 8px 30px rgba(0,0,0,.08);">
+<table width="600" cellpadding="0" cellspacing="0" border="0" style="background:#ffffff;border-radius:20px;overflow:hidden;box-shadow:0 10px 40px rgba(0,50,150,0.12);max-width:600px;">
 
 <!-- Header -->
-
 <tr>
-<td align="center" style="background:#111111;padding:35px;">
+<td align="center" bgcolor="#0a1a3a" style="background-color:#0a1a3a;background-image:linear-gradient(135deg, #0a1a3a 0%, #1a3a7a 100%);padding:40px 35px;">
 
 <img
-src="https://leocult.whydev.co.in/logo.png"
-width="70"
-style="display:block;margin-bottom:15px;"
+src="https://facesync.blr1.digitaloceanspaces.com/products/MMK_1783922404470_mainlogo1.png"
+width="65"
+alt="Leo Cult"
+style="display:block;margin:0 auto 15px;filter:brightness(0) invert(1);"
 >
 
-<h1 style="margin:0;color:#ffffff;font-size:32px;font-family:'Poppins',sans-serif;">
+<h1 style="margin:0;color:#ffffff;font-size:30px;font-family:Arial,Helvetica,sans-serif;letter-spacing:1px;">
 LEO CULT
 </h1>
 
-<p style="margin-top:8px;color:#cccccc;font-size:15px;">
+<p style="margin:8px 0 0;color:#8ab4f8;font-size:14px;letter-spacing:0.5px;">
 Premium Streetwear Brand
 </p>
 
 </td>
 </tr>
 
-<!-- Content -->
-
+<!-- Body -->
 <tr>
-<td style="padding:45px;">
+<td style="padding:35px 35px 30px;">
 
-<h2 style="margin:0;color:#111111;font-size:28px;font-family:'Poppins';">
-Verify Your Account
-</h2>
-
-<p style="margin-top:25px;font-size:16px;color:#444;">
-Hello <strong>${userName}</strong>,
-</p>
-
-<p style="color:#666;font-size:15px;line-height:28px;">
-Use the verification code below to securely access your Leo Cult account.
+<p style="text-align:center;color:#0a1a3a;font-size:15px;margin:0 0 25px;">
+Hi ${userName}, use the code below to verify your account.
 </p>
 
 <!-- OTP -->
-
-<table width="100%" cellpadding="0" cellspacing="0" style="margin:40px 0;">
+<table width="100%" cellpadding="0" cellspacing="0" border="0">
 <tr>
-<td align="center">
+<td align="center" style="padding-bottom:12px;">
 
-<div style="
-display:inline-block;
-background:#FFF4EB;
-border:2px dashed #FF6B00;
-padding:22px 45px;
-border-radius:12px;
-">
-
-<span style="
-font-size:42px;
-font-family:monospace;
-font-weight:bold;
-letter-spacing:10px;
-color:#111111;
-">
+<table cellpadding="0" cellspacing="0" border="0" style="background:#f0f5ff;border:2px solid #1a3a7a;border-radius:14px;">
+<tr>
+<td style="padding:22px 45px;">
+<span style="font-size:38px;font-family:'Courier New',monospace;font-weight:bold;letter-spacing:10px;color:#0a1a3a;">
 ${otp}
 </span>
-
-</div>
+</td>
+</tr>
+</table>
 
 </td>
 </tr>
 </table>
 
-<p style="
-text-align:center;
-color:#888;
-font-size:14px;
-margin-top:-10px;
-">
+<p style="text-align:center;color:#5a7a9a;font-size:13px;margin:0 0 30px;">
 ⏳ Expires in 10 Minutes
 </p>
 
-<!-- Button -->
+<div style="border-top:1px solid #e8edf4;margin:0 0 25px;"></div>
 
-<table width="100%" cellpadding="0" cellspacing="0" style="margin:35px 0;">
-<tr>
-<td align="center">
-
-<a href="#"
-style="
-background:#111111;
-color:#ffffff;
-text-decoration:none;
-padding:15px 40px;
-border-radius:50px;
-display:inline-block;
-font-weight:600;
-font-size:16px;
-">
-Verify Account
-</a>
-
-</td>
-</tr>
-</table>
-
-<hr style="border:none;border-top:1px solid #eeeeee;margin:35px 0;">
-
-<p style="
-text-align:center;
-font-size:14px;
-color:#777;
-line-height:26px;
-">
-If you didn't request this verification code,
+<p style="text-align:center;font-size:13px;color:#7a8a9e;line-height:22px;margin:0;">
+If you didn't request this verification code,<br>
 you can safely ignore this email.
 </p>
 
@@ -147,78 +89,27 @@ you can safely ignore this email.
 </tr>
 
 <!-- Footer -->
-
 <tr>
-<td align="center"
-style="
-background:#111111;
-padding:35px;
-">
+<td align="center" bgcolor="#f7f9fc" style="background:#f7f9fc;padding:35px;border-top:1px solid #e8edf4;">
 
-<p style="
-margin:0 0 18px;
-color:#ffffff;
-font-size:15px;
-font-weight:600;
-">
-
+<p style="margin:0 0 15px;color:#0a1a3a;font-size:15px;font-weight:700;letter-spacing:0.5px;">
 LEO CULT
-
 </p>
 
-<p style="
-margin:0 0 20px;
-color:#bbbbbb;
-font-size:14px;
-">
-
+<p style="margin:0 0 18px;color:#5a7a9a;font-size:13px;">
 Premium collections for Everyone
-
 </p>
 
-<p style="margin-bottom:18px;">
-
-<a href="https://www.instagram.com/_leo_cult_/?fbclid=IwY2xjawS5p1tleHRuA2FlbQIxMQBicmlkETFaQjFzeW1tczZ6RmxIU3BQc3J0YwZhcHBfaWQBMAABHrzBnLnv4kTXFJEyildjjUOE8ZQ5QT77IiH4p3HbAHGYiPluoJV-YTS1sPY0_aem_L60h9F0eCS_p9vfZFW0vRg"
-style="
-color:#ffffff;
-text-decoration:none;
-margin:0 12px;
-">
-Instagram
-</a>
-
-|
-
-<a href="https://leocult.whydev.co.in/"
-style="
-color:#ffffff;
-text-decoration:none;
-margin:0 12px;
-">
-Website
-</a>
-
-|
-
-<a href="mailto:info@leocult.com"
-style="
-color:#ffffff;
-text-decoration:none;
-margin:0 12px;
-">
-Support
-</a>
-
+<p style="margin:0 0 16px;">
+<a href="https://www.instagram.com/_leo_cult_/" style="color:#1a3a7a;text-decoration:none;margin:0 14px;font-size:13px;font-weight:500;">Instagram</a>
+<span style="color:#c0c8d4;">|</span>
+<a href="https://leocult.whydev.co.in/" style="color:#1a3a7a;text-decoration:none;margin:0 14px;font-size:13px;font-weight:500;">Website</a>
+<span style="color:#c0c8d4;">|</span>
+<a href="mailto:info@leocult.com" style="color:#1a3a7a;text-decoration:none;margin:0 14px;font-size:13px;font-weight:500;">Support</a>
 </p>
 
-<p style="
-margin:0;
-font-size:12px;
-color:#888888;
-">
-
+<p style="margin:0;font-size:12px;color:#8a9aaa;">
 © ${currentYear} Leo Cult. All Rights Reserved.
-
 </p>
 
 </td>
