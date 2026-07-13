@@ -338,13 +338,13 @@ const handleGoogleLogin = () => {
                   {isLoading ? "Signing in…" : "Sign In"} <ArrowIcon/>
                 </button>
 
-                <div className="am-divider">
+                {/* <div className="am-divider">
                   <span className="am-div-line"/><span className="am-div-text">Or continue with</span><span className="am-div-line"/>
                 </div>
 
                 <button className="am-google-btn" onClick={handleGoogleLogin} disabled={isLoading}>
                   <GoogleIcon/><span>Continue with Google</span>
-                </button>
+                </button> */}
 
                 <p className="am-switch-text">
                   New here? <span className="am-switch-link" onClick={() => setMode("register")}>Create an account</span>
@@ -448,13 +448,13 @@ const handleGoogleLogin = () => {
                   {isLoading ? "Creating…" : "Create Account"} <ArrowIcon/>
                 </button>
 
-                <div className="am-divider">
+                {/* <div className="am-divider">
                   <span className="am-div-line"/><span className="am-div-text">Or sign up with</span><span className="am-div-line"/>
                 </div>
                 
                 <button className="am-google-btn" onClick={handleGoogleLogin} disabled={isLoading}>
                   <GoogleIcon/><span>Continue with Google</span>
-                </button>
+                </button> */}
 
                 <p className="am-switch-text">
                   Already a member? <span className="am-switch-link" onClick={() => setMode("login")}>Sign in here</span>
@@ -500,7 +500,7 @@ const handleGoogleLogin = () => {
           .am-tab-active { color:#0EA5E9;border-bottom-color:#0EA5E9; }
           .am-form { display:flex;flex-direction:column;gap:14px;flex:1;justify-content:center; }
           .am-form-register { gap:12px; }
-          .am-form-head { margin-bottom:0px;flex-shrink:0; }
+          .am-form-head { margin-bottom:10px;flex-shrink:0; }
           .am-title { font-family:'Poppins',sans-serif;font-weight:700;font-size:${isMobile?"20px":"22px"};background:linear-gradient(135deg,#ffffff 0%,#93c5fd 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin:0 0 2px;line-height:1.2; }
           .am-sub { font-size:11px;color:rgba(255,255,255,0.42);margin:0; }
           .am-input-group { margin-bottom:0; }

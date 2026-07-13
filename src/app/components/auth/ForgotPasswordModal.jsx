@@ -310,7 +310,7 @@ if (res.meta.requestStatus === "fulfilled") {
             </button>
 
             {/* Resend */}
-            <div className="fp-resend-row">
+            {/* <div className="fp-resend-row">
               <span className="fp-resend-text">Didn't receive it?</span>
               {resendTimer > 0 ? (
                 <span className="fp-resend-timer">Resend in {resendTimer}s</span>
@@ -319,7 +319,7 @@ if (res.meta.requestStatus === "fulfilled") {
                   Resend Code
                 </button>
               )}
-            </div>
+            </div> */}
 
             <button className="fp-back-link" onClick={() => setStep(1)}>
               <BackIcon /> Change Email
