@@ -955,13 +955,23 @@ const getAllProducts = async (req) => {
   matchFilter.segment = { $in: segments };
 }
 
-    if (sport) {
-      matchFilter.sport = sport;
-    }
+    // if (sport) {
+    //   matchFilter.sport = sport;
+    // }
 
-    if (apparel) {
-      matchFilter.apparel = apparel;
-    }
+    // if (apparel) {
+    //   matchFilter.apparel = apparel;
+    // }
+
+    if (sport) {
+  const sports = sport.split(",").map((s) => s.trim());
+  matchFilter.sport = { $in: sports };
+}
+
+if (apparel) {
+  const apparels = apparel.split(",").map((a) => a.trim());
+  matchFilter.apparel = { $in: apparels };
+}
 
     if (categoryId) {
       matchFilter.categoryId = categoryId;
