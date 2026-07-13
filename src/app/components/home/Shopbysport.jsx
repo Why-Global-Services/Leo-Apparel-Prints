@@ -210,7 +210,7 @@ export default function ShopBySport() {
               </div>
                           
               <Link
-                href="/products"
+                href="/products/?segment=Uniforms%2CCustom%20Sportswear&sport=Cricket"
                 className="btn btn-gradient btn-md btn-shine inline-flex"
               >
                 Customize Now
