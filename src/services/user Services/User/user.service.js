@@ -10,7 +10,7 @@ const Customization = require("../../../models/customization.model");
 /** Create JWT Token */
 const generateAccessToken = (id, role) => {
   return jwt.sign({ id, role }, process.env.JWT_SECRET, {
-    expiresIn: "15m",
+    expiresIn: "15d",
   });
 };
 
