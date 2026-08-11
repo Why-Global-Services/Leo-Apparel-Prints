@@ -1,3 +1,4 @@
+
 // "use client";
 
 // import { usePathname } from "next/navigation";
@@ -5,25 +6,46 @@
 // import Navbar from "./components/common/Navbar";
 // import RouteLoader from "./components/common/RouteLoader";
 // import Footer from "./components/home/Footer";
+// import { fetchProfile } from "@/features/auth/authThunks";
+// import { useDispatch, useSelector } from "react-redux";
+// import { useEffect } from "react";
+
 
 // export default function LayoutWrapper({ children }) {
 //   const pathname = usePathname();
+//   const token = useSelector((state) => state.auth.token);
+//   const dispatch = useDispatch();
+
+//   useEffect(() => {
+//     if (token) {
+//       dispatch(fetchProfile());
+//     }
+//   }, [token]);
 
 //   const isAuthPage = pathname.startsWith("/auth");
 
+//   // Check if we're on a product detail page (any /product with query params)
+//   const isProductDetailPage = pathname === '/product';
+
 //   return (
 //     <>
-//       {!isAuthPage && <NavbarBottom />}
-//       {!isAuthPage && <Navbar />}
+//       {/* Hide navbars on product detail pages */}
+//       {!isAuthPage && !isProductDetailPage && <NavbarBottom />}
+//       {!isAuthPage && !isProductDetailPage && <Navbar />}
 
 //       <RouteLoader>
-//         <main className="flex-1">{children}</main>
+//         <main className={`flex-1 w-full bg-white ${isProductDetailPage ? 'p-0 m-0 overflow-hidden' : ''}`}>
+//           {children}
+//         </main>
 //       </RouteLoader>
 
-//       {!isAuthPage && <Footer />}
+//       {/* Hide footer on product detail pages */}
+//       {!isAuthPage && !isProductDetailPage && <Footer />}
 //     </>
 //   );
 // }
+
+
 
 
 "use client";
@@ -33,6 +55,7 @@ import NavbarBottom from "./components/common/NavbarBottom";
 import Navbar from "./components/common/Navbar";
 import RouteLoader from "./components/common/RouteLoader";
 import Footer from "./components/home/Footer";
+import WhatsAppFloatButton from "./components/common/WhatsAppFloatButton";
 import { fetchProfile } from "@/features/auth/authThunks";
 import { useDispatch, useSelector } from "react-redux";
 import { useEffect } from "react";
@@ -68,6 +91,7 @@ export default function LayoutWrapper({ children }) {
 
       {/* Hide footer on product detail pages */}
       {!isAuthPage && !isProductDetailPage && <Footer />}
+      {!isAuthPage && <WhatsAppFloatButton />}
     </>
   );
 }

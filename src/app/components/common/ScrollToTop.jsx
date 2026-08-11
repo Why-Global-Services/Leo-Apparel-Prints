@@ -85,7 +85,7 @@ export default function ScrollToTop() {
         <button
           onClick={scrollToTop}
           aria-label="Scroll to top"
-          className="group fixed bottom-8 right-8 z-50
+          className="group fixed bottom-16 right-7 z-50
           bg-gradient-to-r from-[#0EA5E9] via-[#0284C7] to-[#1E3A8A]
           hover:from-[#1E3A8A] hover:via-[#0284C7] hover:to-[#0EA5E9]
           text-white rounded-full p-3

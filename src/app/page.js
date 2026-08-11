@@ -81,8 +81,27 @@ import FeatureBar from "./components/home/FeatureBar";
 import ScrollToTop from "./components/common/ScrollToTop";
 
 export const metadata = {
-  title: "LEO Apparel Prints — Custom Sportswear & Jersey Design",
-  description: "Design premium custom cricket jerseys, football uniforms, and athletic wear for teams and academies. Fast delivery across India.",
+  title:
+    "Custom Sports Wear Manufacturer in Tirupur | Jerseys, Shorts, Lowers, Tracksuits & Team Uniforms",
+
+  description:
+    "LEO CULT is a leading custom sports wear manufacturer in Tirupur, Tamil Nadu, specializing in premium-quality sublimation sportswear, jerseys, shorts, lowers, tracksuits, sports T-shirts, and team uniforms for cricket, football, volleyball, basketball, kabaddi, badminton, schools, colleges, academies, clubs, and corporate events across India.",
+
+  keywords: [
+    "Custom Sports Wear Manufacturer",
+    "Sports Wear Manufacturer Tirupur",
+    "Sports Jersey",
+    "Sports Shorts",
+    "Sports Lowers",
+    "Tracksuits",
+    "Sports Uniform",
+    "Cricket Jersey",
+    "Football Jersey",
+    "Basketball Jersey",
+    "Volleyball Jersey",
+    "Kabaddi Jersey",
+    "LEO CULT",
+  ],
 };
 
 export default function Home() {

@@ -177,10 +177,10 @@ const ContactUs = () => {
       </div>
 
       {/* Fixed Social Media Icons - Bottom Right Corner with React Icons */}
-      <div className="fixed bottom-4 sm:bottom-6 md:bottom-8 right-4 sm:right-6 md:right-8 z-50">
+      <div className="fixed bottom-18 sm:bottom-16 md:bottom-18 right-6 sm:right-6 md:right-7 z-50">
         <div className="flex flex-col space-y-2 sm:space-y-3">
           {/* WhatsApp */}
-          <a
+          {/* <a
             href="https://wa.me/919087149666"
             className="relative w-10 h-10 sm:w-11 sm:h-11 md:w-12 md:h-12 rounded-full flex items-center justify-center transition-all duration-300 hover:scale-110 group overflow-hidden"
             style={{ 
@@ -204,7 +204,7 @@ const ContactUs = () => {
             <span className="absolute right-full mr-2 sm:mr-3 px-2 sm:px-3 py-1 bg-gradient-to-r from-[#25D366] to-[#128C7E] text-white text-xs font-medium rounded-lg opacity-0 group-hover:opacity-100 transition-all duration-300 whitespace-nowrap pointer-events-none shadow-lg transform group-hover:translate-x-0 translate-x-2">
               WhatsApp
             </span>
-          </a>
+          </a> */}
 
           {/* Instagram */}
           <a

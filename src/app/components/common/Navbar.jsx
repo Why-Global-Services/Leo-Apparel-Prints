@@ -1167,7 +1167,7 @@ const RESOURCES_MENU = [
   { name: "Size Guide", href: "/size-guide" },
   { name: "Shipping Info", href: "/shipping-info" },
   { name: "FAQ", href: "/faq" },
-  { name: "Price Estimator", href: "/price-estimator" },
+  // { name: "Price Estimator", href: "/price-estimator" },
   { name: "Catalog", href: "/catalog" },
   { name: "Bulk Orders", href: "/bulk-enquiry" },
 ];
