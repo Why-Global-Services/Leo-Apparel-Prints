@@ -1,6 +1,3 @@
-
-
-
 // import { Poppins, Inter } from "next/font/google";
 // import "@/app/globals.css";
 // import { Providers } from "./providers";
@@ -93,9 +90,6 @@
 //   );
 // }
 
-
-
-
 import { Poppins, Inter } from "next/font/google";
 import "@/app/globals.css";
 import { Providers } from "./providers";
@@ -119,21 +113,29 @@ const inter = Inter({
 });
 
 export const metadata = {
-  metadataBase: new URL("https://www.leocult.com"),
+  metadataBase: new URL("https://leocult.com"),
 
   title: {
-    default: "LEO CULT",
+    default: "LEO CULT | Premium Custom Sportswear",
     template: "%s | LEO CULT",
   },
 
-  description: "Premium custom sportswear manufacturer in Tirupur.",
+  description:
+    "LEO CULT creates premium custom sportswear, teamwear and athletic apparel for athletes, teams and brands.",
 
   keywords: [
-    "Sports Wear",
+    "Custom Sportswear",
     "Sports Jersey",
     "Sports Uniform",
+    "Custom Teamwear",
     "LEO CULT",
+    "Sportswear Manufacturer",
+    "Tirupur Sportswear",
   ],
+
+  alternates: {
+    canonical: "/",
+  },
 
   icons: {
     icon: "/favicon.ico",
@@ -144,6 +146,7 @@ export const metadata = {
     siteName: "LEO CULT",
     locale: "en_IN",
     type: "website",
+    url: "https://leocult.com/",
     images: [
       {
         url: "/og-image.jpg",
@@ -167,7 +170,6 @@ export default function RootLayout({ children }) {
       className={`${poppins.variable} ${inter.variable} h-full antialiased`}
     >
       <body className="min-h-screen flex flex-col bg-background text-foreground font-sans">
-
         {/* Google Sign-In */}
         <Script
           src="https://accounts.google.com/gsi/client"
@@ -188,8 +190,33 @@ export default function RootLayout({ children }) {
             gtag('js', new Date());
 
             gtag('config', 'G-YM3MEXJJ9K');
+            gtag('config', 'G-VH18Z62S5C');
           `}
         </Script>
+
+       {/* Meta Pixel */}
+<Script id="meta-pixel" strategy="afterInteractive">
+  {`
+    !function(f,b,e,v,n,t,s)
+    {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+    n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+    if(!f._fbq)f._fbq=n;
+    n.push=n;
+    n.loaded=!0;
+    n.version='2.0';
+    n.queue=[];
+    t=b.createElement(e);
+    t.async=!0;
+    t.src=v;
+    s=b.getElementsByTagName(e)[0];
+    s.parentNode.insertBefore(t,s)}
+    (window, document, 'script',
+    'https://connect.facebook.net/en_US/fbevents.js');
+
+    fbq('init', '3065772337147675');
+    fbq('track', 'PageView');
+  `}
+</Script>
 
         <Providers>
           <InitInterceptors />
@@ -202,11 +229,8 @@ export default function RootLayout({ children }) {
             }}
           />
 
-          <LayoutWrapper>
-            {children}
-          </LayoutWrapper>
+          <LayoutWrapper>{children}</LayoutWrapper>
         </Providers>
-
       </body>
     </html>
   );

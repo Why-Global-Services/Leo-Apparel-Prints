@@ -81,11 +81,22 @@ import FeatureBar from "./components/home/FeatureBar";
 import ScrollToTop from "./components/common/ScrollToTop";
 
 export const metadata = {
-  title:
-    "Custom Sports Wear Manufacturer in Tirupur | Jerseys, Shorts, Lowers, Tracksuits & Team Uniforms",
+  title: "LEO CULT | Premium Custom Sportswear Manufacturer",
 
   description:
-    "LEO CULT is a leading custom sports wear manufacturer in Tirupur, Tamil Nadu, specializing in premium-quality sublimation sportswear, jerseys, shorts, lowers, tracksuits, sports T-shirts, and team uniforms for cricket, football, volleyball, basketball, kabaddi, badminton, schools, colleges, academies, clubs, and corporate events across India.",
+    "LEO CULT creates premium custom sportswear, jerseys, team uniforms, tracksuits, and athletic apparel for teams, academies, schools, clubs, and brands across India.",
+
+  alternates: {
+    canonical: "/",
+  },
+
+  openGraph: {
+    title: "LEO CULT | Premium Custom Sportswear Manufacturer",
+    description:
+      "Premium custom sportswear, jerseys, team uniforms, tracksuits, and athletic apparel for teams, academies, schools, clubs, and brands across India.",
+    url: "/",
+    type: "website",
+  },
 
   keywords: [
     "Custom Sports Wear Manufacturer",
