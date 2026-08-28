@@ -17,6 +17,7 @@ import Dashboardpage from './pages/Dashboardpage';
 import BulkEnquiriesPage from './pages/BulkEnquiriesPage';
 import TestimonialsPage from './pages/TestimonialsPage';
 import BannerPage from './pages/BannerPage';
+import ShippingCharge from './pages/ShippingCharge';
 
 // Protected Route wrapper
 function ProtectedRoute({ children }) {
@@ -57,6 +58,7 @@ function App() {
           <Route path="bulkenquiries" element={<BulkEnquiriesPage />} />
           <Route path="testimonials" element={<TestimonialsPage />} />
           <Route path="banners" element={<BannerPage />} />
+          <Route path="shipping-charges" element={<ShippingCharge />} />
           <Route path="users" element={<div style={{ padding: '24px', color: 'white' }}>Users Page</div>} />
           <Route path="orders" element={<div style={{ padding: '24px', color: 'white' }}>Orders Page</div>} />
           <Route path="settings" element={<div style={{ padding: '24px', color: 'white' }}>Settings Page</div>} />

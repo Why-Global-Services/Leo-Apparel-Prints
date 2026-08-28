@@ -195,7 +195,7 @@ transition: "all 0.3s ease",
                 </div>
 
                 {/* Settings */}
-                <button
+                {/* <button
                   onClick={() => { setShowProfileMenu(false); navigate("/settings"); }}
                   style={{
                     display: "flex",
@@ -213,7 +213,7 @@ transition: "all 0.3s ease",
                 >
                   <IoSettingsOutline size={18} />
                   <span style={{ fontSize: "13px" }}>Settings</span>
-                </button>
+                </button> */}
 
                 {/* Logout */}
                 <button
