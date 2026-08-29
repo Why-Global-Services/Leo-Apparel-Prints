@@ -1174,12 +1174,12 @@ export default function CartPage() {
                         Calculated at checkout
                       </span>
                     </div>
-                    <div className="flex justify-between text-sm">
+                    {/* <div className="flex justify-between text-sm">
                       <span className="text-gray-600 font-secondary">Tax</span>
                       <span className="font-semibold text-gray-800">
                         Included
                       </span>
-                    </div>
+                    </div> */}
                   </div>
                   <div className="flex justify-between mt-4 pb-4 border-b">
                     <span className="text-lg font-bold text-gray-800 font-primary">

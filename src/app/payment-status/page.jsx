@@ -107,7 +107,7 @@ export default function PaymentStatusPage() {
 
   return (
 
-    <div className="min-h-screen bg-[#f8fafc] flex items-center justify-center px-4">
+    <div className="min-h-screen bg-[#f8fafc] flex items-center justify-center px-4 md:mt-[-50px]">
 
       <div className="bg-white max-w-lg w-full rounded-3xl shadow-xl p-8 text-center">
 
@@ -168,7 +168,7 @@ export default function PaymentStatusPage() {
 
               <button
                 onClick={() => router.push("/products")}
-                className="flex-1 border border-gray-300 hover:bg-gray-100 py-3 rounded-xl font-semibold flex items-center justify-center gap-2 transition"
+                className="flex-1 border border-gray-300 hover:bg-gray-100 py-3 rounded-xl font-semibold flex items-center justify-center gap-2 transition text-black"
               >
                 Continue Shopping
                 <ArrowRight size={18} />
@@ -190,7 +190,7 @@ export default function PaymentStatusPage() {
 
               <button
                 onClick={() => router.push("/cart")}
-                className="flex-1 border border-gray-300 hover:bg-gray-100 py-3 rounded-xl font-semibold flex items-center justify-center gap-2 transition"
+                className="flex-1 border border-gray-300 hover:bg-gray-100 py-3 rounded-xl font-semibold flex items-center justify-center gap-2 transition text-black"
               >
                 Go To Cart
               </button>
