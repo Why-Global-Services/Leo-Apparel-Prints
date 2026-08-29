@@ -14,16 +14,16 @@ const productSchema = new mongoose.Schema(
     },
 
     segment: {
-  type: String,
-},
+      type: String,
+    },
 
-sport: {
-  type: String,
-},
+    sport: {
+      type: String,
+    },
 
-apparel: {
-  type: String,
-},
+    apparel: {
+      type: String,
+    },
 
     categoryId: {
       type: String,
@@ -54,15 +54,15 @@ apparel: {
     ],
 
     allowedPatterns: [
-  {
-    type: String,
-    ref: "PatternDesign",
-  },
-],
+      {
+        type: String,
+        ref: "PatternDesign",
+      },
+    ],
 
-   customFields: { type: mongoose.Schema.Types.Mixed, default: [] },
-    printZones:   { type: mongoose.Schema.Types.Mixed, default: {} },
-    
+    customFields: { type: mongoose.Schema.Types.Mixed, default: [] },
+    printZones: { type: mongoose.Schema.Types.Mixed, default: {} },
+
     basePrice: {
       type: Number,
       default: 0,
@@ -82,6 +82,25 @@ apparel: {
     finalPrice: {
       type: Number,
       default: 0,
+    },
+
+    shipping: {
+      weight: {
+        type: Number,
+        default: 0, // grams
+      },
+      length: {
+        type: Number,
+        default: 0, // cm
+      },
+      breadth: {
+        type: Number,
+        default: 0, // cm
+      },
+      height: {
+        type: Number,
+        default: 0, // cm
+      },
     },
 
     isActive: {

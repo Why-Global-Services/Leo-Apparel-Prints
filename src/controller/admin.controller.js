@@ -6,6 +6,7 @@ const {
   getAllUserQueries,
 } = require("../services/admin Services/userQueries/userQueries.JS");
 const adminService = require("../services/admin.service");
+const { createOrUpdateShippingCharge,getShippingCharge } = require( "../services/admin Services/shippingCharge/shippingCharge.service");
 
 
 
@@ -756,6 +757,17 @@ const getBulkEnquiries = catchAsync(async (req, res) => {
   res.status(200).send(data);
 });
 
+const CreateOrUpdateShippingCharge = catchAsync(async (req, res) => {
+    const data = await createOrUpdateShippingCharge(req);
+    res.status(200).send(data);
+  });
+
+
+const GetShippingCharge = catchAsync(async (req, res) => {
+    const data = await getShippingCharge();
+  res.status(200).send(data);
+  });
+
 
 module.exports = {
   GetAllUserQueries,
@@ -900,6 +912,8 @@ module.exports = {
 
   getUsersWithCustomizations,
   getBulkEnquiries,
-  getFilterOptions
+  getFilterOptions,
+  CreateOrUpdateShippingCharge,
+  GetShippingCharge
 
 };

@@ -69,8 +69,8 @@ const orderDetailsSchema = new mongoose.Schema(
               {
                 size: { type: String },
                 quantity: { type: Number },
-                _id: false
-              }
+                _id: false,
+              },
             ],
             price: {
               type: Number,
@@ -115,7 +115,13 @@ const orderDetailsSchema = new mongoose.Schema(
             },
             returnStatus: {
               type: String,
-              enum: ["Request", "In Process", "Approved", "Rejected", "Cancelled"],
+              enum: [
+                "Request",
+                "In Process",
+                "Approved",
+                "Rejected",
+                "Cancelled",
+              ],
               default: null,
             },
             returnReason: {
@@ -145,6 +151,10 @@ const orderDetailsSchema = new mongoose.Schema(
           required: true,
         },
         discount: {
+          type: Number,
+          default: 0,
+        },
+        shippingCharge: {
           type: Number,
           default: 0,
         },
@@ -209,9 +219,9 @@ const orderDetailsSchema = new mongoose.Schema(
       type: String,
       default: null,
     },
-    deliveryDays:{
+    deliveryDays: {
       type: Number,
-        default: 0,
+      default: 0,
     },
     deliveryAddress: {
       type: AddressSchema,
@@ -220,6 +230,48 @@ const orderDetailsSchema = new mongoose.Schema(
     billingAddress: {
       type: AddressSchema,
       required: true,
+    },
+
+    shiprocket: {
+      orderId: {
+        type: String,
+        default: null,
+      },
+
+      shipmentId: {
+        type: String,
+        default: null,
+      },
+
+      awbCode: {
+        type: String,
+        default: null,
+      },
+
+      courierId: {
+        type: Number,
+        default: null,
+      },
+
+      courierName: {
+        type: String,
+        default: null,
+      },
+
+      status: {
+        type: String,
+        default: null,
+      },
+
+      trackingUrl: {
+        type: String,
+        default: null,
+      },
+
+      createdAt: {
+        type: Date,
+        default: null,
+      },
     },
 
     // ✅ UPDATED: Proper TTL implementation
@@ -246,7 +298,7 @@ const orderDetailsSchema = new mongoose.Schema(
   {
     timestamps: true,
     collection: "orders",
-  }
+  },
 );
 
 // ✅ CRITICAL: Create TTL index for automatic deletion
@@ -258,7 +310,7 @@ orderDetailsSchema.index(
       orderStatus: "Pending", // Only apply to pending orders
       expiresAt: { $exists: true }, // Only if expiresAt exists
     },
-  }
+  },
 );
 
 // ✅ Additional indexes for performance

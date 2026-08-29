@@ -478,5 +478,7 @@ AdminRouter.put(
 );
 AdminRouter.patch("/heroBanner/:id/toggle", heroBannerController.toggleHeroBanner);
 AdminRouter.delete("/heroBanner/:id", heroBannerController.deleteHeroBanner);
+AdminRouter.route("/shipping-charge").post( adminController.CreateOrUpdateShippingCharge);
+AdminRouter.route("/shipping-charge").get( adminController.GetShippingCharge);
 
 module.exports = AdminRouter;

@@ -3,6 +3,7 @@ const { User } = require("../../models/users.model");
 const { getCart } = require("./Cart/cart.service");
 const ApiError = require("../../utils/apiError");
 const Product = require("../../models/Product.model");
+const { calculateShippingCharge } = require("../../services/admin Services/shippingCharge/shippingCharge.service");
 
 // ==============================
 // MAIN CHECKOUT SERVICE
@@ -145,13 +146,10 @@ const checkOut = async (req) => {
   // ==============================
   // SHIPPING
   // ==============================
-  let shippingCharge = 50;
+ 
+const shippingCharge = await calculateShippingCharge(totalSalePrice);
 
-  if (totalSalePrice >= 999) {
-    shippingCharge = 0;
-  }
-
-  const finalTotal = totalSalePrice + shippingCharge;
+const finalTotal = totalSalePrice + shippingCharge;
 
   // ==============================
   // FINAL RESPONSE
