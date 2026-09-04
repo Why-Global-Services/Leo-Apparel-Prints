@@ -6,6 +6,8 @@ import { useEffect } from "react";
 import { fetchAddresses, addAddress, deleteAddress, updateAddress } from "@/features/user/userThunks";
 import AddAddressModal from "./AddAddressModal";
 
+const EMPTY_ADDRESSES = [];
+
 const TYPE_ICONS = { HOME: Home, OFFICE: Building };
 const TYPE_LABELS = { HOME: "Home", OFFICE: "Office" };
 
@@ -93,7 +95,7 @@ export default function Address() {
   const dispatch = useDispatch();
   
   // ✅ Get addresses from Redux store - this will update when data changes
-  const addresses = useSelector((state) => state.user?.addresses?.address || []);
+  const addresses = useSelector((state) => state.user?.addresses ?? EMPTY_ADDRESSES);
   const user = useSelector((state) => state.auth?.user);
 
   console.log("address",addresses)

@@ -14,6 +14,9 @@ import { toast } from "react-hot-toast";
 import axios from "axios";
 import axiosClient from "../../lib/axios"
 
+const EMPTY_ADDRESSES = [];
+const selectCheckoutAddresses = (state) => state.user?.addresses ?? EMPTY_ADDRESSES;
+
 const C = {
   blue: "#003E9B",
   blueDark: "#002a6e",
@@ -186,14 +189,16 @@ export default function CheckoutPage() {
   // Get data from Redux
   const user = useSelector((state) => state.auth?.user);
   const { checkoutData, loading: checkoutLoading, error: checkoutError } = useSelector((state) => state.checkout);
-  const addressesRedux = useSelector((state) => state.user?.addresses?.address || []);
+  const addressesRedux = useSelector(selectCheckoutAddresses);
 
   // Get cart items from checkout data or direct from cart
   const cartItems = checkoutData?.cartItems || [];
   const summary = checkoutData?.pricing || { subtotal: 0, shipping: 0, total: 0, savings: 0 };
 
 
-  const safeAddresses = Array.isArray(addressesRedux) && addressesRedux.length > 0 ? addressesRedux : (Array.isArray(user?.address) ? user.address : []);
+  const safeAddresses = addressesRedux.length > 0
+    ? addressesRedux
+    : (Array.isArray(user?.address) ? user.address : EMPTY_ADDRESSES);
   const billingAddresses = safeAddresses.filter(a => a?.checkoutAddress === "billingAddress");
   const deliveryAddresses = safeAddresses.filter(a => a?.checkoutAddress === "deliveryAddress");
   const primaryBilling = billingAddresses.find(a => a?.isPrimary) || billingAddresses[0];
@@ -309,144 +314,477 @@ export default function CheckoutPage() {
     setSelectedDelivery(next ? selectedBilling : (primaryDelivery || null));
   };
 
+  // const handlePlaceOrder = async () => {
+  //   if (!selectedBilling) {
+  //     alert("Please select a billing address");
+  //     return;
+  //   }
+  //   if (!useSameAsBilling && !selectedDelivery) {
+  //     alert("Please select a delivery address");
+  //     return;
+  //   }
+
+  //   const orderData = {
+  //     billingAddress: selectedBilling,
+  //     deliveryAddress: useSameAsBilling ? selectedBilling : selectedDelivery,
+  //     paymentMethod,
+  //     totalAmount: summary.total,
+  //     deliveryDays: Number(deliveryDays) || 0,
+  //   };
+
+  //   try {
+  //     if (!window.Razorpay) {
+  //       toast.error("Payment gateway is still loading. Please try again.");
+  //       return;
+  //     }
+
+  //     console.log("ORDER DATA:", orderData);
+
+  //     const result = await dispatch(placeOrder(orderData)).unwrap();
+
+  //     console.log("ORDER RESULT:", result);
+
+  //     const razorpayOrder =
+  //       result?.data?.razorpayOrder ||
+  //       result?.razorpayOrder;
+
+  //     const userOrder = result?.data?.userOrder || result?.userOrder; console.log("USER ORDER:", userOrder);
+
+  //     console.log("USER ORDER:", userOrder);
+
+  //     if (!razorpayOrder) {
+  //       alert("Razorpay order not found");
+  //       return;
+  //     }
+
+  //     const options = {
+
+  //       key: process.env.NEXT_PUBLIC_RAZORPAY_KEY,
+
+  //       amount: razorpayOrder.amount,
+
+  //       currency: razorpayOrder.currency,
+
+  //       name: "Leo Cult",
+
+  //       description: "Custom Sports Wear",
+
+  //       order_id: razorpayOrder.id,
+
+  //       handler: async function (response) {
+
+  //         console.log("PAYMENT SUCCESS:", response);
+
+  //         try {
+
+  //           const token = localStorage.getItem("token");
+
+  //           const verifyRes = await axios.post(
+
+  //             `${process.env.NEXT_PUBLIC_API_URL}/v1/user/verifyPayment/${userOrder._id}`,
+
+  //             {
+  //               response,
+  //             },
+
+  //             {
+  //               headers: {
+  //                 Authorization: `Bearer ${token}`,
+  //               },
+  //             }
+
+  //           );
+
+  //           console.log("VERIFY RESPONSE:", verifyRes.data);
+  //           await axiosClient.put(`/v1/user/editOrders/${userOrder.orderId}`,{status:"Ordered"})
+  //           toast.success("Payment Successful!");
+
+  //           router.push(`/payment-status?status=success&orderId=${userOrder.orderId}`);
+
+  //         } catch (err) {
+
+  //           console.error("VERIFY ERROR:", err.response?.data || err);
+
+  //           toast.error("Payment verification failed");
+
+  //         }
+  //       },
+
+  //       modal: {
+  //         ondismiss: function () {
+
+  //           router.push(
+  //             `/payment-status?status=cancelled&orderId=${(result.data?.userOrder || result.userOrder).orderId}`
+  //           );
+  //         },
+  //       },
+
+  //       prefill: {
+  //         name: user?.name || "Customer",
+  //         email: user?.email || "",
+  //         contact: user?.phoneNumber || "",
+  //       },
+
+  //       theme: {
+  //         color: "#003E9B",
+  //       },
+  //     };
+
+
+  //     const razor = new window.Razorpay(options);
+
+  //     razor.on("payment.failed", function (response) {
+
+  //       console.log("❌ PAYMENT FAILED:", response);
+
+  //       console.log("❌ ERROR:", response.error);
+
+  //       alert(response.error.description || "Payment Failed");
+  //     });
+
+  //     console.log("OPENING RAZORPAY");
+
+  //     razor.open();
+
+  //   } catch (error) {
+  //     console.error("PLACE ORDER ERROR:", error);
+
+  //     alert(error?.message || "Failed to place order");
+  //   }
+  // };
+
   const handlePlaceOrder = async () => {
-    if (!selectedBilling) {
-      alert("Please select a billing address");
-      return;
-    }
-    if (!useSameAsBilling && !selectedDelivery) {
-      alert("Please select a delivery address");
+  // ========================================
+  // VALIDATE BILLING ADDRESS
+  // ========================================
+
+  if (!selectedBilling) {
+    alert("Please select a billing address");
+    return;
+  }
+
+  // ========================================
+  // VALIDATE DELIVERY ADDRESS
+  // ========================================
+
+  if (!useSameAsBilling && !selectedDelivery) {
+    alert("Please select a delivery address");
+    return;
+  }
+
+  // ========================================
+  // ORDER DATA
+  // ========================================
+
+  const orderData = {
+    billingAddress: selectedBilling,
+
+    deliveryAddress: useSameAsBilling
+      ? selectedBilling
+      : selectedDelivery,
+
+    paymentMethod,
+
+    totalAmount: summary.total,
+
+    deliveryDays: Number(deliveryDays) || 0,
+  };
+
+  try {
+    console.log("====================================");
+    console.log("ORDER DATA:", orderData);
+    console.log("PAYMENT METHOD:", paymentMethod);
+    console.log("====================================");
+
+    // ========================================
+    // CREATE ORDER
+    // ========================================
+
+    const result = await dispatch(
+      placeOrder(orderData)
+    ).unwrap();
+
+    console.log("ORDER RESULT:", result);
+
+    // ========================================
+    // GET CREATED USER ORDER
+    // ========================================
+
+    const userOrder =
+      result?.data?.userOrder ||
+      result?.userOrder;
+
+    console.log("USER ORDER:", userOrder);
+
+    if (!userOrder) {
+      console.error("User order not found:", result);
+      toast.error("Order information not found");
       return;
     }
 
-    const orderData = {
-      billingAddress: selectedBilling,
-      deliveryAddress: useSameAsBilling ? selectedBilling : selectedDelivery,
-      paymentMethod,
-      totalAmount: summary.total,
-      deliveryDays: Number(deliveryDays) || 0,
+    // ========================================
+    // COD FLOW
+    // ========================================
+
+    if (paymentMethod === "COD") {
+      console.log("💵 COD ORDER");
+
+      toast.success("Order placed successfully!");
+
+      router.push(
+        `/payment-status?status=success&orderId=${userOrder.orderId}`
+      );
+
+      return;
+    }
+
+    // ========================================
+    // RAZORPAY FLOW
+    // ========================================
+
+    console.log("💳 RAZORPAY PAYMENT");
+
+    // Check Razorpay script
+    if (!window.Razorpay) {
+      console.error("Razorpay SDK not loaded");
+
+      toast.error(
+        "Payment gateway is still loading. Please try again."
+      );
+
+      return;
+    }
+
+    // ========================================
+    // GET RAZORPAY ORDER
+    // ========================================
+
+    const razorpayOrder =
+      result?.data?.razorpayOrder ||
+      result?.razorpayOrder;
+
+    console.log("RAZORPAY ORDER:", razorpayOrder);
+
+    if (!razorpayOrder) {
+      console.error(
+        "Razorpay order not found:",
+        result
+      );
+
+      toast.error("Razorpay order not found");
+
+      return;
+    }
+
+    // ========================================
+    // RAZORPAY OPTIONS
+    // ========================================
+
+    const options = {
+      key: process.env.NEXT_PUBLIC_RAZORPAY_KEY,
+
+      amount: razorpayOrder.amount,
+
+      currency:
+        razorpayOrder.currency || "INR",
+
+      name: "Leo Cult",
+
+      description: "Custom Sports Wear",
+
+      order_id: razorpayOrder.id,
+
+      // ======================================
+      // PAYMENT SUCCESS
+      // ======================================
+
+      handler: async function (response) {
+        console.log(
+          "✅ PAYMENT SUCCESS:",
+          response
+        );
+
+        try {
+          const token =
+            localStorage.getItem("token");
+
+          // ====================================
+          // VERIFY PAYMENT
+          // ====================================
+
+          const verifyRes = await axios.post(
+            `${process.env.NEXT_PUBLIC_API_URL}/v1/user/verifyPayment/${userOrder._id}`,
+            {
+              response,
+            },
+            {
+              headers: {
+                Authorization: `Bearer ${token}`,
+              },
+            }
+          );
+
+          console.log(
+            "VERIFY RESPONSE:",
+            verifyRes.data
+          );
+
+          // ====================================
+          // UPDATE ORDER STATUS
+          // ====================================
+
+          await axiosClient.put(
+            `/v1/user/editOrders/${userOrder.orderId}`,
+            {
+              status: "Ordered",
+            }
+          );
+
+          // ====================================
+          // SUCCESS
+          // ====================================
+
+          toast.success(
+            "Payment Successful!"
+          );
+
+          router.push(
+            `/payment-status?status=success&orderId=${userOrder.orderId}`
+          );
+
+        } catch (err) {
+          console.error(
+            "❌ VERIFY ERROR:",
+            err.response?.data || err
+          );
+
+          toast.error(
+            "Payment verification failed"
+          );
+        }
+      },
+
+      // ========================================
+      // RAZORPAY POPUP CLOSED
+      // ========================================
+
+      modal: {
+        ondismiss: function () {
+          console.log(
+            "⚠️ Razorpay popup closed"
+          );
+
+          router.push(
+            `/payment-status?status=cancelled&orderId=${userOrder.orderId}`
+          );
+        },
+      },
+
+      // ========================================
+      // CUSTOMER DETAILS
+      // ========================================
+
+      prefill: {
+        name:
+          user?.name ||
+          selectedBilling?.fullName ||
+          "Customer",
+
+        email:
+          user?.email || "",
+
+        contact:
+          user?.phoneNumber ||
+          selectedBilling?.phone ||
+          "",
+      },
+
+      // ========================================
+      // RAZORPAY THEME
+      // ========================================
+
+      theme: {
+        color: "#003E9B",
+      },
     };
 
-    try {
-      if (!window.Razorpay) {
-        toast.error("Payment gateway is still loading. Please try again.");
-        return;
+    // ========================================
+    // DEBUG
+    // ========================================
+
+    console.log(
+      "RAZORPAY KEY:",
+      process.env.NEXT_PUBLIC_RAZORPAY_KEY
+    );
+
+    console.log(
+      "RAZORPAY OPTIONS:",
+      options
+    );
+
+    // ========================================
+    // CREATE RAZORPAY INSTANCE
+    // ========================================
+
+    const razor = new window.Razorpay(
+      options
+    );
+
+    // ========================================
+    // PAYMENT FAILED
+    // ========================================
+
+    razor.on(
+      "payment.failed",
+      function (response) {
+        console.error(
+          "❌ PAYMENT FAILED:",
+          response
+        );
+
+        console.error(
+          "❌ PAYMENT ERROR:",
+          response.error
+        );
+
+        toast.error(
+          response.error?.description ||
+            "Payment Failed"
+        );
       }
+    );
 
-      console.log("ORDER DATA:", orderData);
+    // ========================================
+    // OPEN RAZORPAY
+    // ========================================
 
-      const result = await dispatch(placeOrder(orderData)).unwrap();
+    console.log(
+      "🚀 OPENING RAZORPAY POPUP"
+    );
 
-      console.log("ORDER RESULT:", result);
+    razor.open();
 
-      const razorpayOrder =
-        result?.data?.razorpayOrder ||
-        result?.razorpayOrder;
+  } catch (error) {
+    // ========================================
+    // ORDER ERROR
+    // ========================================
 
-      const userOrder = result?.data?.userOrder || result?.userOrder; console.log("USER ORDER:", userOrder);
+    console.error(
+      "❌ PLACE ORDER ERROR:",
+      error
+    );
 
-      console.log("USER ORDER:", userOrder);
+    console.error(
+      "❌ ERROR RESPONSE:",
+      error?.response?.data
+    );
 
-      if (!razorpayOrder) {
-        alert("Razorpay order not found");
-        return;
-      }
-
-      const options = {
-
-        key: process.env.NEXT_PUBLIC_RAZORPAY_KEY,
-
-        amount: razorpayOrder.amount,
-
-        currency: razorpayOrder.currency,
-
-        name: "Leo Cult",
-
-        description: "Custom Sports Wear",
-
-        order_id: razorpayOrder.id,
-
-        handler: async function (response) {
-
-          console.log("PAYMENT SUCCESS:", response);
-
-          try {
-
-            const token = localStorage.getItem("token");
-
-            const verifyRes = await axios.post(
-
-              `${process.env.NEXT_PUBLIC_API_URL}/v1/user/verifyPayment/${userOrder._id}`,
-
-              {
-                response,
-              },
-
-              {
-                headers: {
-                  Authorization: `Bearer ${token}`,
-                },
-              }
-
-            );
-
-            console.log("VERIFY RESPONSE:", verifyRes.data);
-            await axiosClient.put(`/v1/user/editOrders/${userOrder.orderId}`,{status:"Ordered"})
-            toast.success("Payment Successful!");
-
-            router.push(`/payment-status?status=success&orderId=${userOrder.orderId}`);
-
-          } catch (err) {
-
-            console.error("VERIFY ERROR:", err.response?.data || err);
-
-            toast.error("Payment verification failed");
-
-          }
-        },
-
-        modal: {
-          ondismiss: function () {
-
-            router.push(
-              `/payment-status?status=cancelled&orderId=${(result.data?.userOrder || result.userOrder).orderId}`
-            );
-          },
-        },
-
-        prefill: {
-          name: user?.name || "Customer",
-          email: user?.email || "",
-          contact: user?.phoneNumber || "",
-        },
-
-        theme: {
-          color: "#003E9B",
-        },
-      };
-
-
-      const razor = new window.Razorpay(options);
-
-      razor.on("payment.failed", function (response) {
-
-        console.log("❌ PAYMENT FAILED:", response);
-
-        console.log("❌ ERROR:", response.error);
-
-        alert(response.error.description || "Payment Failed");
-      });
-
-      console.log("OPENING RAZORPAY");
-
-      razor.open();
-
-    } catch (error) {
-      console.error("PLACE ORDER ERROR:", error);
-
-      alert(error?.message || "Failed to place order");
-    }
-  };
+    toast.error(
+      error?.message ||
+        "Failed to place order"
+    );
+  }
+};
 
   if (!mounted || (loading && !checkoutData)) {
     return (
@@ -802,6 +1140,137 @@ export default function CheckoutPage() {
                   <span style={{ fontSize: 14, fontWeight: 700, color: C.textDark }}>Total</span>
                   <span style={{ fontSize: 22, fontWeight: 800, color: C.blue }}>₹{summary.total?.toLocaleString() || 0}</span>
                 </div>
+
+                {/* Payment Method */}
+<div style={{ marginTop: 20 }}>
+  <h3
+    style={{
+      fontSize: 15,
+      fontWeight: 700,
+      color: C.textDark,
+      marginBottom: 12,
+    }}
+  >
+    Payment Method
+  </h3>
+
+  <div
+    style={{
+      display: "flex",
+      flexDirection: "column",
+      gap: 10,
+    }}
+  >
+    {/* Razorpay */}
+    <label
+      style={{
+        display: "flex",
+        alignItems: "center",
+        gap: 12,
+        padding: "14px",
+        border: `1px solid ${
+          paymentMethod === "RazorPay" ? C.blue : "#E5E7EB"
+        }`,
+        borderRadius: 10,
+        cursor: "pointer",
+        background:
+          paymentMethod === "RazorPay" ? "#F5F9FF" : C.white,
+      }}
+    >
+      <input
+        type="radio"
+        name="paymentMethod"
+        value="RazorPay"
+        checked={paymentMethod === "RazorPay"}
+        onChange={(e) => setPaymentMethod(e.target.value)}
+      />
+
+      <CreditCard size={20} color={C.blue} />
+
+      <div>
+        <div
+          style={{
+            fontSize: 14,
+            fontWeight: 700,
+            color: C.textDark,
+          }}
+        >
+          Online Payment
+        </div>
+
+        <div
+          style={{
+            fontSize: 12,
+            color: C.textLight,
+            marginTop: 2,
+          }}
+        >
+          Pay securely using Razorpay
+        </div>
+      </div>
+    </label>
+
+    {/* COD */}
+    <label
+      style={{
+        display: "flex",
+        alignItems: "center",
+        gap: 12,
+        padding: "14px",
+        border: `1px solid ${
+          paymentMethod === "COD" ? C.blue : "#E5E7EB"
+        }`,
+        borderRadius: 10,
+        cursor: "pointer",
+        background:
+          paymentMethod === "COD" ? "#F5F9FF" : C.white,
+      }}
+    >
+      <input
+        type="radio"
+        name="paymentMethod"
+        value="COD"
+        checked={paymentMethod === "COD"}
+        onChange={(e) => setPaymentMethod(e.target.value)}
+      />
+
+      <span
+        style={{
+          width: 20,
+          height: 20,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          fontSize: 16,
+        }}
+      >
+        💵
+      </span>
+
+      <div>
+        <div
+          style={{
+            fontSize: 14,
+            fontWeight: 700,
+            color: C.textDark,
+          }}
+        >
+          Cash on Delivery
+        </div>
+
+        <div
+          style={{
+            fontSize: 12,
+            color: C.textLight,
+            marginTop: 2,
+          }}
+        >
+          Pay when your order is delivered
+        </div>
+      </div>
+    </label>
+  </div>
+</div>
 
 
                 {/* Place Order button */}

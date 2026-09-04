@@ -170,6 +170,35 @@ export default function RootLayout({ children }) {
       className={`${poppins.variable} ${inter.variable} h-full antialiased`}
     >
       <body className="min-h-screen flex flex-col bg-background text-foreground font-sans">
+        {/* ADD GTM NOSCRIPT HERE — FIRST THING INSIDE BODY */}
+        <noscript>
+          <iframe
+            src="https://www.googletagmanager.com/ns.html?id=GTM-NXTBQBDD"
+            height="0"
+            width="0"
+            style={{
+              display: "none",
+              visibility: "hidden",
+            }}
+          />
+        </noscript>
+
+        {/* ADD GTM SCRIPT HERE */}
+        <Script id="google-tag-manager" strategy="afterInteractive">
+          {`
+            (function(w,d,s,l,i){
+              w[l]=w[l]||[];
+              w[l].push({'gtm.start': new Date().getTime(),event:'gtm.js'});
+              var f=d.getElementsByTagName(s)[0],
+              j=d.createElement(s),
+              dl=l!='dataLayer'?'&l='+l:'';
+              j.async=true;
+              j.src='https://www.googletagmanager.com/gtm.js?id='+i+dl;
+              f.parentNode.insertBefore(j,f);
+            })(window,document,'script','dataLayer','GTM-NXTBQBDD');
+          `}
+        </Script>
+
         {/* Google Sign-In */}
         <Script
           src="https://accounts.google.com/gsi/client"
@@ -194,9 +223,9 @@ export default function RootLayout({ children }) {
           `}
         </Script>
 
-       {/* Meta Pixel */}
-<Script id="meta-pixel" strategy="afterInteractive">
-  {`
+        {/* Meta Pixel */}
+        <Script id="meta-pixel" strategy="afterInteractive">
+          {`
     !function(f,b,e,v,n,t,s)
     {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
     n.callMethod.apply(n,arguments):n.queue.push(arguments)};
@@ -216,7 +245,7 @@ export default function RootLayout({ children }) {
     fbq('init', '3065772337147675');
     fbq('track', 'PageView');
   `}
-</Script>
+        </Script>
 
         <Providers>
           <InitInterceptors />

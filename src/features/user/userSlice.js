@@ -5,6 +5,12 @@ const initialState = {
   addresses: [],
 };
 
+const getAddressesFromResponse = (payload) => {
+  const data = payload?.data ?? payload;
+  if (Array.isArray(data)) return data;
+  return Array.isArray(data?.address) ? data.address : [];
+};
+
 const userSlice = createSlice({
   name: "user",
   initialState,
@@ -12,15 +18,15 @@ const userSlice = createSlice({
  extraReducers: (builder) => {
   builder
     .addCase(fetchAddresses.fulfilled, (state, action) => {
-      state.addresses = action.payload.data || [];
+      state.addresses = getAddressesFromResponse(action.payload);
     })
 
     .addCase(updateAddress.fulfilled, (state, action) => {
-      state.addresses = action.payload.data;
+      state.addresses = getAddressesFromResponse(action.payload);
     })
 
     .addCase(deleteAddress.fulfilled, (state, action) => {
-      state.addresses = action.payload.data;
+      state.addresses = getAddressesFromResponse(action.payload);
     });
 }
   

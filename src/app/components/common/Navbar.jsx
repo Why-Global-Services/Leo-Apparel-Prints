@@ -763,7 +763,7 @@
 
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useSyncExternalStore } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import Link from "next/link";
 import Image from "next/image";
@@ -771,6 +771,8 @@ import { ChevronDown, Menu, X, User, ShoppingCart } from "lucide-react";
 import { useSelector, useDispatch } from "react-redux";
 import AuthModal from "@/app/components/auth/AuthModal";
 import { fetchCart } from "@/features/cart/cartThunks";
+
+const EMPTY_CART_ITEMS = [];
 
 // ─── Data ───────────────────────────────────────────────────────────────────
 
@@ -1390,14 +1392,6 @@ function Tooltip({
   text,
   position = "bottom",
 }) {
-
-  const [mounted, setMounted] =
-    useState(false);
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
-
   const positionClasses = {
     bottom:
       "top-full mt-2 left-1/2 -translate-x-1/2",
@@ -1416,22 +1410,9 @@ function Tooltip({
         z-20 hidden md:block
       `}
     >
-      {mounted && (
-        <div
-          className="
-            relative px-3 py-1.5
-            text-xs font-medium
-            text-white rounded-lg
-            bg-gradient-to-r
-            from-blue-600 to-blue-800
-            shadow-xl backdrop-blur-md
-            whitespace-nowrap
-            opacity-0 group-hover:opacity-100
-            translate-y-1
-            group-hover:translate-y-0
-            transition-all duration-300
-          "
-        >
+      <div
+        className="relative px-3 py-1.5 text-xs font-medium text-white rounded-lg bg-gradient-to-r from-blue-600 to-blue-800 shadow-xl backdrop-blur-md whitespace-nowrap opacity-0 group-hover:opacity-100 translate-y-1 group-hover:translate-y-0 transition-all duration-300"
+      >
           {text}
 
           <div
@@ -1446,8 +1427,7 @@ function Tooltip({
               }
             `}
           />
-        </div>
-      )}
+      </div>
     </div>
   );
 }
@@ -1465,15 +1445,25 @@ export default function Navbar() {
   const leaveTimer = useRef(null);
   const headerRef = useRef(null);
   const { user } = useSelector((state) => state.auth);
-  const cartItems = useSelector((state) => state.cart?.items || []);
-  const cartItemCount = cartItems.length; const [mounted, setMounted] =
-    useState(false);
+  const cartItems = useSelector((state) => state.cart?.items || EMPTY_CART_ITEMS);
+  const cartItemCount = cartItems.length;
+  const mounted = useSyncExternalStore(
+    () => () => {},
+    () => true,
+    () => false,
+  );
+  const showAuthenticatedUi = mounted && Boolean(user);
 
 useEffect(() => {
-  setMounted(true);
   dispatch(fetchCart());
 }, [dispatch]);
 
+  const handleAccountClick = (event) => {
+    if (!showAuthenticatedUi) {
+      event.preventDefault();
+      openAuthModal("login");
+    }
+  };
 
   const openAuthModal = (mode = "login") => {
     setAuthModalMode(mode);
@@ -1579,27 +1569,16 @@ useEffect(() => {
           <div className="hidden lg:flex items-center gap-2">
             {/* Profile Button */}
             <div className="relative group">
-              {user ? (
-                <Link href="/account">
-                  <motion.button
-                    whileHover={{ scale: 1.1 }}
-                    whileTap={{ scale: 0.95 }}
-                    className="p-2.5 text-gray-600 hover:text-primary rounded-full transition-all duration-300"
-                  >
-                    <User size={26} strokeWidth={1.7} />
-                  </motion.button>
-                </Link>
-              ) : (
-                <motion.button
+              <Link href="/account" onClick={handleAccountClick}>
+                <motion.span
                   whileHover={{ scale: 1.1 }}
                   whileTap={{ scale: 0.95 }}
-                  onClick={() => openAuthModal("login")}
-                  className="p-2.5 text-gray-600 hover:text-primary rounded-full transition-all duration-300"
+                  className="inline-flex p-2.5 text-gray-600 hover:text-primary rounded-full transition-all duration-300"
                 >
                   <User size={26} strokeWidth={1.7} />
-                </motion.button>
-              )}
-              <Tooltip text={user ? "My Account" : "Login / Sign Up"} position="bottom" />
+                </motion.span>
+              </Link>
+              <Tooltip text={showAuthenticatedUi ? "My Account" : "Login / Sign Up"} position="bottom" />
             </div>
 
             {/* Cart Button */}
@@ -1672,26 +1651,17 @@ useEffect(() => {
   <MobileItem key={item.id} item={item} onNavigate={() => setMobileOpen(false)} />
 ))}
                 <div className="pt-4 space-y-3">
-                  {user ? (
-                    <Link
-                      href="/account"
-                      className="flex items-center justify-center gap-2 w-full py-3 border border-gray-200 rounded-lg text-gray-700 font-medium text-sm hover:border-primary hover:text-primary font-primary"
-                    >
-                      <User size={18} />
-                      My Account
-                    </Link>
-                  ) : (
-                    <button
-                      onClick={() => {
-                        openAuthModal("login");
-                        setMobileOpen(false);
-                      }}
-                      className="flex items-center justify-center gap-2 w-full py-3 border border-gray-200 rounded-lg text-gray-700 font-medium text-sm hover:border-primary hover:text-primary font-primary"
-                    >
-                      <User size={18} />
-                      Login / Sign Up
-                    </button>
-                  )}
+                  <Link
+                    href="/account"
+                    onClick={(event) => {
+                      handleAccountClick(event);
+                      setMobileOpen(false);
+                    }}
+                    className="flex items-center justify-center gap-2 w-full py-3 border border-gray-200 rounded-lg text-gray-700 font-medium text-sm hover:border-primary hover:text-primary font-primary"
+                  >
+                    <User size={18} />
+                    Account
+                  </Link>
                   <Link
                     href="/cart"
                     onClick={() => setMobileOpen(false)}
