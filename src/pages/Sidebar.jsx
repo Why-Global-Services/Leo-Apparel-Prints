@@ -57,6 +57,7 @@ export default function Sidebar({ collapsed, setCollapsed }) {
       name: "Template Zone",
       icon: <IoLayersOutline size={20} />,
     },
+    
     {
       path: "/products",
       name: "Products",
@@ -87,6 +88,7 @@ export default function Sidebar({ collapsed, setCollapsed }) {
       name: "Testimonials",
       icon: <IoStarOutline size={20} />,
     },
+
   
   ];
 

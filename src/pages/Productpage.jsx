@@ -1109,6 +1109,8 @@ export default function ProductPage() {
   const [backImagePreview, setBackImagePreview] = useState(null);
   const [existingFrontImage, setExistingFrontImage] = useState("");
   const [existingBackImage, setExistingBackImage] = useState("");
+  const [categoryFilter, setCategoryFilter] = useState("");
+const [customizationFilter, setCustomizationFilter] = useState("");
 
   const [formData, setFormData] = useState({
     name: "",
@@ -1121,6 +1123,9 @@ export default function ProductPage() {
     segment: "",
     sport: "",
     apparel: "",
+    customizationType: "NONE",
+    cottonTeeType: "OUR_DESIGN",
+    baseColor: "",
     discountType: "percentage",
     discountValue: "",
     customFields: [],
@@ -1363,11 +1368,14 @@ export default function ProductPage() {
       segment: "",
       sport: "",
       apparel: "",
+      customizationType: "NONE",
+      cottonTeeType: "OUR_DESIGN",
+      baseColor: "",
       discountType: "percentage",
       discountValue: "",
       allowedPatterns: [],
       customFields: [],
-      printZones: { front: DEFAULT_ZONES.front, back: DEFAULT_ZONES.back }
+      printZones: { front: [], back: [] }
     });
     setEditingProduct(null);
   };
@@ -1376,6 +1384,21 @@ export default function ProductPage() {
     if (!formData.name || !formData.categoryId) {
       showAlert("Product name and category are required");
       return;
+    }
+
+    if (formData.customizationType === "CUSTOM_COTTON_TEES") {
+      if (!formData.apparel || (!frontImage && !existingFrontImage) || (!backImage && !existingBackImage)) {
+        showAlert("Custom Cotton Tees require apparel, front image, and back image");
+        return;
+      }
+      if (formData.cottonTeeType === "UPLOAD_DESIGN" && !formData.baseColor.trim()) {
+        showAlert("Base color is required for Upload Design");
+        return;
+      }
+      if (formData.basePrice === "" || Number(formData.basePrice) < 0) {
+        showAlert("A valid product price is required for Custom Cotton Tees");
+        return;
+      }
     }
 
     setUploading(true);
@@ -1395,6 +1418,11 @@ export default function ProductPage() {
       fd.append("segment", formData.segment);
       fd.append("sport", formData.sport);
       fd.append("apparel", formData.apparel);
+      fd.append("customizationType", formData.customizationType);
+      if (formData.customizationType === "CUSTOM_COTTON_TEES") {
+        fd.append("cottonTeeType", formData.cottonTeeType);
+        fd.append("baseColor", formData.cottonTeeType === "UPLOAD_DESIGN" ? formData.baseColor : "");
+      }
 
       if (glbFile) fd.append("glbFile", glbFile);
       if (frontImage) fd.append("frontImage", frontImage);
@@ -1413,6 +1441,11 @@ export default function ProductPage() {
             segment: formData.segment,
             sport: formData.sport,
             apparel: formData.apparel,
+            customizationType: formData.customizationType,
+            ...(formData.customizationType === "CUSTOM_COTTON_TEES" ? {
+              cottonTeeType: formData.cottonTeeType,
+              baseColor: formData.cottonTeeType === "UPLOAD_DESIGN" ? formData.baseColor : ""
+            } : {}),
             // These two were missing here, so any print-zone or pattern
             // changes made while editing (without touching an image/GLB
             // file) were silently discarded on save.
@@ -1476,14 +1509,14 @@ export default function ProductPage() {
       segment: product.segment || "",
       sport: product.sport || "",
       apparel: product.apparel || "",
+      customizationType: product.customizationType || "NONE",
+      cottonTeeType: product.cottonTeeType || product.cottonTee?.type || "OUR_DESIGN",
+      baseColor: product.baseColor || product.cottonTee?.baseColor || "",
       discountType: product.discountType || "percentage",
       discountValue: product.discountValue ?? "",
-      // Normalize front/back independently: only fall back to the full
-      // default zone set for a view that was truly never saved (undefined),
-      // not for a view whose array exists but was intentionally trimmed.
       printZones: {
-        front: Array.isArray(product.printZones?.front) ? product.printZones.front : DEFAULT_ZONES.front,
-        back: Array.isArray(product.printZones?.back) ? product.printZones.back : DEFAULT_ZONES.back
+        front: Array.isArray(product.printZones?.front) ? product.printZones.front : [],
+        back: Array.isArray(product.printZones?.back) ? product.printZones.back : []
       }
     });
 
@@ -1537,7 +1570,13 @@ export default function ProductPage() {
     }
   };
 
-  const filteredProducts = products.filter(p => p.name?.toLowerCase().includes(searchTerm.toLowerCase()));
+const filteredProducts = products.filter(p => {
+  const matchesSearch = p.name?.toLowerCase().includes(searchTerm.toLowerCase());
+  const matchesCategory = !categoryFilter || p.categoryId === categoryFilter;
+  const matchesCustomization =
+    !customizationFilter || (p.customizationType || "NONE") === customizationFilter;
+  return matchesSearch && matchesCategory && matchesCustomization;
+});
   const totalPages = Math.ceil(filteredProducts.length / itemsPerPage);
   const startIndex = (currentPage - 1) * itemsPerPage;
   const currentProducts = filteredProducts.slice(startIndex, startIndex + itemsPerPage);
@@ -1602,7 +1641,12 @@ export default function ProductPage() {
     "Jersey / T-Shirt",
     "Shorts",
     "Track Pants",
+    "Mens Polo T-Shirts",
+    "Mens Half Sleeve T-Shirts",
+    "Mens Full Sleeve T-Shirts",
   ];
+
+  const isCustomCottonTees = formData.customizationType === "CUSTOM_COTTON_TEES";
 
   return (
     <div style={{ padding: '24px', background: bgColor, minHeight: '100vh' }}>
@@ -1623,14 +1667,47 @@ export default function ProductPage() {
         </div>
       </div>
 
-      {/* Search */}
-      <div style={{ marginBottom: '20px' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', background: cardBg, padding: '10px 14px', borderRadius: '10px', border: `1px solid ${borderColor}`, maxWidth: '380px' }}>
-          <IoSearch size={18} style={{ color: textMuted }} />
-          <input type="text" placeholder="Search products..." value={searchTerm} onChange={(e) => { setSearchTerm(e.target.value); setCurrentPage(1); }} style={{ flex: 1, background: 'transparent', border: 'none', outline: 'none', color: textColor, fontSize: '14px' }} />
-        </div>
-      </div>
+     {/* Search & Filters */}
+<div style={{ marginBottom: '20px', display: 'flex', flexWrap: 'wrap', gap: '12px', alignItems: 'center' }}>
+  <div style={{ display: 'flex', alignItems: 'center', gap: '10px', background: cardBg, padding: '10px 14px', borderRadius: '10px', border: `1px solid ${borderColor}`, flex: '1 1 260px', maxWidth: '380px' }}>
+    <IoSearch size={18} style={{ color: textMuted }} />
+    <input
+      type="text"
+      placeholder="Search products..."
+      value={searchTerm}
+      onChange={(e) => { setSearchTerm(e.target.value); setCurrentPage(1); }}
+      style={{ flex: 1, background: 'transparent', border: 'none', outline: 'none', color: textColor, fontSize: '14px' }}
+    />
+  </div>
 
+  <select
+    value={categoryFilter}
+    onChange={(e) => { setCategoryFilter(e.target.value); setCurrentPage(1); }}
+    style={{ padding: '10px 14px', background: cardBg, border: `1px solid ${borderColor}`, borderRadius: '10px', color: textColor, fontSize: '14px', outline: 'none', minWidth: '180px' }}
+  >
+    <option value="">All Categories</option>
+    {categories.map(c => <option key={c._id} value={c._id}>{c.name}</option>)}
+  </select>
+
+  <select
+    value={customizationFilter}
+    onChange={(e) => { setCustomizationFilter(e.target.value); setCurrentPage(1); }}
+    style={{ padding: '10px 14px', background: cardBg, border: `1px solid ${borderColor}`, borderRadius: '10px', color: textColor, fontSize: '14px', outline: 'none', minWidth: '180px' }}
+  >
+    <option value="">All Customizations</option>
+    <option value="NONE">Standard</option>
+    <option value="CUSTOM_COTTON_TEES">Custom Cotton Tees</option>
+  </select>
+
+  {(searchTerm || categoryFilter || customizationFilter) && (
+    <button
+      onClick={() => { setSearchTerm(""); setCategoryFilter(""); setCustomizationFilter(""); setCurrentPage(1); }}
+      style={{ ...btnNeutral, padding: '10px 16px', borderRadius: '10px', fontSize: '13px', fontWeight: 600, cursor: 'pointer' }}
+    >
+      Clear Filters
+    </button>
+  )}
+</div>
       {/* Loading */}
       {loading && products.length === 0 && (
         <div style={{ textAlign: 'center', padding: '60px', color: textSecondary }}>
@@ -1644,8 +1721,8 @@ export default function ProductPage() {
           <table style={{ width: '100%', borderCollapse: 'collapse' }}>
             <thead>
               <tr style={{ borderBottom: `1px solid ${borderColor}`, background: headerBg }}>
-                {['S.no', 'Product Name', 'Images', 'Category',  'Base Price', 'Status', 'Actions'].map((h, i) => (
-                  <th key={i} style={{ textAlign: i >= 5 ? 'center' : 'left', padding: '14px 16px', color: textMuted, fontSize: '12px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em' }}>{h}</th>
+                {['S.no', 'Product Name', 'Images', 'Category', 'Apparel', 'Customization', 'Base Price', 'Status', 'Actions'].map((h, i) => (
+                  <th key={i} style={{ textAlign: i >= 4 ? 'center' : 'left', padding: '14px 16px', color: textMuted, fontSize: '12px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em' }}>{h}</th>
                 ))}
               </tr>
             </thead>
@@ -1692,6 +1769,12 @@ export default function ProductPage() {
                     <td style={{ padding: '14px 16px' }}>
                       <span style={{ background: 'rgba(14,165,233,0.1)', color: '#0EA5E9', padding: '3px 10px', borderRadius: '6px', fontSize: '11px', fontWeight: 600, display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
                         <IoFolder size={11} />{product.categoryName || product.categoryId}
+                      </span>
+                    </td>
+                    <td style={{ padding: '14px 16px', color: textSecondary, fontSize: '12px' }}>{product.apparel || '—'}</td>
+                    <td style={{ padding: '14px 16px', textAlign: 'center' }}>
+                      <span style={{ background: product.customizationType === 'CUSTOM_COTTON_TEES' ? 'rgba(245,158,11,0.12)' : 'rgba(148,163,184,0.14)', color: product.customizationType === 'CUSTOM_COTTON_TEES' ? '#D97706' : textSecondary, padding: '3px 10px', borderRadius: '6px', fontSize: '11px', fontWeight: 600, display: 'inline-flex', alignItems: 'center' }}>
+                        {product.customizationType === 'CUSTOM_COTTON_TEES' ? `Custom Cotton Tees · ${product.cottonTeeType === 'UPLOAD_DESIGN' ? 'Upload Design' : 'Our Design'}` : 'Standard'}
                       </span>
                     </td>
                     {/* <td style={{ padding: '14px 16px' }}>
@@ -1781,33 +1864,35 @@ export default function ProductPage() {
                   <label style={labelStyle}>Product Name <span style={{ color: '#EF4444' }}>*</span></label>
                   <input type="text" value={formData.name} onChange={e => setFormData({ ...formData, name: e.target.value })} placeholder="product name" style={inputStyle} />
                 </div>
-                <div>
-                  <label style={labelStyle}>Segment</label>
-                  <select
-                    value={formData.segment}
-                    onChange={(e) => setFormData({ ...formData, segment: e.target.value })}
-                    style={inputStyle}
-                  >
-                    <option value="">Select Segment</option>
-                    {SEGMENTS.map((item) => (
-                      <option key={item} value={item}>{item}</option>
-                    ))}
-                  </select>
-                </div>
+                {!isCustomCottonTees && <>
+                  <div>
+                    <label style={labelStyle}>Segment</label>
+                    <select
+                      value={formData.segment}
+                      onChange={(e) => setFormData({ ...formData, segment: e.target.value })}
+                      style={inputStyle}
+                    >
+                      <option value="">Select Segment</option>
+                      {SEGMENTS.map((item) => (
+                        <option key={item} value={item}>{item}</option>
+                      ))}
+                    </select>
+                  </div>
 
-                <div>
-                  <label style={labelStyle}>Sport</label>
-                  <select
-                    value={formData.sport}
-                    onChange={(e) => setFormData({ ...formData, sport: e.target.value })}
-                    style={inputStyle}
-                  >
-                    <option value="">Select Sport</option>
-                    {SPORTS.map((item) => (
-                      <option key={item} value={item}>{item}</option>
-                    ))}
-                  </select>
-                </div>
+                  <div>
+                    <label style={labelStyle}>Sport</label>
+                    <select
+                      value={formData.sport}
+                      onChange={(e) => setFormData({ ...formData, sport: e.target.value })}
+                      style={inputStyle}
+                    >
+                      <option value="">Select Sport</option>
+                      {SPORTS.map((item) => (
+                        <option key={item} value={item}>{item}</option>
+                      ))}
+                    </select>
+                  </div>
+                </>}
 
                 <div>
                   <label style={labelStyle}>Apparel</label>
@@ -1829,6 +1914,45 @@ export default function ProductPage() {
                     {categories.map(c => <option key={c._id} value={c._id}>{c.name}</option>)}
                   </select>
                 </div>
+              </div>
+
+              {/* Customization */}
+              <div style={{ marginBottom: '20px', padding: '16px', border: `1px solid ${borderColor}`, borderRadius: '12px', background: inputBg }}>
+                <div style={{ marginBottom: '12px' }}>
+                  <h3 style={{ margin: 0, fontSize: '15px', fontWeight: 700, color: textColor }}>Customization</h3>
+                  <p style={{ margin: '4px 0 0', fontSize: '12px', color: textMuted }}>Choose how customers can customize this product</p>
+                </div>
+                <label style={labelStyle}>Customization Type</label>
+                <select
+                  value={formData.customizationType}
+                  onChange={(e) => setFormData({ ...formData, customizationType: e.target.value })}
+                  style={inputStyle}
+                >
+                  <option value="NONE">None</option>
+                  <option value="CUSTOM_COTTON_TEES">Custom Cotton Tees</option>
+                </select>
+                {isCustomCottonTees && (
+                  <div style={{ marginTop: '12px', padding: '12px', background: 'rgba(16,185,129,0.08)', border: '1px solid rgba(16,185,129,0.25)', borderRadius: '8px' }}>
+                    <label style={labelStyle}>Custom Cotton Tee Type</label>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
+                      {[
+                        { value: 'OUR_DESIGN', label: 'Our Design', description: 'Already printed jersey' },
+                        { value: 'UPLOAD_DESIGN', label: 'Upload Design', description: 'Plain jersey for customization' }
+                      ].map((option) => (
+                        <label key={option.value} style={{ display: 'flex', alignItems: 'flex-start', gap: '8px', padding: '10px', border: `1px solid ${formData.cottonTeeType === option.value ? '#10B981' : borderColor}`, borderRadius: '8px', cursor: 'pointer', background: formData.cottonTeeType === option.value ? 'rgba(16,185,129,0.08)' : inputBg }}>
+                          <input type="radio" name="cottonTeeType" value={option.value} checked={formData.cottonTeeType === option.value} onChange={(e) => setFormData({ ...formData, cottonTeeType: e.target.value, baseColor: e.target.value === 'OUR_DESIGN' ? '' : formData.baseColor })} />
+                          <span><strong style={{ display: 'block', color: textColor, fontSize: '13px' }}>{option.label}</strong><small style={{ color: textSecondary }}>{option.description}</small></span>
+                        </label>
+                      ))}
+                    </div>
+                    {formData.cottonTeeType === 'UPLOAD_DESIGN' && (
+                      <div style={{ marginTop: '12px' }}>
+                        <label style={labelStyle}>Base Color <span style={{ color: '#EF4444' }}>*</span></label>
+                        <input type="text" value={formData.baseColor} onChange={(e) => setFormData({ ...formData, baseColor: e.target.value })} placeholder="Black" style={inputStyle} />
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
 
               {/* Pricing */}
@@ -1869,9 +1993,10 @@ export default function ProductPage() {
                 </button>
               </div>
 
-              {/* 3D Model Section */}
-              <SectionHeader label="3D Model (GLB File)" isDark={isDark} textMuted={textMuted} />
-              <div style={{ marginBottom: '20px' }}>
+              {!isCustomCottonTees && <>
+                {/* 3D Model Section */}
+                <SectionHeader label="3D Model (GLB File)" isDark={isDark} textMuted={textMuted} />
+                <div style={{ marginBottom: '20px' }}>
                 <input ref={glbInputRef} type="file" accept=".glb" onChange={handleGLBFileChange} style={{ display: 'none' }} />
                 {!glbFile && !glbExistingUrl && (
                   <div onClick={() => glbInputRef.current?.click()} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', border: `2px dashed ${borderColor}`, borderRadius: '12px', padding: '28px', cursor: 'pointer', background: inputBg }}>
@@ -1894,10 +2019,11 @@ export default function ProductPage() {
                     <button type="button" onClick={removeGLBFile} style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '8px 16px', background: 'rgba(239,68,68,0.15)', border: '1px solid rgba(239,68,68,0.3)', borderRadius: '8px', cursor: 'pointer', color: '#EF4444' }}><IoTrashBin size={16} /> Remove</button>
                   </div>
                 )}
-              </div>
+                </div>
+              </>}
 
               {/* Product Images */}
-              <SectionHeader label={`Product Images — max ${IMAGE_MAX_MB}MB each`} isDark={isDark} textMuted={textMuted} />
+              <SectionHeader label={`${isCustomCottonTees ? 'Cotton Tee Images' : 'Product Images'} — max ${IMAGE_MAX_MB}MB each`} isDark={isDark} textMuted={textMuted} />
 
               {/* Front Image */}
               <div style={{ marginBottom: '20px' }}>
@@ -1941,9 +2067,10 @@ export default function ProductPage() {
                 )}
               </div>
 
-              {/* Templates */}
-              <SectionHeader label="Templates" isDark={isDark} textMuted={textMuted} />
-              <div style={{ marginBottom: '20px' }}>
+              {!isCustomCottonTees && <>
+                {/* Templates */}
+                <SectionHeader label="Templates" isDark={isDark} textMuted={textMuted} />
+                <div style={{ marginBottom: '20px' }}>
                 {templates.length === 0
                   ? <div style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '10px 14px', background: 'rgba(239,68,68,0.08)', borderRadius: '8px' }}>
                     <IoAlertCircle size={15} style={{ color: '#EF4444' }} />
@@ -1960,20 +2087,22 @@ export default function ProductPage() {
                     })}
                   </div>
                 }
-              </div>
+                </div>
+              </>}
 
-              {/* Print Zones */}
-              <SectionHeader label="Print Zones (drag to position)" isDark={isDark} textMuted={textMuted} />
-              <PrintZoneEditor
-                frontImageUrl={frontImagePreview || existingFrontImage}
-                backImageUrl={backImagePreview || existingBackImage}
-                zones={formData.printZones || DEFAULT_ZONES}
-                onChange={(newZones) => setFormData(prev => ({ ...prev, printZones: newZones }))}
-              />
+              {!isCustomCottonTees && <>
+                {/* Print Zones */}
+                <SectionHeader label="Print Zones (drag to position)" isDark={isDark} textMuted={textMuted} />
+                <PrintZoneEditor
+                  frontImageUrl={frontImagePreview || existingFrontImage}
+                  backImageUrl={backImagePreview || existingBackImage}
+                  zones={formData.printZones || DEFAULT_ZONES}
+                  onChange={(newZones) => setFormData(prev => ({ ...prev, printZones: newZones }))}
+                />
 
-              {/* Custom Fields */}
-              <SectionHeader label="Custom Fields" isDark={isDark} textMuted={textMuted} />
-              <div style={{ marginBottom: '16px' }}>
+                {/* Custom Fields */}
+                <SectionHeader label="Custom Fields" isDark={isDark} textMuted={textMuted} />
+                <div style={{ marginBottom: '16px' }}>
                 {(formData.customFields || []).map((f, i) => (
                   <div key={f.id || i} style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 120px 80px', gap: '8px', alignItems: 'center', marginBottom: '8px' }}>
                     <input
@@ -2015,11 +2144,11 @@ export default function ProductPage() {
                 >
                   + Add Field
                 </button>
-              </div>
+                </div>
 
-              {/* Patterns */}
-              <SectionHeader label="Patterns" isDark={isDark} textMuted={textMuted} />
-              <div style={{ marginBottom: "20px" }}>
+                {/* Patterns */}
+                <SectionHeader label="Patterns" isDark={isDark} textMuted={textMuted} />
+                <div style={{ marginBottom: "20px" }}>
                 {patterns.length === 0 ? (
                   <div style={{ padding: "12px", borderRadius: "8px", background: "#FEF2F2", color: "#EF4444" }}>No patterns found</div>
                 ) : (
@@ -2037,7 +2166,8 @@ export default function ProductPage() {
                     })}
                   </div>
                 )}
-              </div>
+                </div>
+              </>}
             </div>
 
             {/* Modal Footer */}
@@ -2060,20 +2190,44 @@ export default function ProductPage() {
               <h2 style={{ fontSize: '18px', fontWeight: 700, color: textColor, margin: 0 }}>Product Details</h2>
               <button onClick={() => setShowViewModal(false)} style={{ background: 'rgba(255,255,255,0.08)', border: 'none', cursor: 'pointer', color: textSecondary, borderRadius: '8px', padding: '6px', display: 'flex', alignItems: 'center' }}><IoClose size={18} /></button>
             </div>
-            <div style={{ padding: '20px 24px' }}>
-              <ViewRow label="Product Name" value={<span style={{ fontSize: '16px', fontWeight: 700, color: textColor }}>{selectedProduct.name}</span>} textSecondary={textSecondary} />
-              <ViewRow label="Category" value={<span style={{ display: 'flex', alignItems: 'center', gap: '6px', color: '#0EA5E9' }}><IoFolder size={14} />{selectedProduct.categoryName || selectedProduct.categoryId}</span>} textSecondary={textSecondary} />
-              {selectedProduct.subCategoryName && <ViewRow label="Subcategory" value={<span style={{ display: 'flex', alignItems: 'center', gap: '6px', color: '#10B981' }}><IoFolderOpen size={14} />{selectedProduct.subCategoryName}</span>} textSecondary={textSecondary} />}
-              {selectedProduct.segment && <ViewRow label="Segment" value={<span style={{ color: textColor, fontSize: '14px' }}>{selectedProduct.segment}</span>} textSecondary={textSecondary} />}
-              {selectedProduct.sport && <ViewRow label="Sport" value={<span style={{ color: textColor, fontSize: '14px' }}>{selectedProduct.sport}</span>} textSecondary={textSecondary} />}
-              {selectedProduct.apparel && <ViewRow label="Apparel" value={<span style={{ color: textColor, fontSize: '14px' }}>{selectedProduct.apparel}</span>} textSecondary={textSecondary} />}
-              <ViewRow label="Base Price" value={<span style={{ fontSize: '22px', fontWeight: 800, color: primaryColor }}>₹{selectedProduct.basePrice}</span>} textSecondary={textSecondary} />
-              <ViewRow label="Status" value={<span style={{ display: 'inline-block', padding: '4px 14px', borderRadius: '20px', fontSize: '12px', fontWeight: 700, background: selectedProduct.isActive ? '#D1FAE5' : '#FEE2E2', color: selectedProduct.isActive ? '#10B981' : '#EF4444' }}>{selectedProduct.isActive ? 'Active' : 'Inactive'}</span>} textSecondary={textSecondary} />
-              {getProductFrontImage(selectedProduct) && (<ViewRow label="Front Image" value={<img src={getProductFrontImage(selectedProduct)} alt="Front" style={{ width: '100px', height: '100px', objectFit: 'cover', borderRadius: '8px', border: `1px solid ${borderColor}` }} />} textSecondary={textSecondary} />)}
-              {getProductBackImage(selectedProduct) && (<ViewRow label="Back Image" value={<img src={getProductBackImage(selectedProduct)} alt="Back" style={{ width: '100px', height: '100px', objectFit: 'cover', borderRadius: '8px', border: `1px solid ${borderColor}` }} />} textSecondary={textSecondary} />)}
-              {selectedProduct.glbUrl && (<ViewRow label="3D Model" value={<a href={selectedProduct.glbUrl} target="_blank" rel="noopener noreferrer" style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', background: 'rgba(14,165,233,0.1)', color: '#0EA5E9', padding: '5px 12px', borderRadius: '8px', fontSize: '13px', textDecoration: 'none', fontWeight: 600 }}><IoVideocam size={14} /> View 3D Model</a>} textSecondary={textSecondary} />)}
-              <ViewRow label="Created" value={<span style={{ color: textSecondary, fontSize: '13px' }}>{selectedProduct.createdAt ? new Date(selectedProduct.createdAt).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }) : 'N/A'}</span>} textSecondary={textSecondary} />
-            </div>
+            <div style={{ padding: '20px 24px', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0 16px' }}>
+  <ViewRow fullWidth label="Product Name" value={<span style={{ fontSize: '16px', fontWeight: 700, color: textColor }}>{selectedProduct.name}</span>} textSecondary={textSecondary} />
+  <ViewRow label="Category" value={<span style={{ display: 'flex', alignItems: 'center', gap: '6px', color: '#0EA5E9' }}><IoFolder size={14} />{selectedProduct.categoryName || 'Uncategorized'}</span>} textSecondary={textSecondary} />
+  {selectedProduct.subCategoryName && <ViewRow label="Subcategory" value={<span style={{ display: 'flex', alignItems: 'center', gap: '6px', color: '#10B981' }}><IoFolderOpen size={14} />{selectedProduct.subCategoryName}</span>} textSecondary={textSecondary} />}
+  {selectedProduct.segment && <ViewRow label="Segment" value={<span style={{ color: textColor, fontSize: '14px' }}>{selectedProduct.segment}</span>} textSecondary={textSecondary} />}
+  {selectedProduct.sport && <ViewRow label="Sport" value={<span style={{ color: textColor, fontSize: '14px' }}>{selectedProduct.sport}</span>} textSecondary={textSecondary} />}
+  {selectedProduct.apparel && <ViewRow label="Apparel" value={<span style={{ color: textColor, fontSize: '14px' }}>{selectedProduct.apparel}</span>} textSecondary={textSecondary} />}
+  <ViewRow label="Customization" value={<span style={{ color: textColor, fontSize: '14px' }}>{selectedProduct.customizationType === 'CUSTOM_COTTON_TEES' ? 'Custom Cotton Tees' : 'Standard'}</span>} textSecondary={textSecondary} />
+  {selectedProduct.customizationType === 'CUSTOM_COTTON_TEES' && <ViewRow label="Cotton Tee Type" value={<span style={{ color: textColor, fontSize: '14px' }}>{selectedProduct.cottonTeeType === 'UPLOAD_DESIGN' ? 'Upload Design' : 'Our Design'}</span>} textSecondary={textSecondary} />}
+  {selectedProduct.customizationType === 'CUSTOM_COTTON_TEES' && selectedProduct.baseColor && <ViewRow label="Base Color" value={<span style={{ color: textColor, fontSize: '14px' }}>{selectedProduct.baseColor}</span>} textSecondary={textSecondary} />}
+  <ViewRow label="Base Price" value={<span style={{ fontSize: '22px', fontWeight: 800, color: primaryColor }}>₹{selectedProduct.basePrice}</span>} textSecondary={textSecondary} />
+  <ViewRow label="Status" value={<span style={{ display: 'inline-block', padding: '4px 14px', borderRadius: '20px', fontSize: '12px', fontWeight: 700, background: selectedProduct.isActive ? '#D1FAE5' : '#FEE2E2', color: selectedProduct.isActive ? '#10B981' : '#EF4444' }}>{selectedProduct.isActive ? 'Active' : 'Inactive'}</span>} textSecondary={textSecondary} />
+{(getProductFrontImage(selectedProduct) || getProductBackImage(selectedProduct)) && (
+  <ViewRow
+    fullWidth
+    label="Product Images"
+    value={
+      <div style={{ display: 'flex', gap: '16px' }}>
+        {getProductFrontImage(selectedProduct) && (
+          <div>
+            <div style={{ fontSize: '10px', color: textSecondary, fontWeight: 600, marginBottom: '4px' }}>FRONT</div>
+            <img src={getProductFrontImage(selectedProduct)} alt="Front" style={{ width: '100px', height: '100px', objectFit: 'cover', borderRadius: '8px', border: `1px solid ${borderColor}` }} />
+          </div>
+        )}
+        {getProductBackImage(selectedProduct) && (
+          <div>
+            <div style={{ fontSize: '10px', color: textSecondary, fontWeight: 600, marginBottom: '4px' }}>BACK</div>
+            <img src={getProductBackImage(selectedProduct)} alt="Back" style={{ width: '100px', height: '100px', objectFit: 'cover', borderRadius: '8px', border: `1px solid ${borderColor}` }} />
+          </div>
+        )}
+      </div>
+    }
+    textSecondary={textSecondary}
+  />
+)}
+  {selectedProduct.glbUrl && (<ViewRow fullWidth label="3D Model" value={<a href={selectedProduct.glbUrl} target="_blank" rel="noopener noreferrer" style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', background: 'rgba(14,165,233,0.1)', color: '#0EA5E9', padding: '5px 12px', borderRadius: '8px', fontSize: '13px', textDecoration: 'none', fontWeight: 600 }}><IoVideocam size={14} /> View 3D Model</a>} textSecondary={textSecondary} />)}
+  <ViewRow fullWidth label="Created" value={<span style={{ color: textSecondary, fontSize: '13px' }}>{selectedProduct.createdAt ? new Date(selectedProduct.createdAt).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }) : 'N/A'}</span>} textSecondary={textSecondary} />
+</div>
             <div style={{ padding: '14px 24px', borderTop: `1px solid ${borderColor}`, display: 'flex', gap: '10px', justifyContent: 'flex-end', background: 'rgba(255,255,255,0.02)', borderRadius: '0 0 20px 20px' }}>
               <button onClick={() => { setShowViewModal(false); handleEdit(selectedProduct); }} style={{ background: primaryLight, border: 'none', padding: '9px 18px', borderRadius: '9px', cursor: 'pointer', color: primaryColor, fontWeight: 600, fontSize: '14px', display: 'flex', alignItems: 'center', gap: '6px' }}><IoCreate size={15} /> Edit</button>
               <button onClick={() => setShowViewModal(false)} style={{ background: primaryGradient, border: 'none', padding: '9px 22px', borderRadius: '9px', color: '#09185b', cursor: 'pointer', fontWeight: 700, fontSize: '14px' }}>Close</button>
@@ -2103,9 +2257,9 @@ function SectionHeader({ label, isDark, textMuted }) {
   );
 }
 
-function ViewRow({ label, value, textSecondary }) {
+function ViewRow({ label, value, textSecondary, fullWidth }) {
   return (
-    <div style={{ marginBottom: '14px' }}>
+    <div style={{ marginBottom: '14px', gridColumn: fullWidth ? '1 / -1' : 'auto' }}>
       <div style={{ fontSize: '11px', color: textSecondary, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '5px' }}>{label}</div>
       <div>{value}</div>
     </div>
