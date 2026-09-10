@@ -25,6 +25,9 @@ export default function PaymentStatusPage() {
   // =========================================
   const isSuccess = status === "success";
 
+  const isCod = status === "cod";
+  const isOrderConfirmed = isSuccess || isCod;
+
   // =========================================
   // FAILED
   // =========================================
@@ -49,7 +52,21 @@ export default function PaymentStatusPage() {
   let bgColor = "";
   let textColor = "";
 
-  if (isSuccess) {
+  if (isCod) {
+
+    title = "Order Confirmed";
+
+    description =
+      "Your cash-on-delivery order has been placed successfully.";
+
+    Icon = CheckCircle;
+
+    bgColor = "bg-green-100";
+
+    textColor = "text-green-600";
+  }
+
+  else if (isSuccess) {
 
     title = "Payment Successful";
 
@@ -155,7 +172,7 @@ export default function PaymentStatusPage() {
         <div className="mt-8 flex flex-col sm:flex-row gap-4">
 
           {/* SUCCESS */}
-          {isSuccess && (
+          {isOrderConfirmed && (
 
             <>
               <button
@@ -177,7 +194,7 @@ export default function PaymentStatusPage() {
           )}
 
           {/* FAILED / ERROR / CANCEL */}
-          {!isSuccess && (
+          {!isOrderConfirmed && (
 
             <>
               <button

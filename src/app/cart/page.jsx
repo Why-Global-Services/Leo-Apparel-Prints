@@ -870,8 +870,9 @@ export default function CartPage() {
       return;
     }
 
+    const sizes = encodeURIComponent(JSON.stringify(item.sizes || []));
     router.push(
-      `/product?id=${item.productId}&customizationId=${item.customizationId}`,
+      `/product?id=${item.productId}&customizationId=${item.customizationId || ""}&sizes=${sizes}`,
     );
   };
 

@@ -495,9 +495,9 @@
 
 import { useState, useMemo, useCallback, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { fetchAllProducts } from "@/features/products/productThunks";
+import { fetchAllProducts, fetchFilterOptions } from "@/features/products/productThunks";
 import ProductCard from "./ProductCard";
-import { useSearchParams } from "next/navigation";
+import { useSearchParams, useRouter, usePathname } from "next/navigation";
 import {
   Search,
   SlidersHorizontal,
@@ -508,7 +508,6 @@ import {
   Upload,
 } from "lucide-react";
 import Link from "next/link";
-import { fetchFilterOptions } from "@/features/products/productThunks";
 
 
 function SidebarContent({
@@ -519,8 +518,21 @@ function SidebarContent({
   selectedSubCategories,
   onSubCategoryChange,
   onApplyFilters,
-  menuStructure
+  onClearAll,
+  onRemoveSubCategory,
+  onRemoveCategory,
+  menuStructure,
 }) {
+  const isSubSelected = (sub) =>
+    selectedSubCategories.some(
+      (s) => s.trim().toLowerCase() === sub.trim().toLowerCase()
+    );
+
+  const hasActiveFilters =
+    selectedSubCategories.length > 0 ||
+    selectedCategories.includes("all") ||
+    searchTerm.trim().length > 0;
+
   return (
     <div className="flex flex-col gap-4">
       {/* Search */}
@@ -549,75 +561,81 @@ function SidebarContent({
 
       {/* Nav */}
       <nav className="flex flex-col gap-1">
-        {menuStructure.map((cat) => (
-          <div key={cat.id} className="flex flex-col">
-            <label className="flex items-center gap-2 px-3 py-2 cursor-pointer hover:bg-[#003E9B]/5 rounded-lg transition-colors">
-              <input
-                type="checkbox"
-                checked={selectedCategories.includes(cat.id)}
-                onChange={(e) => onCategoryChange(cat.id, e.target.checked)}
-                className="w-4 h-4 rounded border-slate-300 text-[#003E9B] focus:ring-[#003E9B]/20 focus:ring-2"
-              />
-              <span className="flex items-center gap-2 flex-1">
-                <span
-                  className={`transition-colors flex-shrink-0 ${
-                    selectedCategories.includes(cat.id)
-                      ? "text-[#003E9B]"
-                      : "text-slate-400"
-                  }`}
-                >
-                  {cat.icon}
-                </span>
-                <span
-                  className={`text-[10px] sm:text-[11px] font-black uppercase tracking-widest ${
-                    selectedCategories.includes(cat.id)
-                      ? "text-[#003E9B]"
-                      : "text-slate-700"
-                  }`}
-                >
-                  {cat.label}
-                </span>
-              </span>
-              {cat.subs.length > 0 && (
-                <ChevronDown
-                  size={11}
-                  className={`transition-transform duration-300 flex-shrink-0 ${
-                    selectedCategories.includes(cat.id) ? "rotate-180" : ""
-                  } text-slate-400`}
-                />
-              )}
-            </label>
+        {menuStructure.map((cat) => {
+          const isCatChecked = selectedCategories.includes(cat.id);
+          const hasSelectedSub = cat.subs.some((sub) => isSubSelected(sub));
 
-            {selectedCategories.includes(cat.id) && cat.subs.length > 0 && (
-              <div className="flex flex-col ml-8 mt-1 border-l-2 border-[#003E9B]/20 pl-3 gap-1">
-                {cat.subs.map((sub) => (
-                  <label
-                    key={sub}
-                    className="flex items-center gap-2 px-2 py-1.5 cursor-pointer hover:bg-[#003E9B]/5 rounded-md transition-colors"
+          return (
+            <div key={cat.id} className="flex flex-col">
+              <label className="flex items-center gap-2 px-3 py-2 cursor-pointer hover:bg-[#003E9B]/5 rounded-lg transition-colors">
+                <input
+                  type="checkbox"
+                  checked={isCatChecked || hasSelectedSub}
+                  onChange={(e) => onCategoryChange(cat.id, e.target.checked)}
+                  className="w-4 h-4 rounded border-slate-300 text-[#003E9B] focus:ring-[#003E9B]/20 focus:ring-2"
+                />
+                <span className="flex items-center gap-2 flex-1">
+                  <span
+                    className={`transition-colors flex-shrink-0 ${
+                      isCatChecked || hasSelectedSub
+                        ? "text-[#003E9B]"
+                        : "text-slate-400"
+                    }`}
                   >
-                    <input
-                      type="checkbox"
-                      checked={selectedSubCategories.includes(sub)}
-                      onChange={(e) =>
-                        onSubCategoryChange(sub, e.target.checked)
-                      }
-                      className="w-3.5 h-3.5 rounded border-slate-300 text-[#003E9B] focus:ring-[#003E9B]/20 focus:ring-2"
-                    />
-                    <span
-                      className={`text-[9px] sm:text-[10px] font-black tracking-widest uppercase ${
-                        selectedSubCategories.includes(sub)
-                          ? "text-[#003E9B]"
-                          : "text-slate-600"
-                      }`}
-                    >
-                      {sub}
-                    </span>
-                  </label>
-                ))}
-              </div>
-            )}
-          </div>
-        ))}
+                    {cat.icon}
+                  </span>
+                  <span
+                    className={`text-[10px] sm:text-[11px] font-black uppercase tracking-widest ${
+                      isCatChecked || hasSelectedSub
+                        ? "text-[#003E9B]"
+                        : "text-slate-700"
+                    }`}
+                  >
+                    {cat.label}
+                  </span>
+                </span>
+                {cat.subs.length > 0 && (
+                  <ChevronDown
+                    size={11}
+                    className={`transition-transform duration-300 flex-shrink-0 ${
+                      isCatChecked || hasSelectedSub ? "rotate-180" : ""
+                    } text-slate-400`}
+                  />
+                )}
+              </label>
+
+              {(isCatChecked || hasSelectedSub) && cat.subs.length > 0 && (
+                <div className="flex flex-col ml-8 mt-1 border-l-2 border-[#003E9B]/20 pl-3 gap-1">
+                  {cat.subs.map((sub) => {
+                    const checked = isSubSelected(sub);
+                    return (
+                      <label
+                        key={sub}
+                        className="flex items-center gap-2 px-2 py-1.5 cursor-pointer hover:bg-[#003E9B]/5 rounded-md transition-colors"
+                      >
+                        <input
+                          type="checkbox"
+                          checked={checked}
+                          onChange={(e) =>
+                            onSubCategoryChange(sub, e.target.checked)
+                          }
+                          className="w-3.5 h-3.5 rounded border-slate-300 text-[#003E9B] focus:ring-[#003E9B]/20 focus:ring-2"
+                        />
+                        <span
+                          className={`text-[9px] sm:text-[10px] font-black tracking-widest uppercase ${
+                            checked ? "text-[#003E9B]" : "text-slate-600"
+                          }`}
+                        >
+                          {sub}
+                        </span>
+                      </label>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+          );
+        })}
       </nav>
 
       {/* Apply Button */}
@@ -630,28 +648,23 @@ function SidebarContent({
       </button>
 
       {/* Active Filters */}
-      {(selectedCategories.length > 0 ||
-        selectedSubCategories.length > 0 ||
-        searchTerm) && (
+      {hasActiveFilters && (
         <div className="pt-3 border-t border-gray-100">
           <p className="text-[9px] font-bold text-gray-400 uppercase tracking-wider mb-2 font-secondary">
             Active Filters
           </p>
           <div className="flex flex-wrap gap-1.5">
-            {selectedCategories.map((cat) => (
-              <span
-                key={cat}
-                className="text-[8px] bg-[#003E9B]/10 text-[#003E9B] px-2.5 py-1 rounded-full font-secondary font-bold flex items-center gap-1"
-              >
-                {menuStructure.find((c) => c.id === cat)?.label}
+            {selectedCategories.includes("all") && (
+              <span className="text-[8px] bg-[#003E9B]/10 text-[#003E9B] px-2.5 py-1 rounded-full font-secondary font-bold flex items-center gap-1">
+                All Gear
                 <button
-                  onClick={() => onCategoryChange(cat, false)}
+                  onClick={() => onRemoveCategory("all")}
                   className="hover:text-red-600 ml-1"
                 >
                   <X size={10} />
                 </button>
               </span>
-            ))}
+            )}
             {selectedSubCategories.map((sub) => (
               <span
                 key={sub}
@@ -659,7 +672,7 @@ function SidebarContent({
               >
                 {sub}
                 <button
-                  onClick={() => onSubCategoryChange(sub, false)}
+                  onClick={() => onRemoveSubCategory(sub)}
                   className="hover:text-red-600 ml-1"
                 >
                   <X size={10} />
@@ -678,15 +691,7 @@ function SidebarContent({
               </span>
             )}
             <button
-              onClick={() => {
-                onSearchChange("");
-                selectedCategories.forEach((cat) =>
-                  onCategoryChange(cat, false)
-                );
-                selectedSubCategories.forEach((sub) =>
-                  onSubCategoryChange(sub, false)
-                );
-              }}
+              onClick={onClearAll}
               className="text-[8px] bg-red-50 text-red-600 px-2.5 py-1 rounded-full font-secondary font-bold hover:bg-red-100 transition-colors"
             >
               Clear all
@@ -700,6 +705,8 @@ function SidebarContent({
 
 export default function ProductGrid() {
   const dispatch = useDispatch();
+  const router = useRouter();
+  const pathname = usePathname();
   const searchParams = useSearchParams();
   const [mounted, setMounted] = useState(false);
 
@@ -708,7 +715,7 @@ export default function ProductGrid() {
     items: allProducts,
     loading,
     error,
-    filterOptions
+    filterOptions,
   } = useSelector((state) => state.products);
 
   // ── Local UI state ──
@@ -716,96 +723,156 @@ export default function ProductGrid() {
   const [selectedCategories, setSelectedCategories] = useState([]);
   const [selectedSubCategories, setSelectedSubCategories] = useState([]);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
-  const [appliedCategories, setAppliedCategories] = useState([]);
-  const [appliedSubCategories, setAppliedSubCategories] = useState([]);
 
-
-  
   const menuStructure = useMemo(
-  () => [
-    {
-      id: "all",
-      label: "All Gear",
-      icon: <Activity size={15} />,
-      subs: [],
-    },
-    {
-      id: "sports",
-      label: "Sports",
-      icon: <Target size={15} />,
-      subs: filterOptions?.sports || [],
-    },
-    {
-      id: "apparels",
-      label: "Apparels",
-      icon: <Activity size={15} />,
-      subs: filterOptions?.apparels || [],
-    },
-  ],
-  [filterOptions]
-);
+    () => [
+      {
+        id: "all",
+        label: "All Gear",
+        icon: <Activity size={15} />,
+        subs: [],
+      },
+      {
+        id: "sports",
+        label: "Sports",
+        icon: <Target size={15} />,
+        subs: filterOptions?.sports || [],
+      },
+      {
+        id: "apparels",
+        label: "Apparels",
+        icon: <Activity size={15} />,
+        subs: filterOptions?.apparels || [],
+      },
+    ],
+    [filterOptions]
+  );
 
   // Set mounted state to avoid hydration mismatch
   useEffect(() => {
     setMounted(true);
   }, []);
 
-    useEffect(() => {
-      console.log("Calling filter options API...");
-  dispatch(fetchFilterOptions());
-}, [dispatch]);
-  // ── Fetch on mount - only on client side ──
-// useEffect(() => {
+  // Fetch filter options on mount
+  useEffect(() => {
+    dispatch(fetchFilterOptions());
+  }, [dispatch]);
 
-//   if (!mounted) return
+  // Sync state with searchParams (runs on initial load and whenever URL changes)
+  useEffect(() => {
+    if (!mounted) return;
 
-//   const segment = searchParams.get("segment");
-//   const sport = searchParams.get("sport");
-//   const apparel = searchParams.get("apparel");
+    const urlSport = searchParams.get("sport");
+    const urlApparel = searchParams.get("apparel");
 
-//   console.log("FILTERS :", {
-//     segment,
-//     sport,
-//     apparel,
-//   });
+    const sports = urlSport
+      ? urlSport.split(",").map((s) => s.trim()).filter(Boolean)
+      : [];
+    const apparels = urlApparel
+      ? urlApparel.split(",").map((a) => a.trim()).filter(Boolean)
+      : [];
 
-//   dispatch(
-//     fetchAllProducts({
-//       segment,
-//       sport,
-//       apparel,
-//     })
-//   );
+    const initialSubs = [...sports, ...apparels];
+    const initialCats = [];
+    if (sports.length > 0) initialCats.push("sports");
+    if (apparels.length > 0) initialCats.push("apparels");
 
-// }, [dispatch, mounted, searchParams]);
-useEffect(() => {
-  if (!mounted) return;
+    setSelectedSubCategories(initialSubs);
+    setSelectedCategories(initialCats);
+  }, [searchParams, mounted]);
 
-  const segment = searchParams.get("segment");
-  const urlSport = searchParams.get("sport");
-  const urlApparel = searchParams.get("apparel");
+  // Fetch products whenever searchParams change
+  useEffect(() => {
+    if (!mounted) return;
 
-  const selectedSports = appliedSubCategories.filter((sub) =>
-    filterOptions?.sports?.includes(sub)
+    const segment = searchParams.get("segment");
+    const sport = searchParams.get("sport");
+    const apparel = searchParams.get("apparel");
+    const customizationType = searchParams.get("customizationType");
+    const cottonTeeType = searchParams.get("cottonTeeType");
+
+    dispatch(
+      fetchAllProducts({
+        segment: segment || undefined,
+        sport: sport || undefined,
+        apparel: apparel || undefined,
+        customizationType: customizationType || undefined,
+        cottonTeeType: cottonTeeType || undefined,
+      })
+    );
+  }, [dispatch, mounted, searchParams]);
+
+  // Helper to push updated filters to URL
+  const updateUrlFilters = useCallback(
+    (newSubCategories) => {
+      const sportsCategory = menuStructure.find((c) => c.id === "sports");
+      const apparelsCategory = menuStructure.find((c) => c.id === "apparels");
+
+      const selectedSports = [];
+      const selectedApparels = [];
+
+      newSubCategories.forEach((sub) => {
+        const isSport = (sportsCategory?.subs || filterOptions?.sports || []).some(
+          (s) => s.trim().toLowerCase() === sub.trim().toLowerCase()
+        );
+        const isApparel = (apparelsCategory?.subs || filterOptions?.apparels || []).some(
+          (a) => a.trim().toLowerCase() === sub.trim().toLowerCase()
+        );
+
+        if (isSport) {
+          selectedSports.push(sub);
+        } else if (isApparel) {
+          selectedApparels.push(sub);
+        } else {
+          const currentUrlSports = (searchParams.get("sport") || "")
+            .split(",")
+            .map((s) => s.trim().toLowerCase());
+          if (currentUrlSports.includes(sub.trim().toLowerCase())) {
+            selectedSports.push(sub);
+          } else {
+            selectedApparels.push(sub);
+          }
+        }
+      });
+
+      const params = new URLSearchParams();
+      const segment = searchParams.get("segment");
+      const customizationType = searchParams.get("customizationType");
+      const cottonTeeType = searchParams.get("cottonTeeType");
+
+      if (segment) params.set("segment", segment);
+      if (customizationType) params.set("customizationType", customizationType);
+      if (cottonTeeType) params.set("cottonTeeType", cottonTeeType);
+
+      if (selectedSports.length > 0) {
+        params.set("sport", selectedSports.join(","));
+      }
+      if (selectedApparels.length > 0) {
+        params.set("apparel", selectedApparels.join(","));
+      }
+
+      const queryString = params.toString();
+      router.replace(queryString ? `${pathname}?${queryString}` : pathname, {
+        scroll: false,
+      });
+    },
+    [menuStructure, filterOptions, searchParams, router, pathname]
   );
-  const selectedApparels = appliedSubCategories.filter((sub) =>
-    filterOptions?.apparels?.includes(sub)
-  );
-
-  const sportParam = [...new Set([urlSport, ...selectedSports].filter(Boolean))].join(",");
-  const apparelParam = [...new Set([urlApparel, ...selectedApparels].filter(Boolean))].join(",");
-
-  dispatch(
-    fetchAllProducts({
-      segment,
-      sport: sportParam || undefined,
-      apparel: apparelParam || undefined,
-    })
-  );
-}, [dispatch, mounted, searchParams, appliedSubCategories, filterOptions]);
 
   const handleCategoryChange = useCallback(
     (categoryId, isChecked) => {
+      if (categoryId === "all") {
+        if (isChecked) {
+          setSelectedCategories(["all"]);
+          setSelectedSubCategories([]);
+        } else {
+          setSelectedCategories((prev) => prev.filter((id) => id !== "all"));
+        }
+        return;
+      }
+
+      setSelectedCategories((prev) => prev.filter((id) => id !== "all"));
+
       if (isChecked) {
         setSelectedCategories((prev) => [...prev, categoryId]);
       } else {
@@ -813,7 +880,12 @@ useEffect(() => {
         const category = menuStructure.find((c) => c.id === categoryId);
         if (category) {
           setSelectedSubCategories((prev) =>
-            prev.filter((sub) => !category.subs.includes(sub))
+            prev.filter(
+              (sub) =>
+                !category.subs.some(
+                  (s) => s.trim().toLowerCase() === sub.trim().toLowerCase()
+                )
+            )
           );
         }
       }
@@ -823,95 +895,154 @@ useEffect(() => {
 
   const handleSubCategoryChange = useCallback(
     (subCategory, isChecked) => {
+      setSelectedCategories((prev) => prev.filter((id) => id !== "all"));
+
       if (isChecked) {
         setSelectedSubCategories((prev) => [...prev, subCategory]);
         const parentCategory = menuStructure.find((cat) =>
-          cat.subs.includes(subCategory)
+          cat.subs.some(
+            (s) => s.trim().toLowerCase() === subCategory.trim().toLowerCase()
+          )
         );
-        if (
-          parentCategory &&
-          !selectedCategories.includes(parentCategory.id)
-        ) {
+        if (parentCategory && !selectedCategories.includes(parentCategory.id)) {
           setSelectedCategories((prev) => [...prev, parentCategory.id]);
         }
       } else {
         setSelectedSubCategories((prev) =>
-          prev.filter((sub) => sub !== subCategory)
+          prev.filter(
+            (sub) =>
+              sub.trim().toLowerCase() !== subCategory.trim().toLowerCase()
+          )
         );
       }
     },
-    [selectedCategories]
+    [menuStructure, selectedCategories]
   );
 
   const handleApplyFilters = useCallback(() => {
-    setAppliedCategories([...selectedCategories]);
-    setAppliedSubCategories([...selectedSubCategories]);
-  }, [selectedCategories, selectedSubCategories]);
+    if (selectedCategories.includes("all")) {
+      handleClearAll();
+      setIsFilterOpen(false);
+      return;
+    }
+    updateUrlFilters(selectedSubCategories);
+    setIsFilterOpen(false);
+  }, [selectedCategories, selectedSubCategories, updateUrlFilters]);
+
+  const handleRemoveSubCategory = useCallback(
+    (subToRemove) => {
+      const nextSubs = selectedSubCategories.filter(
+        (s) => s.trim().toLowerCase() !== subToRemove.trim().toLowerCase()
+      );
+      setSelectedSubCategories(nextSubs);
+
+      const parentCat = menuStructure.find((cat) =>
+        cat.subs.some(
+          (s) => s.trim().toLowerCase() === subToRemove.trim().toLowerCase()
+        )
+      );
+      if (parentCat) {
+        const hasOtherSubs = nextSubs.some((s) =>
+          parentCat.subs.some(
+            (ps) => ps.trim().toLowerCase() === s.trim().toLowerCase()
+          )
+        );
+        if (!hasOtherSubs) {
+          setSelectedCategories((prev) =>
+            prev.filter((c) => c !== parentCat.id)
+          );
+        }
+      }
+
+      updateUrlFilters(nextSubs);
+    },
+    [selectedSubCategories, menuStructure, updateUrlFilters]
+  );
+
+  const handleRemoveCategory = useCallback(
+    (catId) => {
+      if (catId === "all") {
+        setSelectedCategories((prev) => prev.filter((id) => id !== "all"));
+        return;
+      }
+      setSelectedCategories((prev) => prev.filter((id) => id !== catId));
+      const category = menuStructure.find((c) => c.id === catId);
+      if (category) {
+        const nextSubs = selectedSubCategories.filter(
+          (sub) =>
+            !category.subs.some(
+              (s) => s.trim().toLowerCase() === sub.trim().toLowerCase()
+            )
+        );
+        setSelectedSubCategories(nextSubs);
+        updateUrlFilters(nextSubs);
+      }
+    },
+    [menuStructure, selectedSubCategories, updateUrlFilters]
+  );
 
   const handleClearAll = useCallback(() => {
     setSearchTerm("");
     setSelectedCategories([]);
     setSelectedSubCategories([]);
-    setAppliedCategories([]);
-    setAppliedSubCategories([]);
-  }, []);
-
-  console.log("Filter Options:", filterOptions);
-console.log("Menu Structure:", menuStructure);
+    setIsFilterOpen(false);
+    router.replace(pathname, { scroll: false });
+  }, [router, pathname]);
 
   // ── Filter logic ──
-//   const filteredProducts = useMemo(() => {
-//     if (!mounted) return [];
-    
-//     let filtered = allProducts.filter((p) => p.isActive !== false);
+  const filteredProducts = useMemo(() => {
+    if (!mounted) return [];
+    let filtered = allProducts.filter((p) => p.isActive !== false);
+    const customizationType = searchParams.get("customizationType");
+    const cottonTeeType = searchParams.get("cottonTeeType");
+    const apparelParam = searchParams.get("apparel");
+    const sportParam = searchParams.get("sport");
 
-//     if (searchTerm.trim()) {
-//       filtered = filtered.filter((p) =>
-//         p.name?.toLowerCase().includes(searchTerm.toLowerCase().trim())
-//       );
-//     }
+    const matchesValue = (value, expected) =>
+      String(value || "").trim().toLowerCase() === String(expected || "").trim().toLowerCase();
 
-// const selectedSports = appliedSubCategories.filter((sub) =>
-//   filterOptions.sports.includes(sub)
-// );
+    if (customizationType) {
+      filtered = filtered.filter((product) =>
+        matchesValue(product.customizationType, customizationType)
+      );
+    }
 
-// const selectedApparels = appliedSubCategories.filter((sub) =>
-//   filterOptions.apparels.includes(sub)
-// );
+    if (cottonTeeType) {
+      filtered = filtered.filter((product) =>
+        matchesValue(product.cottonTeeType, cottonTeeType)
+      );
+    }
 
-// if (selectedSports.length > 0) {
-//   filtered = filtered.filter((p) =>
-//     selectedSports.some(
-//       (sport) =>
-//         p.sport?.trim().toLowerCase() ===
-//         sport.trim().toLowerCase()
-//     )
-//   );
-// }
+    if (apparelParam) {
+      const requestedApparels = apparelParam
+        .split(",")
+        .map((apparel) => apparel.trim().toLowerCase())
+        .filter(Boolean);
 
-// if (selectedApparels.length > 0) {
-//   filtered = filtered.filter((p) =>
-//     selectedApparels.some(
-//       (apparel) =>
-//         p.apparel?.trim().toLowerCase() ===
-//         apparel.trim().toLowerCase()
-//     )
-//   );
-// }
-//     return filtered;
-//   }, [allProducts, searchTerm, appliedCategories, appliedSubCategories, mounted]);
-const filteredProducts = useMemo(() => {
-  if (!mounted) return [];
-  let filtered = allProducts.filter((p) => p.isActive !== false);
+      filtered = filtered.filter((product) =>
+        requestedApparels.includes(String(product.apparel || "").trim().toLowerCase())
+      );
+    }
 
-  if (searchTerm.trim()) {
-    filtered = filtered.filter((p) =>
-      p.name?.toLowerCase().includes(searchTerm.toLowerCase().trim())
-    );
-  }
+    if (sportParam) {
+      const requestedSports = sportParam
+        .split(",")
+        .map((sport) => sport.trim().toLowerCase())
+        .filter(Boolean);
 
-  return filtered; // sport/apparel filtering now happens server-side
-}, [allProducts, searchTerm, mounted]);
+      filtered = filtered.filter((product) =>
+        requestedSports.includes(String(product.sport || "").trim().toLowerCase())
+      );
+    }
+
+    if (searchTerm.trim()) {
+      filtered = filtered.filter((p) =>
+        p.name?.toLowerCase().includes(searchTerm.toLowerCase().trim())
+      );
+    }
+
+    return filtered;
+  }, [allProducts, searchTerm, mounted, searchParams]);
 
   const sidebarProps = {
     searchTerm,
@@ -921,6 +1052,9 @@ const filteredProducts = useMemo(() => {
     selectedSubCategories,
     onSubCategoryChange: handleSubCategoryChange,
     onApplyFilters: handleApplyFilters,
+    onClearAll: handleClearAll,
+    onRemoveSubCategory: handleRemoveSubCategory,
+    onRemoveCategory: handleRemoveCategory,
   };
 
   // Don't render anything until mounted to avoid hydration mismatch
@@ -1037,7 +1171,7 @@ const filteredProducts = useMemo(() => {
                     {searchTerm &&
                       `We couldn't find any products matching "${searchTerm}"`}
                     {!searchTerm &&
-                      appliedCategories.length > 0 &&
+                      (selectedSubCategories.length > 0 || searchParams.toString().length > 0) &&
                       `No products found in selected categories`}
                   </p>
                   <button

@@ -678,8 +678,6 @@
 //   );
 // }
 
-
-
 "use client";
 
 import Link from "next/link";
@@ -707,7 +705,20 @@ export default function ProductCard({ product }) {
   const productPrice = product.basePrice ?? product.price ?? 0;
   const productCategory = product.categoryName || product.category || "";
   const productSubCategory =
-    product.subCategoryName || product.sport || productCategory;
+    product.customizationType === "CUSTOM_COTTON_TEES"
+      ? product.cottonTeeType === "OUR_DESIGN"
+        ? "OUR DESIGN"
+        : product.cottonTeeType === "UPLOAD_DESIGN"
+          ? "UPLOAD DESIGN"
+          : ""
+      : product.subCategoryName || product.sport || productCategory;
+
+  console.log("PRODUCT CARD:", {
+    name: product?.name,
+    customizationType: product?.customizationType,
+    cottonTeeType: product?.cottonTeeType,
+    sport: product?.sport,
+  });
 
   const isCustomizable =
     product.templates &&
@@ -739,11 +750,19 @@ export default function ProductCard({ product }) {
       {/* IMAGE AREA */}
       <div className="relative w-full aspect-[4/5] bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center overflow-hidden shrink-0">
         {/* Category Badge */}
-        <div className="absolute top-2 left-2 sm:top-3 sm:left-3 z-10">
-          <span className="bg-primary backdrop-blur-sm text-white px-1.5 py-0.5 sm:px-2 sm:py-0.5 rounded text-[8px] sm:text-[9px] font-black uppercase tracking-widest shadow-sm">
-            {product.sport}
-          </span>
-        </div>
+
+        {((product.customizationType === "CUSTOM_COTTON_TEES" &&
+          productSubCategory) ||
+          (product.customizationType !== "CUSTOM_COTTON_TEES" &&
+            product.sport)) && (
+            <div className="absolute top-2 left-2 sm:top-3 sm:left-3 z-10">
+              <span className="bg-primary backdrop-blur-sm text-white px-1.5 py-0.5 sm:px-2 sm:py-0.5 rounded text-[8px] sm:text-[9px] font-black uppercase tracking-widest shadow-sm">
+                {product.customizationType === "CUSTOM_COTTON_TEES"
+                  ? productSubCategory
+                  : product.sport}
+              </span>
+            </div>
+          )}
 
         {product.discountValue > 0 && (
           <div className="absolute top-2 right-2 sm:top-3 sm:right-3 z-10">
@@ -834,7 +853,13 @@ export default function ProductCard({ product }) {
 
         <div className="mt-auto pt-2 sm:pt-3 lg:pt-2 border-t border-gray-100 flex justify-between items-center">
           <span className="text-[8px] sm:text-[9px] lg:text-[8px] text-gray-400 font-bold tracking-widest uppercase">
-            {productSubCategory}
+            {product?.customizationType === "CUSTOM_COTTON_TEES"
+              ? product?.cottonTeeType === "OUR_DESIGN"
+                ? "OUR DESIGN"
+                : product?.cottonTeeType === "UPLOAD_DESIGN"
+                  ? "UPLOAD DESIGN"
+                  : ""
+              : productSubCategory}
           </span>
           <div className="flex items-center gap-1 text-[8px] sm:text-[9px] lg:text-[8px] font-black text-gray-400 uppercase tracking-tighter hover:text-primary transition-all group-hover:text-primary">
             {isCustomizable ? (

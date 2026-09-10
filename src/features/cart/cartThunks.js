@@ -379,6 +379,7 @@ export const addToCart =
         const response =
           await addToCartAPI({
             customizationId,
+            productId: cartData.productId,
             sizes:
               cartData.sizes || [],
           });

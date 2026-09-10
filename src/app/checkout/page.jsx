@@ -532,7 +532,7 @@ export default function CheckoutPage() {
       toast.success("Order placed successfully!");
 
       router.push(
-        `/payment-status?status=success&orderId=${userOrder.orderId}`
+        `/payment-status?status=cod&orderId=${userOrder.orderId}`
       );
 
       return;
