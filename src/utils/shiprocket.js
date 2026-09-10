@@ -700,6 +700,9 @@ async function createShiprocketOrder(order) {
        * ₹0 if subtotal >= ₹999
        * ₹50 otherwise
        */
+
+      cod_amount: paymentMethod === "COD" ? Number(orderDetails.finalAmount || 0) : 0,
+
       shipping_charges: Number(orderDetails.shippingCharge || 0),
 
       giftwrap_charges: 0,

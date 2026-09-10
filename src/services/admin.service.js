@@ -47,6 +47,42 @@ const calculateFinalPrice = require("../utils/calculateFinalPrice.js");
 
 const customization = require("../models/customization.model");
 
+const parseMultipartObject = (value, fallback = {}) => {
+  if (!value) return fallback;
+  if (typeof value === "object") return value;
+
+  try {
+    return JSON.parse(value);
+  } catch (error) {
+    throw new ApiError(httpStatus.BAD_REQUEST, "Invalid cottonTee data");
+  }
+};
+
+const validateCottonTeeData = (data, frontImage, backImage) => {
+  if (data.customizationType !== "CUSTOM_COTTON_TEES") return;
+
+  if (!["OUR_DESIGN", "UPLOAD_DESIGN"].includes(data.cottonTeeType)) {
+    throw new ApiError(
+      httpStatus.BAD_REQUEST,
+      "cottonTeeType must be OUR_DESIGN or UPLOAD_DESIGN",
+    );
+  }
+
+  if (!frontImage || !backImage) {
+    throw new ApiError(
+      httpStatus.BAD_REQUEST,
+      "Front and back images are required for Custom Cotton Tees",
+    );
+  }
+
+  if (data.cottonTeeType === "UPLOAD_DESIGN" && !data.baseColor?.trim()) {
+    throw new ApiError(
+      httpStatus.BAD_REQUEST,
+      "Base color is required for UPLOAD_DESIGN",
+    );
+  }
+};
+
 const createBanner = async (req, res) => {
   const { title, subtitle, offer } = req.body;
   const image = req.file;
@@ -759,6 +795,10 @@ const getTemplate = async (req) => {
 
 const createProducts = async (req, res) => {
   const data = req.body;
+  const customizationType = data.customizationType || "NONE";
+  const cottonTee = parseMultipartObject(data.cottonTee);
+  const cottonTeeType = data.cottonTeeType || cottonTee.cottonTeeType;
+  const baseColor = data.baseColor ?? cottonTee.baseColor ?? "";
 
   // ── File uploads ──────────────────────────────────────────
   let glbUrl = null;
@@ -775,8 +815,37 @@ const createProducts = async (req, res) => {
     backImage = await uploadToCloud(req.files.backImage[0], "products/images");
   }
 
-  if (!frontImage) throw new ApiError(400, "Front image is required");
-  if (!backImage) backImage = frontImage;
+  if (customizationType === "CUSTOM_COTTON_TEES") {
+    if (!data.name?.trim()) {
+      throw new ApiError(httpStatus.BAD_REQUEST, "Product name is required");
+    }
+
+    if (!data.categoryId) {
+      throw new ApiError(httpStatus.BAD_REQUEST, "Category is required");
+    }
+
+    if (!data.apparel?.trim()) {
+      throw new ApiError(httpStatus.BAD_REQUEST, "Apparel is required");
+    }
+
+    if (
+      data.basePrice === undefined ||
+      data.basePrice === "" ||
+      !Number.isFinite(Number(data.basePrice)) ||
+      Number(data.basePrice) < 0
+    ) {
+      throw new ApiError(httpStatus.BAD_REQUEST, "A valid base price is required");
+    }
+
+    validateCottonTeeData(
+      { customizationType, cottonTeeType, baseColor },
+      frontImage,
+      backImage,
+    );
+  } else {
+    if (!frontImage) throw new ApiError(400, "Front image is required");
+    if (!backImage) backImage = frontImage;
+  }
 
   // ── Parse array / JSON fields from multipart ──────────────
   const templates = Array.isArray(data.templates)
@@ -824,6 +893,15 @@ const createProducts = async (req, res) => {
     segment: data.segment,
     sport: data.sport,
     apparel: data.apparel,
+    customizationType,
+    cottonTeeType: customizationType === "CUSTOM_COTTON_TEES" ? cottonTeeType : null,
+    cottonTee: customizationType === "CUSTOM_COTTON_TEES"
+      ? {
+          baseColor: cottonTeeType === "UPLOAD_DESIGN" ? baseColor.trim() : "",
+          frontImage,
+          backImage,
+        }
+      : undefined,
   });
 
   return {
@@ -1059,6 +1137,9 @@ if (apparel) {
           segment: 1,
           sport: 1,
           apparel: 1,
+          customizationType: 1,
+          cottonTeeType: 1,
+          cottonTee: 1,
           categoryId: 1,
           categoryName: 1,
           subCategoryName: 1,
@@ -1158,6 +1239,11 @@ const editProducts = async (req, res) => {
     throw new ApiError(404, "Product not found");
   }
 
+  const customizationType = data.customizationType || product.customizationType || "NONE";
+  const submittedCottonTee = parseMultipartObject(data.cottonTee, {});
+  const cottonTeeType = data.cottonTeeType || submittedCottonTee.cottonTeeType || product.cottonTeeType;
+  const requestedBaseColor = data.baseColor ?? submittedCottonTee.baseColor;
+
   let glbUrl = product.glbUrl;
 
   // 🔥 GLB UPDATE
@@ -1169,8 +1255,12 @@ const editProducts = async (req, res) => {
   }
 
   // 🔥 EXISTING IMAGES
-  let frontImage = product.viewImages?.front;
-  let backImage = product.viewImages?.back;
+  let frontImage = customizationType === "CUSTOM_COTTON_TEES"
+    ? product.cottonTee?.frontImage || product.viewImages?.front
+    : product.viewImages?.front;
+  let backImage = customizationType === "CUSTOM_COTTON_TEES"
+    ? product.cottonTee?.backImage || product.viewImages?.back
+    : product.viewImages?.back;
 
   // 🔥 UPDATE FRONT
   if (req.files?.frontImage?.[0]) {
@@ -1186,6 +1276,38 @@ const editProducts = async (req, res) => {
       req.files.backImage[0],
       "products/images"
     );
+  }
+
+  let cottonTee = product.cottonTee?.toObject
+    ? product.cottonTee.toObject()
+    : { ...(product.cottonTee || {}) };
+
+  if (customizationType === "CUSTOM_COTTON_TEES") {
+    const cottonFrontImage = req.files?.frontImage?.[0]
+      ? frontImage
+      : cottonTee.frontImage;
+    const cottonBackImage = req.files?.backImage?.[0]
+      ? backImage
+      : cottonTee.backImage;
+    const cottonBaseColor = requestedBaseColor !== undefined
+      ? requestedBaseColor
+      : cottonTee.baseColor || "";
+
+    validateCottonTeeData(
+      {
+        customizationType,
+        cottonTeeType,
+        baseColor: cottonBaseColor,
+      },
+      cottonFrontImage,
+      cottonBackImage,
+    );
+
+    cottonTee = {
+      baseColor: cottonTeeType === "UPLOAD_DESIGN" ? cottonBaseColor.trim() : "",
+      frontImage: cottonFrontImage,
+      backImage: cottonBackImage,
+    };
   }
 
   let allowedPatterns = [];
@@ -1239,7 +1361,10 @@ const editProducts = async (req, res) => {
       basePrice,
       discountType,
       discountValue,
-      finalPrice
+      finalPrice,
+      customizationType,
+      cottonTeeType: customizationType === "CUSTOM_COTTON_TEES" ? cottonTeeType : null,
+      cottonTee: customizationType === "CUSTOM_COTTON_TEES" ? cottonTee : undefined,
     },
     { new: true }
   );
@@ -2560,6 +2685,21 @@ const getOrder = async (req, res) => {
 
             selectedPattern:
               "$orderDetails.products.selectedPattern",
+
+            sizes:
+              "$orderDetails.products.sizes",
+
+            productType:
+              "$orderDetails.products.productType",
+
+            size:
+              "$orderDetails.products.size",
+
+            sleeve:
+              "$orderDetails.products.sleeve",
+
+            color:
+              "$orderDetails.products.color",
 
             // ======================
             // STATUS

@@ -1,3 +1,563 @@
+
+
+// const ApiError = require("../../../utils/apiError");
+// const Customization = require("../../../models/customization.model");
+// const Product = require("../../../models/Product.model");
+// const Cart = require("../../../models/cart.model");
+
+// const cleanCustomization = (customizationArray) => {
+//   return customizationArray
+//     .map(({ zoneKey, fieldName, value }) => ({
+//       zoneKey,
+//       fieldName,
+//       value: String(value).trim().toLowerCase(), // 🔥 FIX
+//     }))
+//     .sort((a, b) => a.fieldName.localeCompare(b.fieldName));
+// };
+
+// // =========================
+// // ✅ ADD TO CART (FINAL)
+// // =========================
+// const addToCart = async (req) => {
+//   const { customizationId, sizes = [] } = req.body;
+
+//   if (!sizes.length) {
+//     throw new ApiError(400, "At least one size required");
+//   }
+
+//   const userId = req.user?._id || null;
+//   const guestId =
+//     req.headers["guestid"] ||
+//     req.headers["guest-id"] ||
+//     null;
+
+//   if (!userId && !guestId) {
+//     throw new ApiError(400, "User ID or Guest ID required");
+//   }
+
+//   if (!customizationId) {
+//     const { productId } = req.body;
+//     if (!productId) throw new ApiError(400, "productId is required");
+
+//     const product = await Product.findById(productId);
+//     if (!product) throw new ApiError(404, "Product not found");
+//     if (
+//       product.customizationType !== "CUSTOM_COTTON_TEES" ||
+//       product.cottonTeeType !== "OUR_DESIGN"
+//     ) {
+//       throw new ApiError(400, "A customizationId is required for this product");
+//     }
+
+//     const cartQuery = userId ? { userId } : { guestId };
+//     let userCart = await Cart.findOne(cartQuery);
+//     const image = product.cottonTee?.frontImage || product.viewImages?.front || product.images?.[0] || "";
+
+//     if (!userCart) {
+//       userCart = await Cart.create({
+//         ...cartQuery,
+//         items: [{ productId: product._id, customizationId: null, sizes, image }],
+//       });
+//     } else {
+//       const existingItem = userCart.items.find(
+//         (item) => !item.customizationId && String(item.productId) === String(product._id),
+//       );
+
+//       if (existingItem) {
+//         existingItem.sizes = sizes;
+//         existingItem.image = image;
+//       } else {
+//         userCart.items.push({ productId: product._id, customizationId: null, sizes, image });
+//       }
+//       await userCart.save();
+//     }
+
+//     return { success: true, message: "Added to cart", data: userCart };
+//   }
+
+//   // ==========================================
+//   // MERGE GUEST CART TO USER CART
+//   // ==========================================
+//   if (userId && guestId) {
+//     const guestCart = await Cart.findOne({ guestId });
+
+//     if (guestCart && guestCart.items.length > 0) {
+//       let userCart = await Cart.findOne({ userId });
+
+//       if (!userCart) {
+//         userCart = await Cart.create({
+//           userId,
+//           items: [],
+//         });
+//       }
+
+//       for (const guestItem of guestCart.items) {
+//         const existingIndex = userCart.items.findIndex(
+//           (item) =>
+//             String(item.customizationId) ===
+//             String(guestItem.customizationId)
+//         );
+
+//         if (existingIndex !== -1) {
+//           userCart.items[existingIndex] = {
+//             ...userCart.items[existingIndex]._doc,
+//             customizationId: guestItem.customizationId,
+//             sizes: guestItem.sizes,
+//             image: guestItem.image,
+//           };
+//         } else {
+//           userCart.items.push(guestItem);
+//         }
+//       }
+
+//       await userCart.save();
+
+//       await Customization.updateMany(
+//         { guestId },
+//         {
+//           $set: {
+//             userId,
+//             guestId: null,
+//           },
+//         }
+//       );
+
+//       await Cart.deleteOne({ guestId });
+
+//       console.log("✅ Guest cart merged");
+//     }
+//   }
+
+//   // ==========================================
+//   // GET CUSTOMIZATION
+//   // ==========================================
+//   const customization = await Customization.findById(
+//     customizationId
+//   );
+
+//   if (!customization) {
+//     throw new ApiError(
+//       404,
+//       "Customization not found"
+//     );
+//   }
+
+//   // ==========================================
+//   // GET PRODUCT
+//   // ==========================================
+//   const product = await Product.findById(
+//     customization.productId
+//   );
+
+//   if (!product) {
+//     throw new ApiError(404, "Product not found");
+//   }
+
+//   // ==========================================
+//   // FIND CART
+//   // ==========================================
+//   const cartQuery = userId
+//     ? { userId }
+//     : { guestId };
+
+//   let userCart = await Cart.findOne(cartQuery);
+
+//   // ==========================================
+//   // CREATE CART
+//   // ==========================================
+//   if (!userCart) {
+//     userCart = await Cart.create({
+//       ...cartQuery,
+//       items: [
+//         {
+//           customizationId,
+//           productId: product._id,
+//           sizes,
+//           image:
+//             product?.viewImages?.front ||
+//             product?.images?.[0] ||
+//             "",
+//         },
+//       ],
+//     });
+
+//     return {
+//       success: true,
+//       message: "Added to cart",
+//       data: userCart,
+//     };
+//   }
+
+//   // ==========================================
+//   // CHECK PRODUCT EXISTS
+//   // ==========================================
+//   const existingIndex =
+//     userCart.items.findIndex(
+//       (item) =>
+//         String(item.customizationId) ===
+//         String(customizationId)
+//     );
+
+//   // ==========================================
+//   // UPDATE EXISTING PRODUCT
+//   // ==========================================
+//   if (existingIndex !== -1) {
+//     userCart.items[existingIndex] = {
+//       ...userCart.items[existingIndex]._doc,
+
+//       customizationId,
+//       productId: product._id,
+//       sizes,
+
+//       image:
+//         product?.viewImages?.front ||
+//         product?.images?.[0] ||
+//         "",
+//     };
+
+//     await userCart.save();
+
+//     return {
+//       success: true,
+//       message: "Cart updated",
+//       data: userCart,
+//     };
+//   }
+
+//   // ==========================================
+//   // ADD NEW PRODUCT
+//   // ==========================================
+//   userCart.items.push({
+//     customizationId,
+//     productId: product._id,
+//     sizes,
+//     image:
+//       product?.viewImages?.front ||
+//       product?.images?.[0] ||
+//       "",
+//   });
+
+//   await userCart.save();
+
+//   return {
+//     success: true,
+//     message: "Added to cart",
+//     data: userCart,
+//   };
+// };
+// // =========================
+// // ✅ GET CART
+// // =========================
+// const getCart = async (req) => {
+//   const userId = req.user?._id || null;
+//   const guestId = req.headers["guestid"] || req.headers["guest-id"] || null;
+
+//   console.log("REQ USER:", req.user);
+//   console.log("USER ID:", userId);
+//   console.log("GUEST ID:", guestId);
+
+//   // =========================
+//   // 🔥 AUTO MERGE (IMPORTANT)
+//   // =========================
+//   if (userId && guestId) {
+//     const guestCart = await Cart.findOne({ guestId });
+
+//     if (guestCart && guestCart.items.length > 0) {
+//       let userCart = await Cart.findOne({ userId });
+
+//       if (!userCart) {
+//         userCart = await Cart.create({ userId, items: [] });
+//       }
+
+//       for (const guestItem of guestCart.items) {
+//         if (!guestItem.customizationId) {
+//           const existingDirectItem = userCart.items.find(
+//             (item) => !item.customizationId && String(item.productId) === String(guestItem.productId),
+//           );
+
+//           if (existingDirectItem) {
+//             existingDirectItem.sizes = guestItem.sizes;
+//             existingDirectItem.image = guestItem.image;
+//           } else {
+//             userCart.items.push(guestItem);
+//           }
+//           continue;
+//         }
+
+//         // ✅ Get guest customization
+//         const guestCustomization = await Customization.findById(
+//           guestItem.customizationId,
+//         );
+//         if (!guestCustomization) {
+
+//           console.log("❌ Guest customization missing");
+
+//           continue;
+//         }
+
+//         let match = null;
+
+//         for (const item of userCart.items) {
+//           const existingCustomization = await Customization.findById(
+//             item.customizationId,
+//           );
+
+//           if (!existingCustomization) {
+
+//             console.log("❌ Existing customization missing");
+
+//             // 🔥 REMOVE INVALID ITEM
+//             userCart.items = userCart.items.filter(
+//               (cartItem) =>
+//                 String(cartItem.customizationId) !==
+//                 String(item.customizationId)
+//             );
+
+//             continue;
+//           }
+
+//           const isSame =
+//             String(existingCustomization.productId) ===
+//             String(guestCustomization.productId) &&
+//             JSON.stringify(
+//               cleanCustomization(existingCustomization.customization),
+//             ) ===
+//             JSON.stringify(
+//               cleanCustomization(guestCustomization.customization),
+//             );
+
+//           if (isSame) {
+//             match = item;
+//             break;
+//           }
+//         }
+
+//         // ✅ Merge sizes
+//         if (match) {
+//           guestItem.sizes.forEach((newSize) => {
+//             const existing = match.sizes.find((s) => s.size === newSize.size);
+
+//             if (existing) {
+//               existing.quantity += newSize.quantity;
+//             } else {
+//               match.sizes.push(newSize);
+//             }
+//           });
+//         } else {
+//           // ✅ Add new item
+//           userCart.items.push(guestItem);
+//         }
+//       }
+
+//       await userCart.save();
+
+//       await Customization.updateMany(
+//         { guestId: guestId },
+//         {
+//           $set: { userId: userId, guestId: null },
+//         },
+//       );
+
+//       if (guestCart._id) {
+//         await Cart.deleteOne({ _id: guestCart._id });
+//       }
+
+//       console.log("✅ Guest cart merged during getCart");
+//     }
+//   }
+
+//   // =========================
+//   // 🔥 FETCH FINAL CART
+//   // =========================
+//   const cartQuery = userId ? { userId } : { guestId };
+
+//   const cart = await Cart.findOne(cartQuery).lean();
+
+//   if (!cart || cart.items.length === 0) {
+//     return {
+//       success: true,
+//       items: [],
+//       grandTotal: 0,
+//     };
+//   }
+
+//   const itemsData = await Promise.all(
+//     cart.items.map(async (item) => {
+//       // const [product, customization] = await Promise.all([
+//       //   Product.findById(item.productId).lean(),
+//       //   Customization.findById(item.customizationId).lean(),
+//       // ]);
+
+//       const productPromise = Product.findOne({ _id: item.productId }).lean();
+//       const customizationPromise = item.customizationId
+//         ? Customization.findOne({ _id: item.customizationId }).lean()
+//         : Promise.resolve(null);
+//       const [product, customization] = await Promise.all([
+//         productPromise,
+//         customizationPromise,
+//       ]);
+
+//       if (!product || (item.customizationId && !customization)) return null;
+
+//       const price = product.finalPrice || 0;
+
+//       const totalQty = item.sizes.reduce((sum, s) => sum + s.quantity, 0);
+
+//       return {
+//         customizationId: item.customizationId,
+//         productId: product._id,
+//         productName: product.name,
+//         basePrice: price,
+//         total: price * totalQty,
+//         totalQuantity: totalQty,
+//         customization: customization?.customization || [],
+//         sizes: item.sizes,
+//         image: product?.cottonTee?.frontImage || product?.viewImages?.front || product?.images?.[0] || "",
+//       };
+//     }),
+//   );
+
+//   const filteredItems = itemsData.filter(Boolean);
+
+//   const grandTotal = filteredItems.reduce((sum, item) => {
+//     return sum + item.total;
+//   }, 0);
+
+//   return {
+//     success: true,
+//     items: filteredItems,
+//     grandTotal,
+//   };
+// };
+
+// // =========================
+// // ✅ EDIT CART
+// // =========================
+// const editCart = async (req) => {
+//   const { customizationId, sizes } = req.body;
+
+//   const userId = req.user?._id || null;
+//   const guestId = req.headers["guestid"] || req.headers["guest-id"] || null;
+
+//   if (!userId && !guestId) {
+//     throw new ApiError(400, "User ID or Guest ID required");
+//   }
+
+//   if (!sizes || sizes.length === 0) {
+//     throw new ApiError(400, "At least one size required");
+//   }
+
+//   const cartQuery = userId ? { userId } : { guestId };
+
+//   const userCart = await Cart.findOne(cartQuery);
+//   if (!userCart) throw new ApiError(404, "Cart not found");
+
+//   const item = userCart.items.find(
+//     (i) => String(i.customizationId) === String(customizationId),
+//   );
+
+//   if (!item) throw new ApiError(404, "Item not found");
+
+//   item.sizes = sizes;
+//   await userCart.save();
+
+//   return { success: true, message: "Cart updated", data: userCart };
+// };
+
+// // =========================
+// // ✅ DELETE CART ITEM
+// // =========================
+// const deleteCart = async (req) => {
+//   const { customizationId } = req.body;
+
+//   const userId = req.user?._id || null;
+//   const guestId = req.headers["guestid"] || req.headers["guest-id"] || null;
+
+//   if (!userId && !guestId) {
+//     throw new ApiError(400, "User ID or Guest ID required");
+//   }
+
+//   const cartQuery = userId ? { userId } : { guestId };
+
+//   const userCart = await Cart.findOne(cartQuery);
+//   if (!userCart) throw new ApiError(404, "Cart not found");
+
+//   // 🔥 find removed item
+//   const removedItem = userCart.items.find(
+//     (item) => String(item.customizationId) === String(customizationId),
+//   );
+
+//   // 🔥 remove from cart
+//   userCart.items = userCart.items.filter(
+//     (item) => String(item.customizationId) !== String(customizationId),
+//   );
+
+//   await userCart.save();
+
+//   // 🔥 DELETE customization (IMPORTANT)
+//   if (removedItem) {
+//     await Customization.findByIdAndDelete(removedItem.customizationId);
+//   }
+
+//   return { success: true, message: "Item removed", data: userCart };
+// };
+
+// // =========================
+// // ✅ CLEAR CART
+// // =========================
+// const clearCart = async (req) => {
+//   const userId = req.user?._id;
+
+//   if (!userId) throw new ApiError(401, "Unauthorized");
+
+//   const cart = await Cart.findOne({ userId });
+
+//   if (cart) {
+//     cart.items = [];
+//     await cart.save();
+//   }
+
+//   return { success: true, message: "Cart cleared" };
+// };
+
+// module.exports = {
+//   addToCart,
+//   getCart,
+//   editCart,
+//   deleteCart,
+//   clearCart,
+// };
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 // const ApiError = require("../../../utils/apiError");
 // const Customization = require("../../../models/customization.model");
 // const Product = require("../../../models/Product.model");
@@ -498,6 +1058,60 @@ const addToCart = async (req) => {
     throw new ApiError(400, "User ID or Guest ID required");
   }
 
+  if (!customizationId) {
+    const productPayload =
+      req.body.product ||
+      req.body.productData ||
+      req.body.productDetails ||
+      req.body.selectedProduct;
+    const productId =
+      req.body.productId ||
+      (typeof productPayload === "object" ? productPayload?._id : productPayload) ||
+      req.body.product_id ||
+      req.body._id ||
+      req.body.id;
+    if (!productId) {
+      throw new ApiError(
+        400,
+        `productId is required; received fields: ${Object.keys(req.body).join(", ") || "none"}`,
+      );
+    }
+
+    const product = await Product.findById(productId);
+    if (!product) throw new ApiError(404, "Product not found");
+    if (
+      product.customizationType !== "CUSTOM_COTTON_TEES" ||
+      product.cottonTeeType !== "OUR_DESIGN"
+    ) {
+      throw new ApiError(400, "A customizationId is required for this product");
+    }
+
+    const cartQuery = userId ? { userId } : { guestId };
+    let userCart = await Cart.findOne(cartQuery);
+    const image = product.cottonTee?.frontImage || product.viewImages?.front || product.images?.[0] || "";
+
+    if (!userCart) {
+      userCart = await Cart.create({
+        ...cartQuery,
+        items: [{ productId: product._id, customizationId: null, sizes, image }],
+      });
+    } else {
+      const existingItem = userCart.items.find(
+        (item) => !item.customizationId && String(item.productId) === String(product._id),
+      );
+
+      if (existingItem) {
+        existingItem.sizes = sizes;
+        existingItem.image = image;
+      } else {
+        userCart.items.push({ productId: product._id, customizationId: null, sizes, image });
+      }
+      await userCart.save();
+    }
+
+    return { success: true, message: "Added to cart", data: userCart };
+  }
+
   // ==========================================
   // MERGE GUEST CART TO USER CART
   // ==========================================
@@ -515,10 +1129,19 @@ const addToCart = async (req) => {
       }
 
       for (const guestItem of guestCart.items) {
-        const existingIndex = userCart.items.findIndex(
-          (item) =>
-            String(item.customizationId) ===
-            String(guestItem.customizationId)
+        // =============================
+        // CUSTOM COTTON TEE / FIX
+        // OUR_DESIGN items always carry customizationId: null. Matching
+        // purely on customizationId would let a null-customizationId
+        // item for one product incorrectly match a null-customizationId
+        // item for a different product. Fall back to matching on
+        // productId whenever customizationId is null, same as getCart's
+        // merge logic below.
+        // =============================
+        const existingIndex = userCart.items.findIndex((item) =>
+          guestItem.customizationId
+            ? String(item.customizationId) === String(guestItem.customizationId)
+            : !item.customizationId && String(item.productId) === String(guestItem.productId)
         );
 
         if (existingIndex !== -1) {
@@ -596,7 +1219,14 @@ const addToCart = async (req) => {
           customizationId,
           productId: product._id,
           sizes,
+          // =============================
+          // CUSTOM COTTON TEE / FIX
+          // Include the cottonTee fallback so Cotton Tee items get a
+          // real snapshot image, consistent with getCottonProduct /
+          // getProductSnapshot / getCart elsewhere in this codebase.
+          // =============================
           image:
+            product?.cottonTee?.frontImage ||
             product?.viewImages?.front ||
             product?.images?.[0] ||
             "",
@@ -632,7 +1262,9 @@ const addToCart = async (req) => {
       productId: product._id,
       sizes,
 
+      // CUSTOM COTTON TEE / FIX — see note above
       image:
+        product?.cottonTee?.frontImage ||
         product?.viewImages?.front ||
         product?.images?.[0] ||
         "",
@@ -654,7 +1286,9 @@ const addToCart = async (req) => {
     customizationId,
     productId: product._id,
     sizes,
+    // CUSTOM COTTON TEE / FIX — see note above
     image:
+      product?.cottonTee?.frontImage ||
       product?.viewImages?.front ||
       product?.images?.[0] ||
       "",
@@ -693,6 +1327,20 @@ const getCart = async (req) => {
       }
 
       for (const guestItem of guestCart.items) {
+        if (!guestItem.customizationId) {
+          const existingDirectItem = userCart.items.find(
+            (item) => !item.customizationId && String(item.productId) === String(guestItem.productId),
+          );
+
+          if (existingDirectItem) {
+            existingDirectItem.sizes = guestItem.sizes;
+            existingDirectItem.image = guestItem.image;
+          } else {
+            userCart.items.push(guestItem);
+          }
+          continue;
+        }
+
         // ✅ Get guest customization
         const guestCustomization = await Customization.findById(
           guestItem.customizationId,
@@ -797,12 +1445,16 @@ const getCart = async (req) => {
       //   Customization.findById(item.customizationId).lean(),
       // ]);
 
+      const productPromise = Product.findOne({ _id: item.productId }).lean();
+      const customizationPromise = item.customizationId
+        ? Customization.findOne({ _id: item.customizationId }).lean()
+        : Promise.resolve(null);
       const [product, customization] = await Promise.all([
-        Product.findOne({ _id: item.productId }).lean(),
-        Customization.findOne({ _id: item.customizationId }).lean(),
+        productPromise,
+        customizationPromise,
       ]);
 
-      if (!product || !customization) return null;
+      if (!product || (item.customizationId && !customization)) return null;
 
       const price = product.finalPrice || 0;
 
@@ -815,9 +1467,9 @@ const getCart = async (req) => {
         basePrice: price,
         total: price * totalQty,
         totalQuantity: totalQty,
-        customization: customization.customization,
+        customization: customization?.customization || [],
         sizes: item.sizes,
-        image: product?.viewImages?.front || product?.images?.[0] || "",
+        image: product?.cottonTee?.frontImage || product?.viewImages?.front || product?.images?.[0] || "",
       };
     }),
   );

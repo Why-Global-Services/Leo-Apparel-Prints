@@ -25,6 +25,33 @@ const productSchema = new mongoose.Schema(
       type: String,
     },
 
+    customizationType: {
+      type: String,
+      enum: ["NONE", "CUSTOM_COTTON_TEES"],
+      default: "NONE",
+    },
+
+    cottonTeeType: {
+      type: String,
+      enum: ["OUR_DESIGN", "UPLOAD_DESIGN", null],
+      default: null,
+    },
+
+    cottonTee: {
+      baseColor: {
+        type: String,
+        default: "",
+      },
+      frontImage: {
+        type: String,
+        default: "",
+      },
+      backImage: {
+        type: String,
+        default: "",
+      },
+    },
+
     categoryId: {
       type: String,
       ref: "Category",

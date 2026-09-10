@@ -23,11 +23,9 @@ const { createStripeCheckoutSession } = require("../Payment/payment.service");
 const ApiError = require("../../../utils/apiError");
 const logger = require("../../../config/logger");
 const { performance } = require("perf_hooks");
-const { calculateShippingCharge
-} = require(
-  "../../../services/admin Services/shippingCharge/shippingCharge.service"
-);
-
+const {
+  calculateShippingCharge,
+} = require("../../../services/admin Services/shippingCharge/shippingCharge.service");
 
 class OrderService {
   constructor() {
@@ -136,10 +134,53 @@ class OrderService {
 
       await session.commitTransaction();
 
+      // ========================================
+      // COD → CREATE SHIPROCKET ORDER
+      // ========================================
+      if (paymentMethod?.toLowerCase() === "cod") {
+        try {
+          console.log("🚚 Creating Shiprocket order for COD...");
+
+          const shiprocketResult = await createShiprocketOrder(order);
+
+          if (shiprocketResult) {
+            order.shiprocket = {
+              orderId: shiprocketResult.order_id || shiprocketResult.orderId || null,
+
+              shipmentId: shiprocketResult.shipment_id || shiprocketResult.shipmentId || null,
+
+              awbCode: shiprocketResult.awb_code || null,
+
+              courierId: shiprocketResult.courier_company_id || null,
+
+              courierName: shiprocketResult.courier_name || null,
+
+              status: shiprocketResult.status || null,
+
+              trackingUrl: shiprocketResult.tracking_url || null,
+
+              createdAt: new Date(),
+            };
+
+            await order.save();
+
+            console.log("✅ COD Shiprocket order created:", {
+              orderId: shiprocketResult.order_id,
+              shipmentId: shiprocketResult.shipment_id,
+            });
+          }
+        } catch (shiprocketError) {
+          console.error(
+            "❌ COD Shiprocket creation failed:",
+            shiprocketError.message,
+          );
+
+          // Do NOT fail the COD order if Shiprocket temporarily fails
+        }
+      }
+
       const duration = performance.now() - startTime;
       this.logOrderSuccess(order, userId, duration);
-
-      /* ================================ */
 
       return this.formatOrderResponse(order, paymentResult, pricing);
     } catch (error) {
@@ -171,58 +212,56 @@ class OrderService {
    * 3. REPLACE ENTIRE calculatePricing() FUNCTION
    * Simple pricing without coupons
    */
-async calculatePricing({ cartItems }) {
-  console.log("💰 Dynamic pricing calculation");
+  async calculatePricing({ cartItems }) {
+    console.log("💰 Dynamic pricing calculation");
 
-  const updatedCartItems = [...cartItems];
+    const updatedCartItems = [...cartItems];
 
-  // =========================
-  // SUBTOTAL
-  // =========================
+    // =========================
+    // SUBTOTAL
+    // =========================
 
-  const subtotal = updatedCartItems.reduce((sum, item) => {
-    const itemSubtotal =
-      item.subtotal ||
-      (item.price || 0) * (item.quantity || 1);
+    const subtotal = updatedCartItems.reduce((sum, item) => {
+      const itemSubtotal =
+        item.subtotal || (item.price || 0) * (item.quantity || 1);
 
-    return sum + itemSubtotal;
-  }, 0);
+      return sum + itemSubtotal;
+    }, 0);
 
-  // =========================
-  // DYNAMIC SHIPPING
-  // =========================
+    // =========================
+    // DYNAMIC SHIPPING
+    // =========================
 
-  const shippingCharge =
-    await calculateShippingCharge(subtotal);
+    const shippingCharge = await calculateShippingCharge(subtotal);
 
-  console.log("🚚 Shipping calculation:", {
-    subtotal,
-    shippingCharge,
-  });
+    console.log("🚚 Shipping calculation:", {
+      subtotal,
+      shippingCharge,
+    });
 
-  // =========================
-  // FINAL TOTAL
-  // =========================
+    // =========================
+    // FINAL TOTAL
+    // =========================
 
-  const finalTotal = subtotal + shippingCharge;
+    const finalTotal = subtotal + shippingCharge;
 
-  console.log("✅ Pricing:", {
-    subtotal,
-    shippingCharge,
-    finalTotal,
-  });
+    console.log("✅ Pricing:", {
+      subtotal,
+      shippingCharge,
+      finalTotal,
+    });
 
-  return {
-    subtotal,
-    shipping: shippingCharge,
-    finalTotal,
+    return {
+      subtotal,
+      shipping: shippingCharge,
+      finalTotal,
 
-    couponDiscount: 0,
-    couponDetails: null,
+      couponDiscount: 0,
+      couponDetails: null,
 
-    cartItems: updatedCartItems,
-  };
-}
+      cartItems: updatedCartItems,
+    };
+  }
 
   // 4. DELETE THESE FULL FUNCTIONS - REMOVED COMPLETELY:
   // async applyCouponWithValidation() - DELETED

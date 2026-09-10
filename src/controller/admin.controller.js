@@ -767,8 +767,6 @@ const GetShippingCharge = catchAsync(async (req, res) => {
     const data = await getShippingCharge();
   res.status(200).send(data);
   });
-
-
 module.exports = {
   GetAllUserQueries,
   CreateDeliveryPolicy,
@@ -914,6 +912,5 @@ module.exports = {
   getBulkEnquiries,
   getFilterOptions,
   CreateOrUpdateShippingCharge,
-  GetShippingCharge
-
+  GetShippingCharge,
 };
