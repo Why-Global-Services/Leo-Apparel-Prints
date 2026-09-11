@@ -523,10 +523,16 @@ function SidebarContent({
   onRemoveCategory,
   menuStructure,
 }) {
-  const isSubSelected = (sub) =>
-    selectedSubCategories.some(
-      (s) => s.trim().toLowerCase() === sub.trim().toLowerCase()
-    );
+  const isSubSelected = (sub) => {
+    const subClean = sub.trim().toLowerCase();
+    const subNorm = subClean.replace(/[-\s]/g, "").replace(/tshirts?$/i, "");
+    return selectedSubCategories.some((s) => {
+      const sClean = s.trim().toLowerCase();
+      if (sClean === subClean) return true;
+      const sNorm = sClean.replace(/[-\s]/g, "").replace(/tshirts?$/i, "");
+      return sNorm === subNorm;
+    });
+  };
 
   const hasActiveFilters =
     selectedSubCategories.length > 0 ||
@@ -772,14 +778,23 @@ export default function ProductGrid() {
       ? urlApparel.split(",").map((a) => a.trim()).filter(Boolean)
       : [];
 
-    const initialSubs = [...sports, ...apparels];
+    const resolvedApparels = apparels.map((a) => {
+      const match = filterOptions?.apparels?.find((fa) => {
+        const cleanFA = fa.trim().toLowerCase().replace(/[-\s]/g, "").replace(/tshirts?$/i, "");
+        const cleanReq = a.trim().toLowerCase().replace(/[-\s]/g, "").replace(/tshirts?$/i, "");
+        return cleanFA === cleanReq;
+      });
+      return match || a;
+    });
+
+    const initialSubs = [...sports, ...resolvedApparels];
     const initialCats = [];
     if (sports.length > 0) initialCats.push("sports");
-    if (apparels.length > 0) initialCats.push("apparels");
+    if (resolvedApparels.length > 0) initialCats.push("apparels");
 
     setSelectedSubCategories(initialSubs);
     setSelectedCategories(initialCats);
-  }, [searchParams, mounted]);
+  }, [searchParams, mounted, filterOptions]);
 
   // Fetch products whenever searchParams change
   useEffect(() => {
@@ -791,16 +806,27 @@ export default function ProductGrid() {
     const customizationType = searchParams.get("customizationType");
     const cottonTeeType = searchParams.get("cottonTeeType");
 
+    // Resolve apparel against available filter options if exact phrasing differs
+    let resolvedApparel = apparel;
+    if (apparel && filterOptions?.apparels?.length > 0) {
+      const match = filterOptions.apparels.find((a) => {
+        const cleanA = a.trim().toLowerCase().replace(/[-\s]/g, "").replace(/tshirts?$/i, "");
+        const cleanReq = apparel.trim().toLowerCase().replace(/[-\s]/g, "").replace(/tshirts?$/i, "");
+        return cleanA === cleanReq;
+      });
+      if (match) resolvedApparel = match;
+    }
+
     dispatch(
       fetchAllProducts({
         segment: segment || undefined,
         sport: sport || undefined,
-        apparel: apparel || undefined,
+        apparel: resolvedApparel || undefined,
         customizationType: customizationType || undefined,
         cottonTeeType: cottonTeeType || undefined,
       })
     );
-  }, [dispatch, mounted, searchParams]);
+  }, [dispatch, mounted, searchParams, filterOptions]);
 
   // Helper to push updated filters to URL
   const updateUrlFilters = useCallback(
@@ -1019,9 +1045,15 @@ export default function ProductGrid() {
         .map((apparel) => apparel.trim().toLowerCase())
         .filter(Boolean);
 
-      filtered = filtered.filter((product) =>
-        requestedApparels.includes(String(product.apparel || "").trim().toLowerCase())
-      );
+      filtered = filtered.filter((product) => {
+        const prodApparel = String(product.apparel || "").trim().toLowerCase();
+        return requestedApparels.some((req) => {
+          if (prodApparel === req) return true;
+          const cleanReq = req.replace(/[-\s]/g, "").replace(/tshirts?$/i, "");
+          const cleanProd = prodApparel.replace(/[-\s]/g, "").replace(/tshirts?$/i, "");
+          return cleanReq === cleanProd;
+        });
+      });
     }
 
     if (sportParam) {

@@ -70,11 +70,11 @@ const COTTON_TEES_MENU = {
         },
         {
           name: "Men's Half Sleeve",
-          href: "/products?customizationType=CUSTOM_COTTON_TEES&cottonTeeType=OUR_DESIGN&apparel=Mens%20Half%20Sleeve",
+          href: "/products?customizationType=CUSTOM_COTTON_TEES&cottonTeeType=OUR_DESIGN&apparel=Mens%20Half%20Sleeve%20T-Shirts",
         },
         {
           name: "Men's Full Sleeve",
-          href: "/products?customizationType=CUSTOM_COTTON_TEES&cottonTeeType=OUR_DESIGN&apparel=Mens%20Full%20Sleeve",
+          href: "/products?customizationType=CUSTOM_COTTON_TEES&cottonTeeType=OUR_DESIGN&apparel=Mens%20Full%20Sleeve%20T-Shirts",
         },
       ],
     },
@@ -87,11 +87,11 @@ const COTTON_TEES_MENU = {
         },
         {
           name: "Men's Half Sleeve",
-          href: "/products?customizationType=CUSTOM_COTTON_TEES&cottonTeeType=UPLOAD_DESIGN&apparel=Mens%20Half%20Sleeve",
+          href: "/products?customizationType=CUSTOM_COTTON_TEES&cottonTeeType=UPLOAD_DESIGN&apparel=Mens%20Half%20Sleeve%20T-Shirts",
         },
         {
           name: "Men's Full Sleeve",
-          href: "/products?customizationType=CUSTOM_COTTON_TEES&cottonTeeType=UPLOAD_DESIGN&apparel=Mens%20Full%20Sleeve",
+          href: "/products?customizationType=CUSTOM_COTTON_TEES&cottonTeeType=UPLOAD_DESIGN&apparel=Mens%20Full%20Sleeve%20T-Shirts",
         },
       ],
     },

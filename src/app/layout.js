@@ -137,6 +137,10 @@ export const metadata = {
     canonical: "/",
   },
 
+  verification: {
+    google: "v9RhLiUmkFjnNueQClubxPso_pF0vP8-vmTI5X7KMdA",
+  },
+
   icons: {
     icon: "/favicon.ico",
     apple: "/apple-touch-icon.png",
@@ -169,6 +173,12 @@ export default function RootLayout({ children }) {
       lang="en"
       className={`${poppins.variable} ${inter.variable} h-full antialiased`}
     >
+      <head>
+        <meta
+          name="google-site-verification"
+          content="v9RhLiUmkFjnNueQClubxPso_pF0vP8-vmTI5X7KMdA"
+        />
+      </head>
       <body className="min-h-screen flex flex-col bg-background text-foreground font-sans">
         {/* ADD GTM NOSCRIPT HERE — FIRST THING INSIDE BODY */}
         <noscript>
