@@ -506,6 +506,7 @@ import {
   Activity,
   ChevronDown,
   Upload,
+  Palette,
 } from "lucide-react";
 import Link from "next/link";
 
@@ -715,6 +716,8 @@ export default function ProductGrid() {
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const [mounted, setMounted] = useState(false);
+  const isUploadDesign =
+    searchParams.get("cottonTeeType")?.toUpperCase() === "UPLOAD_DESIGN";
 
   // ── Redux state ──
   const {
@@ -1128,7 +1131,10 @@ export default function ProductGrid() {
   return (
     <div className="bg-white w-full flex flex-col">
       {/* DESKTOP HEADER */}
-      <div className="hidden sm:block sticky top-0 z-20 bg-white border-b border-gray-100 shadow-sm">
+      <div
+        className="hidden sm:block sticky z-20 bg-white border-b border-gray-100 shadow-sm"
+        style={{ top: "var(--navbar-height, 80px)" }}
+      >
         <div className="w-full mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-5">
           <div className="flex items-center justify-between gap-4">
             <div>
@@ -1140,31 +1146,62 @@ export default function ProductGrid() {
                 Showing {filteredProducts.length} Premium Results
               </p>
             </div>
-            <Link href="/bulk-enquiry">
-              <button className="btn-gradient btn-sm inline-flex whitespace-nowrap rounded-md">
-                <Upload size={14} />
-                Upload Design
-              </button>
-            </Link>
+            {isUploadDesign ? (
+              <Link href="/products">
+                <button className="btn-gradient btn-sm inline-flex items-center gap-2 whitespace-nowrap rounded-md">
+                  <Palette size={14} />
+                  Customize Now
+                </button>
+              </Link>
+            ) : (
+              <Link href="/products?customizationType=CUSTOM_COTTON_TEES&cottonTeeType=UPLOAD_DESIGN">
+                <button className="btn-gradient btn-sm inline-flex items-center gap-2 whitespace-nowrap rounded-md">
+                  <Upload size={14} />
+                  Upload Design
+                </button>
+              </Link>
+            )}
           </div>
         </div>
       </div>
 
       {/* MOBILE HEADER */}
-      <div className="sm:hidden sticky top-0 z-20 bg-transparent">
-        <div className="px-4 pt-5 flex items-center justify-between gap-3">
-          <Link href="/bulk-enquiry" className="flex-1">
-            <button className="w-full flex items-center justify-center gap-2 text-xs font-black uppercase tracking-wider py-3 rounded-xl btn-gradient">
-              <Upload size={16} />
-              <span>Upload Design</span>
-            </button>
-          </Link>
+      <div
+        className="sm:hidden sticky z-30 bg-white/95 backdrop-blur-md border-b border-gray-100 shadow-sm py-3 transition-all duration-200"
+        style={{ top: "var(--navbar-height, 64px)" }}
+      >
+        <div className="px-4 flex items-center gap-3 w-full">
           <button
-            onClick={() => setIsFilterOpen(true)}
-            className="flex items-center justify-center gap-2 px-6 py-3 rounded-xl text-xs font-black uppercase tracking-wider btn-gradient"
+            type="button"
+            onClick={() =>
+              router.push(
+                isUploadDesign
+                  ? "/products"
+                  : "/products?customizationType=CUSTOM_COTTON_TEES&cottonTeeType=UPLOAD_DESIGN"
+              )
+            }
+            className="flex-1 h-11 min-h-[44px] max-h-11 box-border border-0 m-0 p-0 flex items-center justify-center gap-2 text-xs font-black uppercase tracking-wider rounded-xl btn-gradient shadow-sm leading-none select-none cursor-pointer"
           >
-            <SlidersHorizontal size={16} />
-            <span>Filter</span>
+            {isUploadDesign ? (
+              <>
+                <Palette size={16} className="shrink-0" />
+                <span className="leading-none whitespace-nowrap">Customize Now</span>
+              </>
+            ) : (
+              <>
+                <Upload size={16} className="shrink-0" />
+                <span className="leading-none whitespace-nowrap">Upload Design</span>
+              </>
+            )}
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setIsFilterOpen(true)}
+            className="flex-1 h-11 min-h-[44px] max-h-11 box-border border-0 m-0 p-0 flex items-center justify-center gap-2 text-xs font-black uppercase tracking-wider rounded-xl btn-gradient shadow-sm leading-none select-none cursor-pointer"
+          >
+            <SlidersHorizontal size={16} className="shrink-0" />
+            <span className="leading-none whitespace-nowrap">Filter</span>
           </button>
         </div>
       </div>
@@ -1250,7 +1287,12 @@ export default function ProductGrid() {
           border: none;
           transition: all 0.3s ease;
         }
-        .btn-gradient:hover { transform: translateY(-2px); box-shadow: 0 10px 20px rgba(0,62,155,0.3); }
+        @media (hover: hover) and (pointer: fine) {
+          .btn-gradient:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(0,62,155,0.3);
+          }
+        }
         .btn-gradient:active { transform: scale(0.98); }
       `}</style>
 

@@ -467,7 +467,7 @@ export default function HowItWorks() {
               </Link>
               
               <Link
-                href="/bulk-enquiry"
+                href="/products?customizationType=CUSTOM_COTTON_TEES&cottonTeeType=UPLOAD_DESIGN"
                 className="btn btn-outline btn-md text-center inline-flex items-center justify-center gap-2 group"
               >
                 <span>Upload Design</span>
@@ -478,7 +478,7 @@ export default function HowItWorks() {
                 >
                   <path
                     d="M2 7h10M8 3.5L11.5 7 8 10.5"
-                    stroke="white"
+                    stroke="currentColor"
                     strokeWidth="1.8"
                     strokeLinecap="round"
                     strokeLinejoin="round"
