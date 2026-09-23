@@ -1114,6 +1114,7 @@ const [customizationFilter, setCustomizationFilter] = useState("");
 
   const [formData, setFormData] = useState({
     name: "",
+    description: "",
     categoryId: "",
     subCategoryId: "",
     basePrice: "",
@@ -1360,6 +1361,7 @@ const [customizationFilter, setCustomizationFilter] = useState("");
     if (backImageInputRef.current) backImageInputRef.current.value = "";
     setFormData({
       name: "",
+      description: "",
       categoryId: "",
       subCategoryId: "",
       basePrice: "",
@@ -1405,6 +1407,7 @@ const [customizationFilter, setCustomizationFilter] = useState("");
     try {
       const fd = new FormData();
       fd.append("name", formData.name);
+      fd.append("description", formData.description || "");
       fd.append("categoryId", formData.categoryId);
       if (formData.subCategoryId) fd.append("subCategoryId", formData.subCategoryId);
       fd.append("basePrice", formData.basePrice || 0);
@@ -1433,7 +1436,9 @@ const [customizationFilter, setCustomizationFilter] = useState("");
           await axiosInstance.put(`/editproducts/${editingProduct._id}`, fd, { headers: { "Content-Type": "multipart/form-data" } });
         } else {
           await updateProduct(editingProduct._id, {
-            name: formData.name, categoryId: formData.categoryId,
+            name: formData.name,
+            description: formData.description || "",
+            categoryId: formData.categoryId,
             subCategoryId: formData.subCategoryId || null,
             basePrice: parseFloat(formData.basePrice) || 0,
             templates: formData.templates, isActive: formData.isActive,
@@ -1494,6 +1499,7 @@ const [customizationFilter, setCustomizationFilter] = useState("");
 
     setFormData({
       name: product.name,
+      description: product.description || "",
       categoryId: product.categoryId,
       subCategoryId: product.subCategoryId || "",
       basePrice: product.basePrice,
@@ -1951,6 +1957,16 @@ const filteredProducts = products.filter(p => {
                         <input type="text" value={formData.baseColor} onChange={(e) => setFormData({ ...formData, baseColor: e.target.value })} placeholder="Black" style={inputStyle} />
                       </div>
                     )}
+                    <div style={{ marginTop: '12px' }}>
+                      <label style={labelStyle}>Product Description</label>
+                      <textarea
+                        value={formData.description}
+                        onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                        placeholder="Enter description about this custom cotton tee product..."
+                        rows={3}
+                        style={{ ...inputStyle, resize: 'vertical', minHeight: '80px', fontFamily: 'inherit' }}
+                      />
+                    </div>
                   </div>
                 )}
               </div>
@@ -2200,6 +2216,18 @@ const filteredProducts = products.filter(p => {
   <ViewRow label="Customization" value={<span style={{ color: textColor, fontSize: '14px' }}>{selectedProduct.customizationType === 'CUSTOM_COTTON_TEES' ? 'Custom Cotton Tees' : 'Standard'}</span>} textSecondary={textSecondary} />
   {selectedProduct.customizationType === 'CUSTOM_COTTON_TEES' && <ViewRow label="Cotton Tee Type" value={<span style={{ color: textColor, fontSize: '14px' }}>{selectedProduct.cottonTeeType === 'UPLOAD_DESIGN' ? 'Upload Design' : 'Our Design'}</span>} textSecondary={textSecondary} />}
   {selectedProduct.customizationType === 'CUSTOM_COTTON_TEES' && selectedProduct.baseColor && <ViewRow label="Base Color" value={<span style={{ color: textColor, fontSize: '14px' }}>{selectedProduct.baseColor}</span>} textSecondary={textSecondary} />}
+  {selectedProduct.description && (
+    <ViewRow
+      fullWidth
+      label="Description"
+      value={
+        <span style={{ color: textColor, fontSize: '14px', lineHeight: '1.5', whiteSpace: 'pre-wrap' }}>
+          {selectedProduct.description}
+        </span>
+      }
+      textSecondary={textSecondary}
+    />
+  )}
   <ViewRow label="Base Price" value={<span style={{ fontSize: '22px', fontWeight: 800, color: primaryColor }}>₹{selectedProduct.basePrice}</span>} textSecondary={textSecondary} />
   <ViewRow label="Status" value={<span style={{ display: 'inline-block', padding: '4px 14px', borderRadius: '20px', fontSize: '12px', fontWeight: 700, background: selectedProduct.isActive ? '#D1FAE5' : '#FEE2E2', color: selectedProduct.isActive ? '#10B981' : '#EF4444' }}>{selectedProduct.isActive ? 'Active' : 'Inactive'}</span>} textSecondary={textSecondary} />
 {(getProductFrontImage(selectedProduct) || getProductBackImage(selectedProduct)) && (
