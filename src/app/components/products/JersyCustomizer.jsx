@@ -1030,7 +1030,7 @@
 
 import { useState, useCallback, useEffect, useRef } from 'react';
 import {
-  Upload, ChevronDown, Save, Check, Trash2,
+  Upload, ChevronDown, ChevronUp, Sparkles, Info, Save, Check, Trash2,
   Type, Shield, Paintbrush, ShoppingBag,
   X, Star, Maximize2, Minimize2, ZoomIn, ZoomOut,
 } from 'lucide-react';
@@ -1140,6 +1140,7 @@ const FABRIC_TYPES = [
 const SIZES = ['XS', 'S', 'M', 'L', 'XL', 'XXL', '3XL', '4XL'];
 
 const MAIN_TABS_FULL = [
+  { id: 'details', label: 'Details', Icon: Info },
   { id: 'style', label: 'Style', Icon: Paintbrush },
   { id: 'logos', label: 'Logos', Icon: Shield },
   { id: 'nameNumber', label: 'Name & Number', Icon: Type },
@@ -1473,7 +1474,7 @@ export default function JerseyCustomizer({ product }) {
   }, [cartState]);
 
   const [mounted, setMounted] = useState(false);
-  const [activeTab, setActiveTab] = useState('style');
+  const [activeTab, setActiveTab] = useState('details');
   const [view, setView] = useState('front');
   const [viewMode, setViewMode] = useState('product');
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -1481,6 +1482,7 @@ export default function JerseyCustomizer({ product }) {
   const [roster, setRoster] = useState([{ id: '1', size: 'M', sleeve: 'Half', name: '', number: '' }]);
   const [isMobile, setIsMobile] = useState(false);
   const [isTablet, setIsTablet] = useState(false);
+  const [detailsOpen, setDetailsOpen] = useState(false);
 
   const getProductType = () => {
     const n = product?.name?.toLowerCase() || '';
@@ -1491,6 +1493,12 @@ export default function JerseyCustomizer({ product }) {
     return 'jersey';
   };
   const productType = product ? getProductType() : 'jersey';
+
+  const availableSizes = (Array.isArray(product?.sizes) && product.sizes.length > 0)
+    ? product.sizes.map(s => typeof s === 'object' ? s.size : s)
+    : (Array.isArray(product?.availableSizes) && product.availableSizes.length > 0)
+      ? product.availableSizes.map(s => typeof s === 'object' ? s.size : s)
+      : SIZES;
 
   // =============================
   // CUSTOM COTTON TEE — detection
@@ -1516,9 +1524,11 @@ export default function JerseyCustomizer({ product }) {
   // CUSTOM COTTON TEE — dedicated tab sets
   // =============================
   const COTTON_OUR_DESIGN_TABS = [
+    { id: 'details', label: 'Details', Icon: Info },
     { id: 'order', label: 'Order', Icon: ShoppingBag },
   ];
   const COTTON_UPLOAD_TABS = [
+    { id: 'details', label: 'Details', Icon: Info },
     { id: 'design', label: 'Design', Icon: Paintbrush },
     { id: 'order', label: 'Order', Icon: ShoppingBag },
   ];
@@ -1532,23 +1542,12 @@ export default function JerseyCustomizer({ product }) {
         : MAIN_TABS_FULL.filter(t => t.id !== 'logos');
   // ── END tab sets ─────────────────────────────────────────────────
 
-  // If the active tab becomes unavailable, fall back to Style.
+  // If the active tab becomes unavailable, fall back to Details or Style.
   useEffect(() => {
     if (!isCustomCottonTees && !isCustomizable && !hasGlb && activeTab === 'logos') {
       setActiveTab('style');
     }
   }, [isCustomizable, hasGlb, activeTab, isCustomCottonTees]);
-
-  // =============================
-  // CUSTOM COTTON TEE — default tab on load
-  // =============================
-  useEffect(() => {
-    if (isCottonOurDesign) {
-      setActiveTab('order');
-    } else if (isCottonUploadDesign) {
-      setActiveTab('design');
-    }
-  }, [isCottonOurDesign, isCottonUploadDesign]);
   // ── END default tab ──────────────────────────────────────────────
 
   const [jerseyColor, setJerseyColor] = useState('#1E40AF');
@@ -2210,19 +2209,65 @@ export default function JerseyCustomizer({ product }) {
   };
   // ── END Cotton Tee tab renderers ─────────────────────────────────
 
+  // ── Details Tab renderer ──────────────────────────────────────────
+  const renderDetailsTab = () => {
+    return (
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+        {/* Product Description */}
+        <div style={{ background: '#fff', borderRadius: 12, padding: '15px 16px', border: '1px solid #E8ECF0', boxShadow: '0 2px 8px rgba(0,0,0,0.03)' }}>
+          <div style={{ fontSize: 12, fontWeight: 800, color: '#003E9B', textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: 8, display: 'flex', alignItems: 'center', gap: 6 }}>
+            <Info size={15} />
+            Description
+          </div>
+          <p style={{ fontSize: 12, lineHeight: 1.6, color: '#334155', margin: 0, whiteSpace: 'pre-line' }}>
+            {product?.description || 'Custom premium sportswear crafted with high-durability performance fabric, engineered for superior moisture management, athletic fit, and vibrant all-over sublimation prints.'}
+          </p>
+        </div>
+
+        {/* Action Button to Start Customizing */}
+        <button
+          type="button"
+          onClick={() => setActiveTab(isCottonUploadDesign ? 'design' : (isCottonOurDesign ? 'order' : 'style'))}
+          style={{
+            width: '100%',
+            padding: '12px',
+            borderRadius: 10,
+            border: 'none',
+            background: 'linear-gradient(135deg,#0EA5E9,#0284C7,#1E3A8A)',
+            color: '#fff',
+            fontSize: 12,
+            fontWeight: 800,
+            cursor: 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: 6,
+            boxShadow: '0 4px 12px rgba(0,62,155,0.18)',
+          }}
+        >
+          Start Customizing →
+        </button>
+      </div>
+    );
+  };
+
   // ── TAB CONTENT ──────────────────────────────────────────────────────────
   const renderTabContent = () => {
     // =============================
     // CUSTOM COTTON TEE — branch away from Jersey tab content entirely
     // =============================
     if (isCottonOurDesign) {
+      if (activeTab === 'details') return renderDetailsTab();
       return renderCottonOrderTab();
     }
     if (isCottonUploadDesign) {
+      if (activeTab === 'details') return renderDetailsTab();
       if (activeTab === 'design') return renderCottonDesignTab();
       return renderCottonOrderTab();
     }
     // ── END Cotton Tee branch ────────────────────────────────────────
+
+    if (activeTab === 'details') return renderDetailsTab();
 
     if (activeTab === 'style') return (
       <>
@@ -2418,26 +2463,38 @@ export default function JerseyCustomizer({ product }) {
 
   const panelInner = (
     <>
+      {/* Product Title & Price Header */}
+      <div style={{ padding: '14px 16px 12px', borderBottom: '1px solid #E8ECF0', background: '#fff', flexShrink: 0 }}>
+        <div style={{ fontSize: 16, fontWeight: 800, color: '#0F172A', lineHeight: 1.3 }}>{product?.name || 'Kit Designer'}</div>
+        {(product?.finalPrice || product?.price || product?.basePrice) ? (
+          <div style={{ display: 'flex', alignItems: 'baseline', gap: 8, marginTop: 4, flexWrap: 'wrap' }}>
+            <span style={{ fontSize: 18, fontWeight: 900, color: '#003E9B' }}>
+              ₹{(product?.finalPrice ?? product?.price ?? 0).toLocaleString()}
+            </span>
+            {product?.basePrice && product.basePrice > (product?.finalPrice ?? product?.price ?? 0) && (
+              <span style={{ fontSize: 12, color: '#94A3B8', textDecoration: 'line-through', fontWeight: 500 }}>
+                ₹{product.basePrice.toLocaleString()}
+              </span>
+            )}
+            {product?.basePrice && product.basePrice > (product?.finalPrice ?? product?.price ?? 0) && (
+              <span style={{ fontSize: 10, fontWeight: 700, color: '#16A34A', background: '#DCFCE7', padding: '1px 6px', borderRadius: 4 }}>
+                {product?.discountValue ? `${product.discountValue}% OFF` : 'SPECIAL OFFER'}
+              </span>
+            )}
+          </div>
+        ) : null}
+      </div>
+
       <div style={{ display: 'flex', borderBottom: '1px solid #E8ECF0', background: '#fff', flexShrink: 0 }}>
         {visibleTabs.map(tab => {
           const active = activeTab === tab.id, Icon = tab.Icon;
           return (
-            <button key={tab.id} onClick={() => setActiveTab(tab.id)} style={{ flex: 1, padding: '12px 4px 10px', border: 'none', cursor: 'pointer', borderBottom: `2.5px solid ${active ? '#003E9B' : 'transparent'}`, background: active ? 'rgba(0,62,155,0.05)' : 'transparent', color: active ? '#003E9B' : '#94A3B8', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3 }}>
-              <Icon size={16} strokeWidth={active ? 2.5 : 1.8} />
+            <button key={tab.id} onClick={() => setActiveTab(tab.id)} style={{ flex: 1, padding: '10px 4px 8px', border: 'none', cursor: 'pointer', borderBottom: `2.5px solid ${active ? '#003E9B' : 'transparent'}`, background: active ? 'rgba(0,62,155,0.05)' : 'transparent', color: active ? '#003E9B' : '#94A3B8', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2 }}>
+              <Icon size={15} strokeWidth={active ? 2.5 : 1.8} />
               <span style={{ fontSize: 9, fontWeight: 700 }}>{tab.label}</span>
             </button>
           );
         })}
-      </div>
-      <div style={{ padding: '10px 16px', borderBottom: '1px solid #E8ECF0', flexShrink: 0, background: '#fff' }}>
-        <div style={{ fontSize: 15, fontWeight: 800, color: '#0F172A', lineHeight: 1.3 }}>{product?.name || 'Kit Designer'}</div>
-        <div style={{ fontSize: 9, color: '#94A3B8', marginTop: 2 }}>
-          {activeTab === 'style' && 'Style & Colors'}
-          {activeTab === 'logos' && 'Logos & Badges'}
-          {activeTab === 'nameNumber' && 'Name & Number'}
-          {activeTab === 'design' && 'Upload & Position Your Design'}
-          {activeTab === 'order' && 'Order Details'}
-        </div>
       </div>
       <div style={{ flex: 1, overflowY: 'auto', overflowX: 'hidden', padding: '12px 10px', background: '#FAFAFA', paddingBottom: 20 }}>
         {renderTabContent()}
@@ -2462,46 +2519,102 @@ export default function JerseyCustomizer({ product }) {
   return (
     <div style={{ display: 'flex', height: 'calc(100dvh - 72px)', minHeight: 500, overflow: 'visible', background: '#fff', fontFamily: "'Poppins','Segoe UI',sans-serif", position: 'relative' }}>
 
-      {/* ── Viewer ── */}
-      <div ref={viewerContainerRef} style={{ flex: 1, position: 'relative', background: '#ffffff', overflow: 'hidden', minHeight: 'calc(100vh - 120px)' }}>
-
+      {/* ── Left Side: Pure Interactive Visualizer (Zero Clutter, Zero Scrollbars) ── */}
+      <div
+        ref={viewerContainerRef}
+        style={{
+          flex: 1,
+          position: 'relative',
+          background: '#ffffff',
+          overflow: 'hidden',
+          minHeight: 'calc(100vh - 120px)',
+          height: '100%',
+        }}
+      >
         {/* View mode toggle */}
-        <div style={{ position: 'absolute', top: 14, left: '50%', transform: 'translateX(-50%)', zIndex: 10, display: 'flex', gap: 6, background: 'rgba(0,0,0,0.55)', backdropFilter: 'blur(10px)', WebkitBackdropFilter: 'blur(10px)', padding: '3px', borderRadius: 30 }}>
-          {/* CUSTOM COTTON TEE: gate the 3D toggle on hasGlb (already false for cotton tee products) instead of the raw product.glbUrl flag */}
+        <div
+          style={{
+            position: 'absolute',
+            top: 14,
+            left: '50%',
+            transform: 'translateX(-50%)',
+            zIndex: 10,
+            display: 'flex',
+            gap: 6,
+            background: 'rgba(0,0,0,0.55)',
+            backdropFilter: 'blur(10px)',
+            WebkitBackdropFilter: 'blur(10px)',
+            padding: '3px',
+            borderRadius: 30,
+          }}
+        >
           {[
             { id: 'product', label: isMobile ? '2D' : 'Product View' },
             ...(hasGlb ? [{ id: 'glb', label: isMobile ? '3D' : '3D View' }] : []),
           ].map(v => (
-            <button key={v.id} onClick={() => setViewMode(v.id)} style={{ padding: isMobile ? '4px 14px' : '5px 20px', borderRadius: 30, fontSize: isMobile ? 10 : 11, fontWeight: 700, background: viewMode === v.id ? '#fff' : 'transparent', color: viewMode === v.id ? '#003E9B' : '#fff', border: 'none', cursor: 'pointer', whiteSpace: 'nowrap', transition: 'all 0.2s' }}>{v.label}</button>
+            <button
+              key={v.id}
+              onClick={() => setViewMode(v.id)}
+              style={{
+                padding: isMobile ? '4px 14px' : '5px 20px',
+                borderRadius: 30,
+                fontSize: isMobile ? 10 : 11,
+                fontWeight: 700,
+                background: viewMode === v.id ? '#fff' : 'transparent',
+                color: viewMode === v.id ? '#003E9B' : '#fff',
+                border: 'none',
+                cursor: 'pointer',
+                whiteSpace: 'nowrap',
+                transition: 'all 0.2s',
+              }}
+            >
+              {v.label}
+            </button>
           ))}
         </div>
 
-        <button onClick={handleFullscreen} style={{ position: 'absolute', top: 14, right: 14, zIndex: 10, background: 'rgba(255,255,255,0.92)', backdropFilter: 'blur(8px)', padding: 8, borderRadius: 40, border: 'none', cursor: 'pointer', boxShadow: '0 2px 8px rgba(0,0,0,0.12)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <button
+          onClick={handleFullscreen}
+          style={{
+            position: 'absolute',
+            top: 14,
+            right: 14,
+            zIndex: 10,
+            background: 'rgba(255,255,255,0.92)',
+            backdropFilter: 'blur(8px)',
+            padding: 8,
+            borderRadius: 40,
+            border: 'none',
+            cursor: 'pointer',
+            boxShadow: '0 2px 8px rgba(0,0,0,0.12)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+          }}
+        >
           {isFullscreen ? <Minimize2 size={15} /> : <Maximize2 size={15} />}
         </button>
-
-        {/* Front/Back toggle */}
-        {viewMode === 'product' && (
-          <div style={{ position: 'absolute', bottom: 20, left: '50%', transform: 'translateX(-50%)', zIndex: 10 }}>
-            <div style={{ background: 'rgba(255,255,255,0.95)', borderRadius: 99, padding: 4, display: 'inline-flex', gap: 4, boxShadow: '0 4px 14px rgba(0,0,0,0.10)' }}>
-              {['front', 'back'].map(v => (
-                <button key={v} onClick={() => setView(v)} style={{ padding: '8px 26px', borderRadius: 99, fontSize: 10, fontWeight: 700, cursor: 'pointer', background: view === v ? 'linear-gradient(135deg,#0EA5E9,#0284C7,#1E3A8A)' : 'transparent', border: view === v ? 'none' : '1px solid #003E9B', color: view === v ? '#fff' : '#003E9B' }}>{v.toUpperCase()}</button>
-              ))}
-            </div>
-          </div>
-        )}
 
         {/* 3D */}
         {viewMode === 'glb' && (
           <div style={{ position: 'absolute', inset: 0, width: '100%', height: '100%' }}>
             <GLBViewer
               glbPath={product?.glbUrl || '/images/jerseys/TSHIRT.glb'}
-              autoRotate={true} backgroundColor="#E2E8F0"
-              jerseyColor={jerseyColor} sleeveColor={sleeveColor} collarColor={collarColor}
-              playerName={showName ? playerName : ''} playerNumber={showNumber ? playerNumber : ''}
-              nameColor={nameColor} numberColor={numberColor}
-              nameStyleId={nameFont} nameArcStyle={nameStyle} textEffect={textEffect}
-              showText={showName} clubLogo={clubLogo} sponsorLogo={sponsorLogo}
+              autoRotate={true}
+              backgroundColor="#E2E8F0"
+              jerseyColor={jerseyColor}
+              sleeveColor={sleeveColor}
+              collarColor={collarColor}
+              playerName={showName ? playerName : ''}
+              playerNumber={showNumber ? playerNumber : ''}
+              nameColor={nameColor}
+              numberColor={numberColor}
+              nameStyleId={nameFont}
+              nameArcStyle={nameStyle}
+              textEffect={textEffect}
+              showText={showName}
+              clubLogo={clubLogo}
+              sponsorLogo={sponsorLogo}
             />
           </div>
         )}
@@ -2540,7 +2653,7 @@ export default function JerseyCustomizer({ product }) {
                   ref={jerseyImageRef}
                   src={view === 'front' ? frontImage : backImage}
                   alt={`Product ${view} view`}
-                  style={{ maxWidth: '80%', maxHeight: '80%', objectFit: 'contain', display: 'block' }}
+                  style={{ maxWidth: '85%', maxHeight: '82%', objectFit: 'contain', display: 'block' }}
                   onError={e => { e.target.src = '/images/jerseys/front.jpg'; }}
                 />
                 {!isCustomCottonTees && hasPrintZones && (
@@ -2550,16 +2663,67 @@ export default function JerseyCustomizer({ product }) {
                     jerseyImageRef={jerseyImageRef}
                     currentView={view}
                     printZones={product?.printZones}
-                    playerName={playerName} showName={showName}
-                    nameFont={nameFont} nameColor={nameColor} nameStyle={nameStyle}
-                    playerNumber={playerNumber} showNumber={showNumber}
-                    numberFont={numberFont} numberColor={numberColor}
+                    playerName={playerName}
+                    showName={showName}
+                    nameFont={nameFont}
+                    nameColor={nameColor}
+                    nameStyle={nameStyle}
+                    playerNumber={playerNumber}
+                    showNumber={showNumber}
+                    numberFont={numberFont}
+                    numberColor={numberColor}
                     textEffect={textEffect}
-                    clubLogo={clubLogo} sponsorLogo={sponsorLogo}
+                    clubLogo={clubLogo}
+                    sponsorLogo={sponsorLogo}
                   />
                 )}
               </>
             )}
+          </div>
+        )}
+
+        {/* Front / Back Toggle floating cleanly at bottom center of the visualizer */}
+        {viewMode === 'product' && (
+          <div
+            style={{
+              position: 'absolute',
+              bottom: (isMobile || isTablet) ? 68 : 16,
+              left: '50%',
+              transform: 'translateX(-50%)',
+              zIndex: 10,
+              pointerEvents: 'auto',
+            }}
+          >
+            <div
+              style={{
+                background: 'rgba(255,255,255,0.95)',
+                borderRadius: 99,
+                padding: 4,
+                display: 'inline-flex',
+                gap: 4,
+                boxShadow: '0 4px 14px rgba(0,0,0,0.10)',
+              }}
+            >
+              {['front', 'back'].map(v => (
+                <button
+                  key={v}
+                  onClick={() => setView(v)}
+                  style={{
+                    padding: isMobile ? '6px 20px' : '8px 26px',
+                    borderRadius: 99,
+                    fontSize: isMobile ? 9 : 10,
+                    fontWeight: 700,
+                    cursor: 'pointer',
+                    background: view === v ? 'linear-gradient(135deg,#0EA5E9,#0284C7,#1E3A8A)' : 'transparent',
+                    border: view === v ? 'none' : '1px solid #003E9B',
+                    color: view === v ? '#fff' : '#003E9B',
+                    transition: 'all 0.2s',
+                  }}
+                >
+                  {v.toUpperCase()}
+                </button>
+              ))}
+            </div>
           </div>
         )}
       </div>
@@ -2611,6 +2775,8 @@ export default function JerseyCustomizer({ product }) {
         ::-webkit-scrollbar-track{background:#F1F5F9;border-radius:10px}
         ::-webkit-scrollbar-thumb{background:linear-gradient(135deg,#0EA5E9,#0284C7);border-radius:10px}
         input:focus{outline:2px solid rgba(0,62,155,0.4);outline-offset:2px}
+        .no-scrollbar::-webkit-scrollbar{display:none !important;width:0 !important;height:0 !important}
+        .no-scrollbar{-ms-overflow-style:none !important;scrollbar-width:none !important}
       `}</style>
     </div>
   );
