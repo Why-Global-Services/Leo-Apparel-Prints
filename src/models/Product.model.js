@@ -13,6 +13,11 @@ const productSchema = new mongoose.Schema(
       required: true,
     },
 
+    description: {
+      type: String,
+      default: "",
+    },
+
     segment: {
       type: String,
     },

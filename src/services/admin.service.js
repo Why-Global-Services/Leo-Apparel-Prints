@@ -877,6 +877,7 @@ const createProducts = async (req, res) => {
   // ── Create — no ...data spread ────────────────────────────
   const createdProduct = await Product.create({
     name: data.name,
+    description: data.description || "",
     categoryId: data.categoryId,
     subCategoryId: data.subCategoryId || null,
     glbUrl,
@@ -1134,6 +1135,7 @@ if (apparel) {
         $project: {
           _id: 1,
           name: 1,
+          description: 1,
           segment: 1,
           sport: 1,
           apparel: 1,
